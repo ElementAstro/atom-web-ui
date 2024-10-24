@@ -1,6 +1,7 @@
 // src/components/Toast.js
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
+import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
 const Toast = ({
   message,
@@ -13,7 +14,17 @@ const Toast = ({
   customClass = "",
   customMessageClass = "",
   customButtonClass = "",
+  theme, // 新增属性
+  tooltip = "", // 新增属性
+  borderWidth = "2", // 新增属性
+  animation = "transform transition-transform duration-500 ease-in-out", // 新增属性
+  icon = null, // 新增属性
+  fullscreen = false, // 新增属性
 }) => {
+  const [calculatedPosition, setCalculatedPosition] = useState(position);
+  const toastRef = useRef(null);
+  const { theme: currentTheme } = useTheme(); // 获取当前主题
+
   useEffect(() => {
     if (onOpen) onOpen();
     const timer = setTimeout(() => {
@@ -25,6 +36,39 @@ const Toast = ({
       if (onCloseComplete) onCloseComplete();
     };
   }, [onClose, duration, onOpen, onCloseComplete]);
+
+  useEffect(() => {
+    if (toastRef.current) {
+      const toastRect = toastRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      if (position === "top-left" && toastRect.top < 0) {
+        setCalculatedPosition("bottom-left");
+      } else if (position === "top-right" && toastRect.top < 0) {
+        setCalculatedPosition("bottom-right");
+      } else if (
+        position === "bottom-left" &&
+        toastRect.bottom > viewportHeight
+      ) {
+        setCalculatedPosition("top-left");
+      } else if (
+        position === "bottom-right" &&
+        toastRect.bottom > viewportHeight
+      ) {
+        setCalculatedPosition("top-right");
+      } else if (position === "top-center" && toastRect.top < 0) {
+        setCalculatedPosition("bottom-center");
+      } else if (
+        position === "bottom-center" &&
+        toastRect.bottom > viewportHeight
+      ) {
+        setCalculatedPosition("top-center");
+      } else {
+        setCalculatedPosition(position);
+      }
+    }
+  }, [position]);
 
   const variantClasses = {
     info: "bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700",
@@ -42,19 +86,34 @@ const Toast = ({
     "bottom-center": "bottom-4 left-1/2 transform -translate-x-1/2",
   };
 
+  const themeClasses = {
+    light: "bg-white text-gray-900 border-gray-300",
+    dark: "bg-gray-900 text-white border-gray-700",
+    astronomy:
+      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
+    eyeCare: "bg-green-100 text-green-900 border-green-300",
+  };
+
   return (
     <div
-      className={`fixed ${positionClasses[position]} ${variantClasses[variant]} text-white p-4 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out animate-fade-in hover:scale-105 hover:shadow-neon z-50 ${customClass}`}
+      ref={toastRef}
+      className={`fixed ${positionClasses[calculatedPosition]} ${
+        variantClasses[variant]
+      } text-white p-4 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out animate-fade-in hover:scale-105 hover:shadow-neon z-50 ${customClass} ${
+        themeClasses[theme || currentTheme]
+      } border-${borderWidth} ${fullscreen ? "w-full h-full" : ""}`}
       role="alert"
       aria-live="assertive"
     >
       <div className={`flex items-center ${customMessageClass}`}>
+        {icon && <span className="mr-2">{icon}</span>}
         {message}
         <button
           className={`ml-3 text-sm hover:text-red-400 transition duration-300 ${customButtonClass}`}
           onClick={onClose}
           onKeyDown={(e) => e.key === "Enter" && onClose()}
           aria-label="Close"
+          title={tooltip}
         >
           <AiOutlineClose />
         </button>

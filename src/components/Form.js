@@ -2,12 +2,22 @@
 import React, { useState } from "react";
 import Input from "./Input";
 import Button from "./Button";
+import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
-const Form = ({ onSubmitSuccess, onSubmitFailure }) => {
+const Form = ({
+  onSubmitSuccess,
+  onSubmitFailure,
+  theme, // 新增属性
+  tooltip = "", // 新增属性
+  borderWidth = "2", // 新增属性
+  animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
+  icon = null, // 新增属性
+}) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [responseMessage, setResponseMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { theme: currentTheme } = useTheme(); // 获取当前主题
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,11 +44,23 @@ const Form = ({ onSubmitSuccess, onSubmitFailure }) => {
     setPassword("");
   };
 
+  const themeClasses = {
+    light: "bg-white text-gray-900 border-gray-300",
+    dark: "bg-gray-900 text-white border-gray-700",
+    astronomy:
+      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
+    eyeCare: "bg-green-100 text-green-900 border-green-300",
+  };
+
   return (
-    <div className="bg-gray-900 min-h-screen flex items-center justify-center">
+    <div
+      className={`min-h-screen flex items-center justify-center ${
+        themeClasses[theme || currentTheme]
+      }`}
+    >
       <form
         onSubmit={handleSubmit}
-        className="p-6 border rounded-lg shadow-xl bg-gray-800 transition-transform duration-300 hover:scale-105 hover:shadow-neon"
+        className={`p-6 border-${borderWidth} rounded-lg shadow-xl bg-gray-800 ${animation} hover:scale-105 hover:shadow-neon`}
       >
         <h2 className="text-white text-2xl font-semibold mb-4">登录表单</h2>
         <Input
@@ -57,11 +79,12 @@ const Form = ({ onSubmitSuccess, onSubmitFailure }) => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full mt-4 transition-transform duration-300 transform hover:scale-105 ${
+          className={`w-full mt-4 ${animation} hover:scale-105 ${
             isSubmitting
               ? "bg-gray-600 cursor-wait"
               : "bg-blue-500 hover:bg-blue-700"
           }`}
+          title={tooltip}
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">
@@ -88,7 +111,10 @@ const Form = ({ onSubmitSuccess, onSubmitFailure }) => {
               提交中...
             </div>
           ) : (
-            "提交"
+            <>
+              {icon && <span className="mr-2">{icon}</span>}
+              提交
+            </>
           )}
         </Button>
         {responseMessage && (

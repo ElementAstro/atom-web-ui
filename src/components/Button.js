@@ -1,5 +1,6 @@
 // src/components/Button.js
 import React, { useRef } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const Button = ({
   children,
@@ -13,23 +14,55 @@ const Button = ({
   onBlur,
   onMouseEnter,
   onMouseLeave,
-  ripple = false, // 新增属性
+  ripple = false, 
+  icon = null, 
+  tooltip = "", 
+  fullWidth = false, 
+  outline = false, 
+  gradient = false, 
 }) => {
   const buttonRef = useRef(null);
+  const { theme } = useTheme(); // 获取当前主题
 
   const baseStyle =
     "px-4 py-2 rounded focus:outline-none transition duration-300 ease-in-out transform";
 
-  const variantStyle =
-    variant === "primary"
-      ? "bg-blue-500 text-white hover:bg-blue-700 active:bg-blue-800"
-      : variant === "secondary"
-      ? "bg-gray-300 text-black hover:bg-gray-400 active:bg-gray-500"
-      : variant === "alert"
-      ? "bg-red-500 text-white hover:bg-red-700 active:bg-red-800"
-      : variant === "success"
-      ? "bg-green-500 text-white hover:bg-green-700 active:bg-green-800"
-      : "bg-purple-500 text-white hover:bg-purple-700 active:bg-purple-800"; // 默认变体
+  const themeClasses = {
+    light: {
+      primary: "bg-blue-500 text-white hover:bg-blue-700 active:bg-blue-800",
+      secondary: "bg-gray-300 text-black hover:bg-gray-400 active:bg-gray-500",
+      alert: "bg-red-500 text-white hover:bg-red-700 active:bg-red-800",
+      success: "bg-green-500 text-white hover:bg-green-700 active:bg-green-800",
+    },
+    dark: {
+      primary: "bg-blue-700 text-white hover:bg-blue-500 active:bg-blue-400",
+      secondary: "bg-gray-500 text-white hover:bg-gray-400 active:bg-gray-300",
+      alert: "bg-red-700 text-white hover:bg-red-500 active:bg-red-400",
+      success: "bg-green-700 text-white hover:bg-green-500 active:bg-green-400",
+    },
+    astronomy: {
+      primary:
+        "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white",
+      secondary:
+        "bg-gradient-to-r from-gray-700 via-gray-800 to-black text-white",
+      alert: "bg-gradient-to-r from-red-900 via-pink-900 to-black text-white",
+      success:
+        "bg-gradient-to-r from-green-900 via-teal-900 to-black text-white",
+    },
+    eyeCare: {
+      primary:
+        "bg-green-500 text-green-900 hover:bg-green-700 active:bg-green-800",
+      secondary:
+        "bg-green-300 text-green-900 hover:bg-green-400 active:bg-green-500",
+      alert: "bg-red-500 text-green-900 hover:bg-red-700 active:bg-red-800",
+      success:
+        "bg-green-700 text-green-900 hover:bg-green-500 active:bg-green-400",
+    },
+  };
+
+  const variantStyle = outline
+    ? `border ${themeClasses[theme][variant]}`
+    : themeClasses[theme][variant];
 
   const sizeStyle =
     size === "small"
@@ -43,6 +76,12 @@ const Button = ({
 
   const sciFiStyle =
     "hover:shadow-neon hover:scale-105 focus:ring-2 focus:ring-purple-600";
+
+  const fullWidthStyle = fullWidth ? "w-full" : "";
+
+  const gradientStyle = gradient
+    ? "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500"
+    : "";
 
   const handleRipple = (event) => {
     if (!ripple) return;
@@ -69,7 +108,7 @@ const Button = ({
   return (
     <button
       ref={buttonRef}
-      className={`${baseStyle} ${variantStyle} ${sizeStyle} ${sciFiStyle} ${
+      className={`${baseStyle} ${variantStyle} ${sizeStyle} ${sciFiStyle} ${fullWidthStyle} ${gradientStyle} ${
         disabled ? disabledStyle : ""
       } ${isLoading ? loadingStyle : ""}`}
       onClick={!disabled && !isLoading ? onClick : undefined}
@@ -79,6 +118,7 @@ const Button = ({
       onBlur={onBlur}
       onMouseDown={handleRipple}
       disabled={disabled || isLoading} // 禁用按钮或加载时禁用
+      title={tooltip}
     >
       {isLoading ? (
         <div className="flex items-center">
@@ -105,7 +145,10 @@ const Button = ({
           Loading...
         </div>
       ) : (
-        children
+        <div className="flex items-center">
+          {icon && <span className="mr-2">{icon}</span>}
+          {children}
+        </div>
       )}
     </button>
   );

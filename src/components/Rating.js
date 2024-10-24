@@ -1,5 +1,7 @@
 // src/components/Rating.js
 import React, { useState } from "react";
+import { AiOutlineClose } from "react-icons/ai";
+import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
 const Rating = ({
   max = 5,
@@ -11,9 +13,18 @@ const Rating = ({
   label,
   onFocus,
   onBlur,
+  allowHalf = false, // 新增半星评分功能
+  clearable = false, // 新增清除评分功能
+  theme, // 新增属性
+  tooltip = "", // 新增属性
+  borderWidth = "2", // 新增属性
+  animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
+  icon = "★", // 新增属性
+  fullscreen = false, // 新增属性
 }) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const { theme: currentTheme } = useTheme(); // 获取当前主题
 
   const handleRate = (rate) => {
     if (disabled) return;
@@ -39,14 +50,33 @@ const Rating = ({
     }
   };
 
+  const handleClear = () => {
+    setRating(0);
+    if (onRate) {
+      onRate(0);
+    }
+  };
+
   const sizeClasses = {
     small: "text-xl",
     medium: "text-3xl",
     large: "text-5xl",
   };
 
+  const themeClasses = {
+    light: "bg-white text-gray-900 border-gray-300",
+    dark: "bg-gray-900 text-white border-gray-700",
+    astronomy:
+      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
+    eyeCare: "bg-green-100 text-green-900 border-green-300",
+  };
+
   return (
-    <div className="flex flex-col items-center">
+    <div
+      className={`flex flex-col items-center p-4 md:p-6 lg:p-8 ${
+        fullscreen ? "w-full h-full" : ""
+      } ${themeClasses[theme || currentTheme]}`}
+    >
       {label && <span className="mb-2 text-gray-200">{label}</span>}
       <div
         className="flex space-x-1"
@@ -64,20 +94,53 @@ const Rating = ({
             onMouseLeave={handleMouseLeave}
             className={`cursor-pointer ${
               sizeClasses[size]
-            } transition duration-300 transform ${
+            } transition duration-300 transform ${animation} ${
               index < (hoverRating || rating)
                 ? "text-yellow-500 scale-110"
                 : "text-gray-300"
             } hover:scale-125 hover:text-blue-500 hover:shadow-neon ${
               disabled ? "cursor-not-allowed opacity-50" : ""
-            }`}
+            } border-${borderWidth}`}
             role="radio"
             aria-checked={index < rating}
+            title={tooltip}
           >
-            ★
+            {icon}
           </span>
         ))}
+        {allowHalf &&
+          [...Array(max)].map((_, index) => (
+            <span
+              key={`half-${index}`}
+              onClick={() => handleRate(index + 0.5)}
+              onMouseEnter={() => handleMouseEnter(index + 0.5)}
+              onMouseLeave={handleMouseLeave}
+              className={`cursor-pointer ${
+                sizeClasses[size]
+              } transition duration-300 transform ${animation} ${
+                index + 0.5 <= (hoverRating || rating)
+                  ? "text-yellow-500 scale-110"
+                  : "text-gray-300"
+              } hover:scale-125 hover:text-blue-500 hover:shadow-neon ${
+                disabled ? "cursor-not-allowed opacity-50" : ""
+              } border-${borderWidth}`}
+              role="radio"
+              aria-checked={index + 0.5 <= rating}
+              title={tooltip}
+            >
+              {icon}
+            </span>
+          ))}
       </div>
+      {clearable && (
+        <button
+          onClick={handleClear}
+          className="mt-2 text-red-500 hover:text-red-700 transition duration-300"
+          title={tooltip}
+        >
+          <AiOutlineClose />
+        </button>
+      )}
     </div>
   );
 };

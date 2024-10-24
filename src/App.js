@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState } from "react";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import Button from "./components/Button";
@@ -28,7 +27,6 @@ import Notification from "./components/Notification";
 import Alert from "./components/Alert";
 import ConfirmDialog from "./components/ConfirmDialog";
 import Divider from "./components/Divider";
-import Slides from "./components/Slides";
 import Tooltip from "./components/Tooltip";
 import LoadMore from "./components/LoadMore";
 import Sidebar from "./components/Sidebar";
@@ -56,6 +54,9 @@ import Navbar from "./components/Navbars";
 import Navs from "./components/Nav";
 import FluidLayout from "./components/FluidLayout";
 import FlowLayout from "./components/FlowLayout";
+import Grid from "./components/Grid";
+import DraggableModal from "./components/DraggableModal";
+import CollapsibleSidebar from "./components/CollapsibleSidebar";
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
@@ -85,10 +86,26 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const steps = ["Step 1", "Step 2", "Step 3", "Step 4"];
-  const [itemsAA, setItems] = useState(["Item 1", "Item 2", "Item 3", "Item 4"]);
+  const [itemsAA, setItems] = useState([
+    "Item 1",
+    "Item 2",
+    "Item 3",
+    "Item 4",
+  ]);
+  const sidebarItems = ['首页', '关于', '服务', '联系'];
+
 
   const [content, setContent] = useState("<p>Start typing...</p>");
   const [isOffcanvasOpen, setOffcanvasOpen] = useState(false);
+  const [isModalOpenA, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   const buttons = [
     {
@@ -193,9 +210,9 @@ const App = () => {
   };
 
   const items = [
-    { label: "Home", link: "/" },
-    { label: "Category", link: "/category" },
-    { label: "Product", link: "/product" },
+    { label: "家", link: "/" },
+    { label: "分类", link: "/category" },
+    { label: "产品", link: "/product" },
   ];
 
   const handleItemClick = (item) => {
@@ -256,12 +273,14 @@ const App = () => {
       <Button onClick={toggleTheme}>Toggle Theme</Button>
 
       <Divider title="卡片示例" />
+
       <Card title="示例卡片">
         <p>这是卡片内的内容。</p>
         <Input label="示例输入" />
       </Card>
 
       <Divider title="按钮示例" />
+
       <Button
         variant="primary"
         size="large"
@@ -301,6 +320,7 @@ const App = () => {
       </Button>
 
       <Divider title="按钮组" />
+
       <ButtonGroup
         buttons={buttons}
         onButtonClick={handleButtonClick}
@@ -308,6 +328,7 @@ const App = () => {
       />
 
       <Divider title="折叠按钮组" />
+
       <CollapseButtonGroup
         mainLabel="Main Button"
         buttons={buttons}
@@ -320,6 +341,7 @@ const App = () => {
       />
 
       <Divider title="输入框示例" />
+
       <TimeInput
         value={time}
         onChange={(newTime) => setTime(newTime)}
@@ -346,9 +368,11 @@ const App = () => {
       />
 
       <Divider title="下拉菜单" />
+
       <Dropdown options={["选项 1", "选项 2", "选项 3"]} />
 
       <Divider title="复选框" />
+
       <CheckBox
         checked={isChecked}
         onChange={handleChange}
@@ -361,6 +385,7 @@ const App = () => {
       />
 
       <Divider title="表格示例" />
+
       <Table
         data={data}
         columns={columns}
@@ -370,6 +395,7 @@ const App = () => {
       />
 
       <Divider title="轮播图" />
+
       <Carousel
         items={[
           <div className="h-64 bg-red-200">Slide 1</div>,
@@ -379,6 +405,7 @@ const App = () => {
       />
 
       <Divider title="Toast 通知" />
+
       <Button
         variant="primary"
         size="large"
@@ -398,6 +425,7 @@ const App = () => {
       )}
 
       <Divider title="模态框" />
+
       <Button variant="primary" size="large" onClick={() => setModalOpen(true)}>
         Open Modal
       </Button>
@@ -424,27 +452,34 @@ const App = () => {
       </Modal>
 
       <Divider title="进度条" />
+
       <ProgressBar progress={70} />
 
       <Divider title="图标示例" />
+
       <Icon icon="coffee" />
 
       <Divider title="反馈表单" />
+
       <Feedback />
 
       <Divider title="验证表单" />
+
       <ValidatedForm />
 
       <Divider title="搜索框" />
+
       <SearchBox
         placeholder="输入搜索内容..."
         onSearch={(val) => console.log(val)}
       />
 
       <Divider title="日历选择" />
+
       <Calendar />
 
       <Divider title="切换开关" />
+
       <Switch
         checked={isChecked}
         onChange={handleChange}
@@ -661,25 +696,23 @@ const App = () => {
         size="large"
         onClick={() => setOffcanvasOpen(true)}
       >
-        Open Offcanvas
+        打开侧边栏
       </Button>
       <Offcanvas
         isOpen={isOffcanvasOpen}
         onClose={() => setOffcanvasOpen(false)}
-        onOpen={() => console.log("Offcanvas opened")}
-        onCloseComplete={() => console.log("Offcanvas closed")}
+        onOpen={() => console.log("侧边栏已打开")}
+        onCloseComplete={() => console.log("侧边栏已关闭")}
         customClass="custom-offcanvas"
         closeButtonContent="✖"
       >
-        <h2 className="text-lg font-bold text-white">Offcanvas Content</h2>
-        <p className="text-gray-300">
-          This is the content inside the offcanvas.
-        </p>
+        <h2 className="text-lg font-bold text-white">侧边栏内容</h2>
+        <p className="text-gray-300">这是侧边栏内部的内容。</p>
       </Offcanvas>
 
-      <Divider title="NavBar" />
+      <Divider title="导航栏" />
       <Router>
-        <Navbar brand="MyBrand" links={links} onLinkClick={handleLinkClick} />
+        <Navbar brand="我的品牌" links={links} onLinkClick={handleLinkClick} />
         <Routes>
           <Route exact path="/" component={Home} />
           <Route path="/about" component={About} />
@@ -687,7 +720,7 @@ const App = () => {
         </Routes>
       </Router>
 
-      <Divider title="Nav" />
+      <Divider title="导航" />
       <Navs
         items={items}
         onNavClick={handleNavClick}
@@ -696,7 +729,7 @@ const App = () => {
         onBlur={handleBlur}
       />
 
-      <Divider title="Fluid Layout" />
+      <Divider title="流体布局" />
       <FluidLayout
         sidebarContent={sidebarContent}
         mainContent={mainContent}
@@ -704,7 +737,7 @@ const App = () => {
         customClass="custom-fluid-layout"
       />
 
-      <Divider title="Flow Layout" />
+      <Divider title="流布局" />
       <DndProvider backend={HTML5Backend}>
         <FlowLayout
           items={itemsAA}
@@ -715,6 +748,25 @@ const App = () => {
           draggable={true}
         />
       </DndProvider>
+
+      <Divider title="可拖动模态框" />
+      <Button variant="primary" size="large" onClick={handleOpenModal}>
+        打开模态框
+      </Button>
+      <DraggableModal isOpen={isModalOpenA} onClose={handleCloseModal}>
+        <h2>模态框内容</h2>
+        <p>这是一个可拖动的模态框。</p>
+      </DraggableModal>
+
+      <Divider title="可折叠侧边栏" />
+      <CollapsibleSidebar
+        items={sidebarItems}
+        tooltip="点击展开/折叠"
+        borderWidth="2"
+        animation="transition-all duration-300 ease-in-out"
+        icon="🔍"
+        fullscreen={false}
+      />
     </div>
   );
 };

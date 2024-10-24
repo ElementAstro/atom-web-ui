@@ -1,37 +1,64 @@
 // src/components/ButtonGroup.js
 import React from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const ButtonGroup = ({
   buttons,
-  vertical = false,
+  orientation = "horizontal",
   onButtonClick,
   size = "medium",
+  disabled = false,
+  variant = "primary",
+  className = "",
+  tooltip = "", 
+  borderWidth = "2", 
+  iconPosition = "left", 
+  animation = "transform transition-transform duration-200 ease-in-out", 
 }) => {
+  const { theme } = useTheme(); // 获取当前主题
+
   const sizeClasses = {
     small: "p-1 text-sm",
     medium: "p-2 text-md",
     large: "p-3 text-lg",
   };
 
+  const variantClasses = {
+    primary:
+      "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-neon",
+    secondary: "bg-gray-700 hover:bg-gray-600",
+  };
+
+  const orientationClasses = {
+    horizontal: "flex-row space-x-2",
+    vertical: "flex-col space-y-2",
+  };
+
+  const themeClasses = {
+    light: "bg-white text-gray-900 border-gray-300",
+    dark: "bg-gray-900 text-white border-gray-700",
+    astronomy:
+      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
+    eyeCare: "bg-green-100 text-green-900 border-green-300",
+  };
+
   return (
-    <div
-      className={`flex ${vertical ? "flex-col" : "flex-row"} ${
-        vertical ? "space-y-2" : "space-x-2"
-      }`}
-    >
+    <div className={`flex ${orientationClasses[orientation]} ${className}`}>
       {buttons.map((btn, index) => (
         <button
           key={index}
-          onClick={() => !btn.disabled && onButtonClick(btn.value)} // 禁用按钮时不触发点击事件
-          className={`flex items-center justify-center rounded-md text-white focus:outline-none transition duration-200 transform hover:scale-105 ${
+          onClick={() => !btn.disabled && !disabled && onButtonClick(btn.value)} // 禁用按钮时不触发点击事件
+          className={`flex items-center justify-center rounded-md focus:outline-none ${animation} ${
             sizeClasses[size]
           } ${
             btn.active
-              ? "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-neon"
+              ? variantClasses[variant]
               : "bg-gray-700 hover:bg-gray-600"
-          } ${btn.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-          title={btn.tooltip}
-          disabled={btn.disabled} // 使用禁用状态
+          } ${
+            btn.disabled || disabled ? "opacity-50 cursor-not-allowed" : ""
+          } ${themeClasses[theme]} border-${borderWidth}`}
+          title={tooltip}
+          disabled={btn.disabled || disabled} // 使用禁用状态
         >
           {btn.loading ? (
             <svg
@@ -55,11 +82,51 @@ const ButtonGroup = ({
               />
             </svg>
           ) : (
-            btn.icon && <span className="mr-2">{btn.icon}</span>
+            btn.icon && (
+              <span
+                className={`mr-2 ${
+                  iconPosition === "right" ? "order-last" : ""
+                }`}
+              >
+                {btn.icon}
+              </span>
+            )
           )}
           {btn.label}
         </button>
       ))}
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .p-1 {
+            padding: 0.25rem;
+          }
+          .p-2 {
+            padding: 0.5rem;
+          }
+          .p-3 {
+            padding: 0.75rem;
+          }
+          .text-sm {
+            font-size: 0.875rem;
+          }
+          .text-md {
+            font-size: 1rem;
+          }
+          .text-lg {
+            font-size: 1.125rem;
+          }
+          .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
+          }
+          .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+            margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+          }
+        }
+      `}</style>
     </div>
   );
 };
