@@ -1,7 +1,7 @@
-// src/hooks/useFetch.js
+// src/hooks/usePut.js
 import { useState, useEffect, useRef } from "react";
 
-const useFetch = (url, options = {}, dependencies = []) => {
+const usePut = (url, body, options = {}, dependencies = []) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,13 +10,21 @@ const useFetch = (url, options = {}, dependencies = []) => {
   const abortController = useRef(new AbortController());
 
   useEffect(() => {
-    const fetchData = async () => {
+    const putData = async () => {
       let retries = retryCount;
-      const fetchWithRetry = async () => {
+      const putWithRetry = async () => {
         try {
           const { signal } = abortController.current;
           const response = await Promise.race([
-            fetch(url, { ...options, signal }),
+            fetch(url, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                ...options.headers,
+              },
+              body: JSON.stringify(body),
+              signal,
+            }),
             new Promise((_, reject) =>
               setTimeout(() => reject(new Error("Request timed out")), timeout)
             ),
@@ -27,7 +35,7 @@ const useFetch = (url, options = {}, dependencies = []) => {
         } catch (error) {
           if (retries > 0) {
             retries -= 1;
-            fetchWithRetry();
+            putWithRetry();
           } else {
             setError(error);
           }
@@ -35,17 +43,17 @@ const useFetch = (url, options = {}, dependencies = []) => {
           setLoading(false);
         }
       };
-      fetchWithRetry();
+      putWithRetry();
     };
 
-    fetchData();
+    putData();
 
     return () => {
       abortController.current.abort();
     };
-  }, [url, ...dependencies]);
+  }, [url, body, ...dependencies]);
 
   return { data, loading, error };
 };
 
-export default useFetch;
+export default usePut;
