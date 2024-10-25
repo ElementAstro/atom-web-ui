@@ -21,6 +21,8 @@ const Rating = ({
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   icon = "★", // 新增属性
   fullscreen = false, // 新增属性
+  border = false, // 新增边框可选功能
+  borderColor = "border-gray-300", // 新增边框颜色选项
 }) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -58,17 +60,17 @@ const Rating = ({
   };
 
   const sizeClasses = {
-    small: "text-xl",
-    medium: "text-3xl",
-    large: "text-5xl",
+    small: "text-xl w-8 h-8",
+    medium: "text-3xl w-12 h-12",
+    large: "text-5xl w-16 h-16",
   };
 
   const themeClasses = {
-    light: "bg-white text-gray-900 border-gray-300",
-    dark: "bg-gray-900 text-white border-gray-700",
+    light: "bg-white text-gray-900",
+    dark: "bg-gray-900 text-white",
     astronomy:
-      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
-    eyeCare: "bg-green-100 text-green-900 border-green-300",
+      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white",
+    eyeCare: "bg-green-100 text-green-900",
   };
 
   return (
@@ -100,7 +102,7 @@ const Rating = ({
                 : "text-gray-300"
             } hover:scale-125 hover:text-blue-500 hover:shadow-neon ${
               disabled ? "cursor-not-allowed opacity-50" : ""
-            } border-${borderWidth}`}
+            } ${border ? `border ${borderColor} border-${borderWidth}` : ""}`}
             role="radio"
             aria-checked={index < rating}
             title={tooltip}
@@ -123,7 +125,7 @@ const Rating = ({
                   : "text-gray-300"
               } hover:scale-125 hover:text-blue-500 hover:shadow-neon ${
                 disabled ? "cursor-not-allowed opacity-50" : ""
-              } border-${borderWidth}`}
+              } ${border ? `border ${borderColor} border-${borderWidth}` : ""}`}
               role="radio"
               aria-checked={index + 0.5 <= rating}
               title={tooltip}

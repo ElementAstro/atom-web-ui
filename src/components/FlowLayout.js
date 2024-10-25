@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { useDrag, useDrop } from "react-dnd";
+import { AiOutlineSearch } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext";
 
 const FlowLayout = ({
@@ -10,13 +11,15 @@ const FlowLayout = ({
   onDragEnd,
   customClass = "",
   draggable = true,
-  theme, 
-  tooltip = "", 
-  borderWidth = "2", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  icon = null, 
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  icon = null,
 }) => {
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const [searchTerm, setSearchTerm] = useState("");
+  const containerRef = useRef(null);
 
   const moveItem = (dragIndex, hoverIndex) => {
     const newItems = [...items];
@@ -26,7 +29,7 @@ const FlowLayout = ({
   };
 
   const Item = ({ item, index }) => {
-    const ref = React.useRef(null);
+    const ref = useRef(null);
     const [, drop] = useDrop({
       accept: "item",
       hover(draggedItem) {
@@ -71,6 +74,7 @@ const FlowLayout = ({
           }
         }}
         title={tooltip}
+        aria-label="Flow item"
       >
         {icon && <span className="mr-2">{icon}</span>}
         {item}
@@ -78,11 +82,45 @@ const FlowLayout = ({
     );
   };
 
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredItems = items.filter((item) =>
+    item.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className={`flex flex-wrap gap-4 p-4 bg-gray-900 ${customClass}`}>
-      {items.map((item, index) => (
-        <Item key={index} item={item} index={index} />
-      ))}
+    <div className={`relative ${customClass}`} ref={containerRef}>
+      <div className="flex items-center mb-4">
+        <AiOutlineSearch className="mr-2 text-gray-400" />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearch}
+          placeholder="搜索..."
+          className={`p-2 border-${borderWidth} rounded w-full focus:outline-none focus:ring focus:ring-purple-500 ${animation}`}
+          aria-label="搜索"
+        />
+      </div>
+      <div className={`flex flex-wrap gap-4 p-4 bg-gray-900 ${customClass}`}>
+        {filteredItems.map((item, index) => (
+          <Item key={index} item={item} index={index} />
+        ))}
+      </div>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .p-4 {
+            padding: 1rem;
+          }
+          .mb-4 {
+            margin-bottom: 1rem;
+          }
+          .w-full {
+            width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 };
@@ -94,11 +132,11 @@ FlowLayout.propTypes = {
   onDragEnd: PropTypes.func,
   customClass: PropTypes.string,
   draggable: PropTypes.bool,
-  theme: PropTypes.string, 
-  tooltip: PropTypes.string, 
-  borderWidth: PropTypes.string, 
-  animation: PropTypes.string, 
-  icon: PropTypes.node, 
+  theme: PropTypes.string,
+  tooltip: PropTypes.string,
+  borderWidth: PropTypes.string,
+  animation: PropTypes.string,
+  icon: PropTypes.node,
 };
 
 export default FlowLayout;

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   AiOutlineClose,
   AiOutlineExpand,
   AiOutlineCompress,
+  AiOutlineFullscreen
 } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
@@ -14,6 +15,9 @@ const SkeletonScreen = ({
   onHover,
   onFocus,
   onBlur,
+  onKeyDown,
+  onAnimationEnd,
+  onDoubleClick,
   draggable = false,
   maximizable = false,
   onMaximize,
@@ -28,10 +32,12 @@ const SkeletonScreen = ({
   animation = "animate-pulse", // 新增属性
   icon = null, // 新增属性
   fullscreen = false, // 新增属性
+  iconColor = "text-gray-400", // 新增属性
 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [progress, setProgress] = useState(0);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (autoHide) {
@@ -46,6 +52,12 @@ const SkeletonScreen = ({
         });
       }, 100);
     }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
   }, [autoHide, hideAfter]);
 
   const shapeClasses = {
@@ -94,6 +106,19 @@ const SkeletonScreen = ({
     setIsVisible(false);
   };
 
+  const handleFullscreen = () => {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  };
+
   if (!isVisible) return null;
 
   const themeClasses = {
@@ -113,6 +138,9 @@ const SkeletonScreen = ({
       onMouseEnter={onHover}
       onFocus={onFocus}
       onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      onDoubleClick={onDoubleClick}
       onDragStart={handleDragStart}
       onDrop={handleDrop}
       draggable={draggable}
@@ -122,7 +150,7 @@ const SkeletonScreen = ({
       {maximizable && (
         <button
           onClick={handleMaximize}
-          className="absolute top-2 right-2 bg-blue-500 text-white p-1 rounded hover:bg-blue-700 transition duration-300"
+          className={`absolute top-2 right-2 bg-blue-500 text-white p-1 rounded hover:bg-blue-700 transition duration-300 ${iconColor}`}
           title={tooltip}
         >
           {icon || <AiOutlineExpand />}
@@ -131,7 +159,7 @@ const SkeletonScreen = ({
       {maximizable && (
         <button
           onClick={handleMinimize}
-          className="absolute top-2 right-16 bg-blue-500 text-white p-1 rounded hover:bg-blue-700 transition duration-300"
+          className={`absolute top-2 right-16 bg-blue-500 text-white p-1 rounded hover:bg-blue-700 transition duration-300 ${iconColor}`}
           title={tooltip}
         >
           {icon || <AiOutlineCompress />}
@@ -140,10 +168,19 @@ const SkeletonScreen = ({
       {closable && (
         <button
           onClick={handleClose}
-          className="absolute top-2 right-8 bg-red-500 text-white p-1 rounded hover:bg-red-700 transition duration-300"
+          className={`absolute top-2 right-8 bg-red-500 text-white p-1 rounded hover:bg-red-700 transition duration-300 ${iconColor}`}
           title={tooltip}
         >
           {icon || <AiOutlineClose />}
+        </button>
+      )}
+      {fullscreen && (
+        <button
+          onClick={handleFullscreen}
+          className={`absolute top-2 right-24 bg-blue-500 text-white p-1 rounded hover:bg-blue-700 transition duration-300 ${iconColor}`}
+          title={tooltip}
+        >
+          {icon || <AiOutlineFullscreen />}
         </button>
       )}
       {showProgress && (

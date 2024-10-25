@@ -9,15 +9,20 @@ const Divider = ({
   onDoubleClick,
   onFocus,
   onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
   draggable = false,
   customClass = "",
   customTitleClass = "",
   customLineClass = "",
-  theme, 
-  tooltip = "", 
-  borderWidth = "2", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  icon = null, 
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  icon = null,
+  ariaLabel = "Divider",
 }) => {
   const dividerRef = useRef(null);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
@@ -60,6 +65,8 @@ const Divider = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
   };
 
   return (
@@ -73,11 +80,16 @@ const Divider = ({
       onDoubleClick={onDoubleClick}
       onFocus={onFocus}
       onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onAnimationEnd={onAnimationEnd}
       draggable={draggable}
       onDragStart={handleDragStart}
       onDrop={handleDrop}
       tabIndex={0}
       title={tooltip}
+      aria-label={ariaLabel}
     >
       <div
         className={`flex-1 border-t border-gray-400 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 border-${borderWidth} ${customLineClass}`}

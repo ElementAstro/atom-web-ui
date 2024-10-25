@@ -1,5 +1,5 @@
 // src/components/ImageSlider.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
 const ImageSlider = ({
@@ -16,10 +16,18 @@ const ImageSlider = ({
   animation = "transition-transform duration-700 ease-in-out", // 新增属性
   fullscreen = false, // 新增属性
   showThumbnails = false, // 新增属性
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "图片滑块",
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const sliderRef = useRef(null);
 
   useEffect(() => {
     if (autoplay && !isPaused) {
@@ -61,7 +69,7 @@ const ImageSlider = ({
 
   const handleFullscreen = () => {
     if (fullscreen) {
-      const elem = document.documentElement;
+      const elem = sliderRef.current;
       if (elem.requestFullscreen) {
         elem.requestFullscreen();
       } else if (elem.mozRequestFullScreen) {
@@ -84,12 +92,18 @@ const ImageSlider = ({
 
   return (
     <div
+      ref={sliderRef}
       className={`image-slider relative overflow-hidden ${
         themeClasses[theme || currentTheme]
       } rounded-lg shadow-lg`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleFullscreen}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
     >
       {showArrows && (
         <button

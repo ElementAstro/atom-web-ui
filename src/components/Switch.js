@@ -21,6 +21,9 @@ const Switch = ({
   borderWidth = "2", // 新增属性
   animation = "transition-all duration-300 ease-in-out", // 新增属性
   fullscreen = false, // 新增属性
+  onDoubleClick, // 新增属性
+  onKeyDown, // 新增属性
+  ariaLabel = "Toggle switch", // 新增属性
 }) => {
   const { theme: currentTheme } = useTheme(); // 获取当前主题
 
@@ -36,12 +39,14 @@ const Switch = ({
     small: "w-12 h-6",
     medium: "w-16 h-8",
     large: "w-20 h-10",
+    extraLarge: "w-24 h-12", // 新增尺寸
   };
 
   const knobSizeClasses = {
     small: "w-6 h-6",
     medium: "w-8 h-8",
     large: "w-10 h-10",
+    extraLarge: "w-12 h-12", // 新增尺寸
   };
 
   const colorClasses = {
@@ -49,6 +54,8 @@ const Switch = ({
     green: "bg-gradient-to-r from-green-500 to-teal-500",
     red: "bg-gradient-to-r from-red-500 to-pink-500",
     yellow: "bg-gradient-to-r from-yellow-500 to-orange-500",
+    purple: "bg-gradient-to-r from-purple-500 to-indigo-500", // 新增颜色
+    cyan: "bg-gradient-to-r from-cyan-500 to-blue-500", // 新增颜色
   };
 
   const themeClasses = {
@@ -57,6 +64,10 @@ const Switch = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    sunset:
+      "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-pink-500", // 新增主题
+    ocean:
+      "bg-gradient-to-r from-blue-500 to-teal-500 text-white border-teal-500", // 新增主题
   };
 
   return (
@@ -69,7 +80,10 @@ const Switch = ({
       onMouseEnter={onHover}
       onFocus={onFocus}
       onBlur={onBlur}
+      onDoubleClick={onDoubleClick}
+      onKeyDown={onKeyDown}
       title={tooltip}
+      aria-label={ariaLabel}
     >
       {label && labelPosition === "left" && (
         <span className="mr-3 text-gray-200">{label}</span>

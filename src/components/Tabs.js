@@ -1,7 +1,8 @@
 // src/components/Tabs.js
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { AiOutlinePlus, AiOutlineClose, AiOutlineExpand } from "react-icons/ai";
+import { useTheme } from "../context/ThemeContext";
 
 const Tabs = ({
   tabs,
@@ -13,16 +14,23 @@ const Tabs = ({
   draggable = true,
   closable = true,
   addable = true,
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  animation = "transition duration-300 transform hover:scale-105", // 新增属性
-  icon = null, // 新增属性
-  fullscreen = false, // 新增属性
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transition duration-300 transform hover:scale-105",
+  icon = null,
+  fullscreen = false,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onAnimationEnd,
+  onDoubleClick,
+  ariaLabel = "标签页",
 }) => {
   const [activeTab, setActiveTab] = useState(tabs[0].label);
   const [tabList, setTabList] = useState(tabs);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
+  const windowRefs = useRef({}); // 保存打开的窗口引用
 
   const handleTabChange = (label) => {
     setActiveTab(label);
@@ -68,8 +76,45 @@ const Tabs = ({
     setTabList(newTabs);
   };
 
+  const handleDragOut = (tab, index) => {
+    const newWindow = window.open(
+      "",
+      "_blank",
+      "width=600,height=400,location=no,menubar=no"
+    );
+    if (newWindow) {
+      windowRefs.current[tab.label] = newWindow;
+      // 将 tab 渲染到新窗口中
+      newWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>${tab.label}</title></head>
+        <body>
+          <div id="content">${tab.content}</div>
+        </body>
+        </html>
+      `);
+      newWindow.document.close();
+
+      // 监听新窗口关闭
+      const timer = setInterval(() => {
+        if (newWindow.closed) {
+          clearInterval(timer);
+          setTabList((prevTabs) => [...prevTabs, tab]);
+        }
+      }, 500);
+
+      // 从原窗口中移除拖出的 Tab
+      handleTabClose(tab.label, { stopPropagation: () => {} });
+    }
+  };
+
+  const handleDragReset = () => {
+    setTabList(tabs);
+  };
+
   const Tab = ({ tab, index }) => {
-    const ref = React.useRef(null);
+    const ref = useRef(null);
     const [, drop] = useDrop({
       accept: "tab",
       hover(item) {
@@ -98,6 +143,10 @@ const Tabs = ({
         } flex-1`}
         style={{ height: tabHeight }}
         title={tooltip}
+        onDoubleClick={() => handleDragOut(tab, index)} // 双击将标签拖出
+        onKeyDown={onKeyDown}
+        onAnimationEnd={onAnimationEnd}
+        aria-label={ariaLabel}
       >
         <button
           className={`py-2 px-4 text-white transition duration-300 transform w-full text-center ${animation} ${
@@ -106,18 +155,28 @@ const Tabs = ({
               : "hover:bg-gray-600"
           } focus:outline-none`}
           onClick={() => handleTabChange(tab.label)}
+          onFocus={onFocus}
+          onBlur={onBlur}
         >
           {icon && <span className="mr-2">{icon}</span>}
           {tab.label}
         </button>
-        {closable && (
+        <div className="absolute top-0 right-0 mt-1 mr-1 flex space-x-1">
+          {closable && (
+            <button
+              className="text-gray-400 hover:text-red-500 transition duration-300"
+              onClick={(event) => handleTabClose(tab.label, event)}
+            >
+              <AiOutlineClose />
+            </button>
+          )}
           <button
-            className="absolute top-0 right-0 mt-1 mr-1 text-gray-400 hover:text-red-500 transition duration-300"
-            onClick={(event) => handleTabClose(tab.label, event)}
+            className="text-gray-400 hover:text-blue-500 transition duration-300"
+            onClick={() => handleDragOut(tab, index)}
           >
-            ✕
+            <AiOutlineExpand />
           </button>
-        )}
+        </div>
       </div>
     );
   };
@@ -128,18 +187,26 @@ const Tabs = ({
         fullscreen ? "w-full h-full" : ""
       }`}
     >
-      <div className="flex flex-wrap border-b border-gray-700 overflow-x-auto">
+      <div className="flex flex-wrap border-b border-gray-700 overflow-x-auto items-center">
         {tabList.map((tab, index) => (
           <Tab key={tab.label} tab={tab} index={index} />
         ))}
         {addable && (
           <button
-            className="py-2 px-4 text-white bg-gray-700 hover:bg-gray-600 transition duration-300 transform w-full text-center focus:outline-none"
+            className="py-2 px-4 text-white bg-gray-700 hover:bg-gray-600 transition duration-300 transform w-12 h-12 flex items-center justify-center focus:outline-none"
             onClick={handleTabAdd}
+            title="添加新标签"
           >
-            + 添加新标签
+            <AiOutlinePlus size={24} />
           </button>
         )}
+        <button
+          className="py-2 px-4 text-white bg-gray-700 hover:bg-gray-600 transition duration-300 transform w-12 h-12 flex items-center justify-center focus:outline-none"
+          onClick={handleDragReset}
+          title="重置标签顺序"
+        >
+          ↺
+        </button>
       </div>
       <div className="p-4" style={{ height: tabHeight }}>
         {tabList.map((tab) =>

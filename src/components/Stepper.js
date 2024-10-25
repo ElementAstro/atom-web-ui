@@ -21,6 +21,9 @@ const Stepper = ({
   animation = "transition duration-300 transform hover:scale-110", // 新增属性
   icon = null, // 新增属性
   fullscreen = false, // 新增属性
+  onDoubleClick, // 新增属性
+  onKeyDown, // 新增属性
+  ariaLabel = "Stepper", // 新增属性
 }) => {
   const isHorizontal = orientation === "horizontal";
   const { theme: currentTheme } = useTheme(); // 获取当前主题
@@ -28,8 +31,17 @@ const Stepper = ({
   const themeClasses = {
     light: "bg-white text-gray-900 border-gray-300",
     dark: "bg-gray-900 text-white border-gray-700",
-    astronomy: "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
+    astronomy:
+      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    sunset:
+      "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-pink-500", // 新增主题
+    ocean:
+      "bg-gradient-to-r from-blue-500 to-teal-500 text-white border-teal-500", // 新增主题
+    forest:
+      "bg-gradient-to-r from-green-500 to-lime-500 text-white border-green-500", // 新增主题
+    desert:
+      "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-yellow-500", // 新增主题
   };
 
   return (
@@ -77,6 +89,8 @@ const Stepper = ({
                 onStepClick(index);
               }
             }}
+            onDoubleClick={onDoubleClick}
+            onKeyDown={onKeyDown}
             title={tooltip}
           >
             {icon || index + 1}

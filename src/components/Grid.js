@@ -1,6 +1,7 @@
 // src/components/Grid.js
 import React, { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { AiOutlineSearch } from "react-icons/ai";
 
 const Grid = ({
   children,
@@ -19,8 +20,12 @@ const Grid = ({
   borderWidth = "2", // 新增属性
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   icon = null, // 新增属性
+  itemsPerPage = 10, // 新增属性
+  searchPlaceholder = "搜索...", // 新增属性
 }) => {
   const [items, setItems] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
   const { theme: currentTheme } = useTheme(); // 获取当前主题
 
   useEffect(() => {
@@ -33,6 +38,26 @@ const Grid = ({
     loadItems();
   }, [fetchData]);
 
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // 重置到第一页
+  };
+
+  const filteredItems = items.filter((item) =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   const themeClasses = {
     light: "bg-white text-gray-900 border-gray-300",
     dark: "bg-gray-900 text-white border-gray-700",
@@ -43,14 +68,25 @@ const Grid = ({
 
   return (
     <div className="p-4">
+      <div className="flex items-center mb-4">
+        <AiOutlineSearch className="mr-2 text-gray-400" />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearch}
+          placeholder={searchPlaceholder}
+          className={`p-2 border-${borderWidth} rounded w-full focus:outline-none focus:ring focus:ring-purple-500 ${animation}`}
+          aria-label="搜索"
+        />
+      </div>
       {isLoading ? (
         loadingComponent
       ) : (
         <div
           className={`grid grid-cols-${columns.base} sm:grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} gap-${gap}`}
         >
-          {items.length > 0
-            ? items.map((item, index) => (
+          {paginatedItems.length > 0
+            ? paginatedItems.map((item, index) => (
                 <div
                   key={index}
                   className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg ${animation} hover:scale-105 hover:shadow-neon ${
@@ -59,6 +95,7 @@ const Grid = ({
                   onMouseEnter={() => onItemHover && onItemHover(item)}
                   onClick={() => onItemClick && onItemClick(item)}
                   title={tooltip}
+                  aria-label="Grid item"
                 >
                   <div className="p-4">
                     <h3 className="text-white text-xl font-semibold flex items-center">
@@ -72,6 +109,21 @@ const Grid = ({
             : emptyComponent}
         </div>
       )}
+      <div className="flex justify-center mt-4">
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index}
+            onClick={() => handlePageChange(index + 1)}
+            className={`mx-1 px-3 py-1 rounded ${
+              currentPage === index + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-700 text-gray-300"
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
       <style jsx>{`
         @media (max-width: 640px) {
           .grid-cols-${columns.base} {

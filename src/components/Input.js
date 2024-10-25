@@ -30,6 +30,11 @@ const Input = ({
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   iconPosition = "left", // 新增属性
   clearable = false, // 新增属性
+  iconColor = "text-gray-400", // 新增属性
+  onDoubleClick, // 新增属性
+  onKeyDown, // 新增属性
+  onAnimationEnd, // 新增属性
+  ariaLabel = "输入框", // 新增属性
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -70,7 +75,13 @@ const Input = ({
   };
 
   return (
-    <div className={`input__container mb-4 ${customClass}`}>
+    <div
+      className={`input__container mb-4 ${customClass}`}
+      onDoubleClick={onDoubleClick}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
+    >
       <label
         className={`input__label block text-sm font-semibold mb-1 transition-all duration-300 ${
           isFocused ? "text-blue-400" : "text-gray-600"
@@ -80,7 +91,9 @@ const Input = ({
       </label>
       <div className="relative">
         {icon && iconPosition === "left" && (
-          <span className="input__icon absolute left-3 top-1/2 transform -translate-y-1/2">
+          <span
+            className={`input__icon absolute left-3 top-1/2 transform -translate-y-1/2 ${iconColor}`}
+          >
             {icon}
           </span>
         )}
@@ -107,7 +120,9 @@ const Input = ({
           {...props}
         />
         {icon && iconPosition === "right" && (
-          <span className="input__icon absolute right-3 top-1/2 transform -translate-y-1/2">
+          <span
+            className={`input__icon absolute right-3 top-1/2 transform -translate-y-1/2 ${iconColor}`}
+          >
             {icon}
           </span>
         )}

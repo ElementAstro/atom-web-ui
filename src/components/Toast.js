@@ -1,4 +1,3 @@
-// src/components/Toast.js
 import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
@@ -20,6 +19,10 @@ const Toast = ({
   animation = "transform transition-transform duration-500 ease-in-out", // 新增属性
   icon = null, // 新增属性
   fullscreen = false, // 新增属性
+  size = "medium", // 新增属性
+  onDoubleClick, // 新增属性
+  onKeyDown, // 新增属性
+  ariaLabel = "通知", // 新增属性
 }) => {
   const [calculatedPosition, setCalculatedPosition] = useState(position);
   const toastRef = useRef(null);
@@ -75,6 +78,7 @@ const Toast = ({
     success: "bg-gradient-to-r from-green-500 via-green-600 to-green-700",
     warning: "bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700",
     error: "bg-gradient-to-r from-red-500 via-red-600 to-red-700",
+    neutral: "bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700", // 新增颜色
   };
 
   const positionClasses = {
@@ -92,6 +96,14 @@ const Toast = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
+  };
+
+  const sizeClasses = {
+    small: "p-2 text-sm",
+    medium: "p-4 text-base",
+    large: "p-6 text-lg",
   };
 
   return (
@@ -99,11 +111,17 @@ const Toast = ({
       ref={toastRef}
       className={`fixed ${positionClasses[calculatedPosition]} ${
         variantClasses[variant]
-      } text-white p-4 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out animate-fade-in hover:scale-105 hover:shadow-neon z-50 ${customClass} ${
+      } text-white ${
+        sizeClasses[size]
+      } rounded-lg shadow-lg transform transition-all duration-500 ease-in-out animate-fade-in hover:scale-105 hover:shadow-neon z-50 ${customClass} ${
         themeClasses[theme || currentTheme]
       } border-${borderWidth} ${fullscreen ? "w-full h-full" : ""}`}
       role="alert"
       aria-live="assertive"
+      aria-label={ariaLabel}
+      onDoubleClick={onDoubleClick}
+      onKeyDown={onKeyDown}
+      title={tooltip}
     >
       <div className={`flex items-center ${customMessageClass}`}>
         {icon && <span className="mr-2">{icon}</span>}

@@ -12,6 +12,13 @@ const Breadcrumbs = ({
   tooltip = "",
   maxItems = 5,
   responsive = true,
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
 }) => {
   const location = useLocation(); // 获取当前路径
   const { theme } = useTheme(); // 获取当前主题
@@ -29,6 +36,8 @@ const Breadcrumbs = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white",
     eyeCare: "bg-green-100 text-green-900",
+    ocean: "bg-blue-100 text-blue-900",
+    sunset: "bg-orange-100 text-orange-900",
   };
 
   const displayedItems =
@@ -47,7 +56,16 @@ const Breadcrumbs = ({
     >
       <ol className={`flex space-x-2 ${responsive ? "flex-wrap" : ""}`}>
         {displayedItems.map((item, index) => (
-          <li key={item.label} className="flex items-center">
+          <li
+            key={item.label}
+            className="flex items-center"
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onKeyDown={onKeyDown}
+            onAnimationEnd={onAnimationEnd}
+          >
             {index > 0 && <span className="mx-2">{separator}</span>}
             {item.link ? (
               <Link

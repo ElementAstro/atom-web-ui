@@ -1,5 +1,5 @@
 // src/components/Carousel.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 const Carousel = ({
@@ -11,15 +11,25 @@ const Carousel = ({
   showIndicators = true,
   showControls = true,
   loop = true,
-  theme, 
-  animation = "transition-transform duration-700 ease-in-out", 
-  showThumbnails = false, 
-  keyboardNavigation = true, 
-  fullscreen = false, 
+  theme,
+  animation = "transition-transform duration-700 ease-in-out",
+  showThumbnails = false,
+  keyboardNavigation = true,
+  fullscreen = false,
+  customClass = "",
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "Carousel",
 }) => {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const carouselRef = useRef(null);
 
   // 自动轮播的效果
   useEffect(() => {
@@ -65,17 +75,19 @@ const Carousel = ({
     if (pauseOnHover) {
       setIsPaused(true);
     }
+    if (onMouseEnter) onMouseEnter();
   };
 
   const handleMouseLeave = () => {
     if (pauseOnHover) {
       setIsPaused(false);
     }
+    if (onMouseLeave) onMouseLeave();
   };
 
   const handleFullscreen = () => {
     if (fullscreen) {
-      const elem = document.documentElement;
+      const elem = carouselRef.current;
       if (elem.requestFullscreen) {
         elem.requestFullscreen();
       } else if (elem.mozRequestFullScreen) {
@@ -85,6 +97,21 @@ const Carousel = ({
       } else if (elem.msRequestFullscreen) {
         elem.msRequestFullscreen();
       }
+    }
+  };
+
+  const handleTouchStart = (e) => {
+    const touchStartX = e.touches[0].clientX;
+    carouselRef.current.dataset.touchStartX = touchStartX;
+  };
+
+  const handleTouchMove = (e) => {
+    const touchStartX = parseFloat(carouselRef.current.dataset.touchStartX);
+    const touchEndX = e.touches[0].clientX;
+    if (touchStartX - touchEndX > 50) {
+      nextSlide();
+    } else if (touchStartX - touchEndX < -50) {
+      prevSlide();
     }
   };
 
@@ -98,12 +125,20 @@ const Carousel = ({
 
   return (
     <div
+      ref={carouselRef}
       className={`relative overflow-hidden ${
         themeClasses[theme || currentTheme]
-      }`}
+      } ${customClass}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleFullscreen}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
     >
       {showControls && (
         <button

@@ -10,10 +10,18 @@ const ButtonGroup = ({
   disabled = false,
   variant = "primary",
   className = "",
-  tooltip = "", 
-  borderWidth = "2", 
-  iconPosition = "left", 
-  animation = "transform transition-transform duration-200 ease-in-out", 
+  tooltip = "",
+  borderWidth = "2",
+  iconPosition = "left",
+  animation = "transform transition-transform duration-200 ease-in-out",
+  onHover,
+  onFocus,
+  onBlur,
+  onMouseEnter,
+  onMouseLeave,
+  onKeyDown,
+  onAnimationEnd,
+  ariaLabel = "",
 }) => {
   const { theme } = useTheme(); // 获取当前主题
 
@@ -27,6 +35,8 @@ const ButtonGroup = ({
     primary:
       "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-neon",
     secondary: "bg-gray-700 hover:bg-gray-600",
+    alert: "bg-red-500 text-white hover:bg-red-700 active:bg-red-800",
+    success: "bg-green-500 text-white hover:bg-green-700 active:bg-green-800",
   };
 
   const orientationClasses = {
@@ -40,93 +50,42 @@ const ButtonGroup = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
   };
 
   return (
-    <div className={`flex ${orientationClasses[orientation]} ${className}`}>
+    <div
+      className={`flex ${orientationClasses[orientation]} ${className} ${themeClasses[theme]}`}
+      aria-label={ariaLabel}
+    >
       {buttons.map((btn, index) => (
         <button
           key={index}
           onClick={() => !btn.disabled && !disabled && onButtonClick(btn.value)} // 禁用按钮时不触发点击事件
           className={`flex items-center justify-center rounded-md focus:outline-none ${animation} ${
             sizeClasses[size]
-          } ${
-            btn.active
-              ? variantClasses[variant]
-              : "bg-gray-700 hover:bg-gray-600"
-          } ${
+          } ${variantClasses[variant]} ${
             btn.disabled || disabled ? "opacity-50 cursor-not-allowed" : ""
-          } ${themeClasses[theme]} border-${borderWidth}`}
+          }`}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
+          onAnimationEnd={onAnimationEnd}
           title={tooltip}
-          disabled={btn.disabled || disabled} // 使用禁用状态
+          aria-label={btn.label}
         >
-          {btn.loading ? (
-            <svg
-              className="animate-spin h-5 w-5 mr-2 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12c0-4.418 1.791-8.365 4.688-11.264l5.688 5.688C9.472 6.112 7.314 9.836 8 12h-4z"
-              />
-            </svg>
-          ) : (
-            btn.icon && (
-              <span
-                className={`mr-2 ${
-                  iconPosition === "right" ? "order-last" : ""
-                }`}
-              >
-                {btn.icon}
-              </span>
-            )
+          {iconPosition === "left" && btn.icon && (
+            <span className="mr-2">{btn.icon}</span>
           )}
           {btn.label}
+          {iconPosition === "right" && btn.icon && (
+            <span className="ml-2">{btn.icon}</span>
+          )}
         </button>
       ))}
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .p-1 {
-            padding: 0.25rem;
-          }
-          .p-2 {
-            padding: 0.5rem;
-          }
-          .p-3 {
-            padding: 0.75rem;
-          }
-          .text-sm {
-            font-size: 0.875rem;
-          }
-          .text-md {
-            font-size: 1rem;
-          }
-          .text-lg {
-            font-size: 1.125rem;
-          }
-          .space-y-2 > :not([hidden]) ~ :not([hidden]) {
-            --tw-space-y-reverse: 0;
-            margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
-            margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
-          }
-          .space-x-2 > :not([hidden]) ~ :not([hidden]) {
-            --tw-space-x-reverse: 0;
-            margin-right: calc(0.5rem * var(--tw-space-x-reverse));
-            margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
-          }
-        }
-      `}</style>
     </div>
   );
 };

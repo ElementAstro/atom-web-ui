@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { AiOutlineClose } from "react-icons/ai";
+import { AiOutlineClose, AiOutlineCalendar } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const DateInput = ({
   value,
@@ -17,39 +19,40 @@ const DateInput = ({
   maxDate,
   defaultValue = "",
   disabledDates = [],
-  theme, 
-  tooltip = "", 
-  borderWidth = "2", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  iconPosition = "right", 
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  iconPosition = "right",
+  ariaLabel = "日期输入",
 }) => {
   const [error, setError] = useState("");
   const [dateValue, setDateValue] = useState(value || defaultValue);
+  const [isDatePickerOpen, setDatePickerOpen] = useState(false);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
 
-  const handleChange = (e) => {
-    const newValue = e.target.value;
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/; // 日期格式检查 YYYY-MM-DD
-    if (datePattern.test(newValue)) {
-      if (
-        (!minDate || newValue >= minDate) &&
-        (!maxDate || newValue <= maxDate) &&
-        !disabledDates.includes(newValue)
-      ) {
-        setError("");
-        setDateValue(newValue);
-        onChange(newValue);
-      } else {
-        setError(`请输入 ${minDate} 到 ${maxDate} 之间的有效日期`);
-      }
+  const handleChange = (date) => {
+    const newValue = date ? date.toISOString().split("T")[0] : "";
+    if (
+      (!minDate || newValue >= minDate) &&
+      (!maxDate || newValue <= maxDate) &&
+      !disabledDates.includes(newValue)
+    ) {
+      setError("");
+      setDateValue(newValue);
+      onChange(newValue);
     } else {
-      setError("请输入有效的日期格式 (YYYY-MM-DD)");
+      setError(`请输入 ${minDate} 到 ${maxDate} 之间的有效日期`);
     }
   };
 
   const handleClear = () => {
     setDateValue("");
     onChange("");
+  };
+
+  const handleToggleDatePicker = () => {
+    setDatePickerOpen(!isDatePickerOpen);
   };
 
   const themeClasses = {
@@ -69,12 +72,12 @@ const DateInput = ({
       )}
       <div className="relative">
         <input
-          type="date"
+          type="text"
           value={dateValue}
-          onChange={handleChange}
           onFocus={onFocus}
           onBlur={onBlur}
           onMouseEnter={onHover}
+          onChange={(e) => handleChange(new Date(e.target.value))}
           disabled={disabled}
           className={`p-2 border-${borderWidth} rounded ${
             themeClasses[theme || currentTheme]
@@ -84,20 +87,57 @@ const DateInput = ({
           min={minDate}
           max={maxDate}
           title={tooltip}
+          aria-label={ariaLabel}
         />
+        <button
+          type="button"
+          onClick={handleToggleDatePicker}
+          className={`absolute ${
+            iconPosition === "right" ? "right-2" : "left-2"
+          } top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition duration-300`}
+        >
+          <AiOutlineCalendar />
+        </button>
         {dateValue && (
           <button
             type="button"
             onClick={handleClear}
             className={`absolute ${
-              iconPosition === "right" ? "right-2" : "left-2"
+              iconPosition === "right" ? "right-8" : "left-8"
             } top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-300`}
           >
             <AiOutlineClose />
           </button>
         )}
+        {isDatePickerOpen && (
+          <DatePicker
+            selected={dateValue ? new Date(dateValue) : null}
+            onChange={handleChange}
+            inline
+            minDate={minDate ? new Date(minDate) : null}
+            maxDate={maxDate ? new Date(maxDate) : null}
+            excludeDates={disabledDates.map((date) => new Date(date))}
+            className="absolute z-10 mt-2"
+          />
+        )}
       </div>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .p-2 {
+            padding: 0.5rem;
+          }
+          .text-sm {
+            font-size: 0.875rem;
+          }
+          .mt-1 {
+            margin-top: 0.25rem;
+          }
+          .mb-4 {
+            margin-bottom: 1rem;
+          }
+        }
+      `}</style>
     </div>
   );
 };

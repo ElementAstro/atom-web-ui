@@ -1,7 +1,10 @@
 // src/components/Modal.js
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Divider from "./Divider";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import {
+  AiOutlineClose
+} from "react-icons/ai";
 
 const Modal = ({
   isOpen,
@@ -23,10 +26,20 @@ const Modal = ({
   tooltip = "", // 新增属性
   borderWidth = "2", // 新增属性
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
-  icon = "X", // 新增属性
+  icon = <AiOutlineClose />, // 新增属性
   fullscreen = false, // 新增属性
+  autoClose = false, // 新增属性
+  autoCloseDuration = 5000, // 新增属性
+  iconColor = "text-gray-400", // 新增属性
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onAnimationEnd,
+  onDoubleClick,
+  ariaLabel = "模态框", // 新增属性
 }) => {
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const timerRef = useRef(null);
 
   const handleClose = (e) => {
     // 确保用户单击的是背景而不是模态框内部
@@ -51,6 +64,20 @@ const Modal = ({
       if (!isOpen && onCloseComplete) onCloseComplete();
     };
   }, [isOpen, onClose, onOpen, onCloseComplete]);
+
+  useEffect(() => {
+    if (isOpen && autoClose) {
+      timerRef.current = setTimeout(() => {
+        onClose();
+      }, autoCloseDuration);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isOpen, autoClose, autoCloseDuration, onClose]);
 
   if (!isOpen) return null;
 
@@ -92,12 +119,18 @@ const Modal = ({
         fullscreen ? "w-full h-full" : ""
       } ${themeClasses[theme || currentTheme]}`}
       onClick={handleClose}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      onDoubleClick={onDoubleClick}
+      aria-label={ariaLabel}
     >
       <div
         className={`${variantClasses[variant]} ${sizeClasses[size]} rounded-lg p-6 transform transition-transform duration-300 ease-in-out scale-95 opacity-0 animate-fade-in hover:shadow-neon relative border-${borderWidth}`}
       >
         <button
-          className="absolute top-3 right-3 text-white hover:text-red-500 transition duration-300"
+          className={`absolute top-3 right-3 ${iconColor} hover:text-red-500 transition duration-300`}
           onClick={onClose}
           title={tooltip}
         >

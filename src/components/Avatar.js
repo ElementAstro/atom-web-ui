@@ -14,10 +14,17 @@ const Avatar = ({
   statusColor = "green",
   shape = "circle",
   fallbackSrc = "https://via.placeholder.com/150",
-  tooltip = "", 
-  borderWidth = "2", 
-  statusPosition = "bottom-right", 
-  animation = "scale-105 shadow-lg shadow-neon", 
+  tooltip = "",
+  borderWidth = "2",
+  statusPosition = "bottom-right",
+  animation = "scale-105 shadow-lg shadow-neon",
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
 }) => {
   const [isError, setIsError] = useState(false);
   const { theme } = useTheme(); // 获取当前主题
@@ -47,12 +54,20 @@ const Avatar = ({
     dark: "border-gray-700",
     astronomy: "border-gradient-to-r from-purple-900 via-blue-900 to-black",
     eyeCare: "border-green-300",
+    ocean: "border-blue-300",
+    sunset: "border-orange-300",
   };
 
   return (
     <div
       className={`relative w-${size} h-${size} group flex items-center justify-center`}
       title={tooltip}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
     >
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">

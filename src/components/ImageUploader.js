@@ -1,6 +1,8 @@
 // src/components/ImageUploader.js
-import React, { useState } from "react";
-import { AiOutlineCloudUpload } from "react-icons/ai";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  AiOutlineCloudUpload,
+} from "react-icons/ai";
 import LoadingSpinner from "./LoadingSpinner"; // 确保有 LoadingSpinner 组件
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
@@ -17,11 +19,36 @@ const ImageUploader = ({
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   icon = <AiOutlineCloudUpload />, // 新增属性
   maxImages = 10, // 新增属性
+  iconColor = "text-gray-400", // 新增属性
+  autoClose = false, // 新增属性
+  autoCloseDuration = 5000, // 新增属性
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "图片上传器",
 }) => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedImages.length > 0 && autoClose) {
+      timerRef.current = setTimeout(() => {
+        setSelectedImages([]);
+      }, autoCloseDuration);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [selectedImages, autoClose, autoCloseDuration]);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -52,6 +79,19 @@ const ImageUploader = ({
     );
   };
 
+  const handleFullscreen = () => {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  };
+
   const themeClasses = {
     light: "bg-white text-gray-900 border-gray-300",
     dark: "bg-gray-900 text-white border-gray-700",
@@ -65,13 +105,20 @@ const ImageUploader = ({
       className={`image-uploader flex flex-col items-center p-4 border-${borderWidth} rounded-lg ${animation} ${
         themeClasses[theme || currentTheme]
       } shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-neon`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
     >
       <label
         htmlFor="file-upload"
         className="image-uploader__label flex flex-col items-center cursor-pointer"
         title={tooltip}
       >
-        {icon}
+        {icon && <span className={iconColor}>{icon}</span>}
         <span className="image-uploader__text text-gray-400">点击上传图片</span>
         <input
           id="file-upload"

@@ -18,6 +18,10 @@ const Tooltip = ({
   animation = "transition-opacity duration-300 ease-in-out", // 新增属性
   icon = null, // 新增属性
   fullscreen = false, // 新增属性
+  size = "medium", // 新增属性
+  onDoubleClick, // 新增属性
+  onKeyDown, // 新增属性
+  ariaLabel = "提示", // 新增属性
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
@@ -109,6 +113,14 @@ const Tooltip = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    sunset: "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-pink-500", // 新增主题
+    ocean: "bg-gradient-to-r from-blue-500 to-teal-500 text-white border-teal-500", // 新增主题
+  };
+
+  const sizeClasses = {
+    small: "text-xs p-1",
+    medium: "text-sm p-2",
+    large: "text-lg p-3",
   };
 
   return (
@@ -120,16 +132,19 @@ const Tooltip = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
+      onDoubleClick={onDoubleClick}
+      onKeyDown={onKeyDown}
       title={tooltip}
+      aria-label={ariaLabel}
     >
       {children}
       <div
         ref={tooltipRef}
-        className={`absolute ${
-          positionClasses[calculatedPosition]
-        } ${animation} ${
+        className={`absolute ${positionClasses[calculatedPosition]} ${animation} ${
           isVisible ? "opacity-100" : "opacity-0"
-        } bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white text-xs p-2 rounded shadow-lg z-10 border-${borderWidth} ${customTextClass}`}
+        } bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded shadow-lg z-10 border-${borderWidth} ${customTextClass} ${
+          sizeClasses[size]
+        }`}
       >
         {icon && <span className="mr-2">{icon}</span>}
         {text}

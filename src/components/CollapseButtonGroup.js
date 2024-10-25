@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { AiOutlineRight, AiOutlineClose } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext";
 
@@ -16,18 +16,65 @@ const CollapseButtonGroup = ({
   showLabels = true,
   buttonSize = "12",
   buttonColor = "bg-gradient-to-r from-purple-500 to-red-500",
-  theme, 
-  tooltip = "", 
-  borderWidth = "2", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  iconPosition = "left", 
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  iconPosition = "left",
+  draggable = false,
+  resizable = false,
+  ariaLabel = "Collapse button group",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const buttonGroupRef = useRef(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const [groupSize, setGroupSize] = useState({ width: 200, height: 300 });
 
   const toggleOpen = () => {
     setIsOpen((prev) => !prev);
     if (onToggle) onToggle(!isOpen);
+  };
+
+  const handleDragStart = (e) => {
+    if (draggable) {
+      e.dataTransfer.setData("text/plain", buttonGroupRef.current.id);
+    }
+  };
+
+  const handleDrop = (e) => {
+    if (draggable) {
+      e.preventDefault();
+      const droppedGroupId = e.dataTransfer.getData("text/plain");
+      const droppedGroup = document.getElementById(droppedGroupId);
+      buttonGroupRef.current.parentNode.insertBefore(
+        droppedGroup,
+        buttonGroupRef.current.nextSibling
+      );
+    }
+  };
+
+  const handleResizeStart = () => {
+    if (resizable) {
+      setIsResizing(true);
+      document.addEventListener("mousemove", handleResize);
+      document.addEventListener("mouseup", handleResizeEnd);
+    }
+  };
+
+  const handleResize = (e) => {
+    if (isResizing) {
+      setGroupSize({
+        width: e.clientX - buttonGroupRef.current.offsetLeft,
+        height: e.clientY - buttonGroupRef.current.offsetTop,
+      });
+    }
+  };
+
+  const handleResizeEnd = () => {
+    setIsResizing(false);
+    document.removeEventListener("mousemove", handleResize);
+    document.removeEventListener("mouseup", handleResizeEnd);
   };
 
   const isVertical = direction === "vertical";
@@ -40,8 +87,30 @@ const CollapseButtonGroup = ({
     eyeCare: "bg-green-100 text-green-900 border-green-300",
   };
 
+  // 定义未定义的事件处理程序
+  const onMouseEnter = () => {};
+  const onMouseLeave = () => {};
+  const onFocus = () => {};
+  const onBlur = () => {};
+  const onKeyDown = () => {};
+  const onAnimationEnd = () => {};
+
   return (
-    <div className="relative">
+    <div
+      ref={buttonGroupRef}
+      className="relative"
+      draggable={draggable}
+      onDragStart={handleDragStart}
+      onDrop={handleDrop}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
+      style={{ width: groupSize.width, height: groupSize.height }}
+    >
       <button
         onClick={toggleOpen}
         className={`w-${buttonSize} h-${buttonSize} flex justify-center items-center p-3 rounded-full text-white ${buttonColor} focus:outline-none transition duration-200 ${
@@ -112,6 +181,12 @@ const CollapseButtonGroup = ({
           </button>
         ))}
       </div>
+      {resizable && (
+        <div
+          className="absolute bottom-0 right-0 w-4 h-4 bg-gray-500 cursor-se-resize"
+          onMouseDown={handleResizeStart}
+        ></div>
+      )}
       <style jsx>{`
         @media (max-width: 768px) {
           .w-${buttonSize} {

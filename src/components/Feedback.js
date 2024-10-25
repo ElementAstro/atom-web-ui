@@ -6,11 +6,20 @@ import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 
 const Feedback = ({
   onSubmitSuccess,
   onSubmitFailure,
-  theme, 
-  tooltip = "", 
-  borderWidth = "2", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  icon = <AiOutlineSend />, 
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  icon = <AiOutlineSend />,
+  maxLength = 500,
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "反馈表单",
 }) => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,12 +58,21 @@ const Feedback = ({
     }
   }, [message, isSubmitting, responseMessage]);
 
+  const handleKeyDown = (e) => {
+    if (e.ctrlKey && e.key === "Enter") {
+      handleSubmit(e);
+    }
+    if (onKeyDown) onKeyDown(e);
+  };
+
   const themeClasses = {
     light: "bg-white text-gray-900 border-gray-300",
     dark: "bg-gray-900 text-white border-gray-700",
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
   };
 
   return (
@@ -63,6 +81,13 @@ const Feedback = ({
       className={`p-4 rounded-lg shadow-lg ${animation} hover:scale-105 hover:shadow-neon max-w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl ${
         themeClasses[theme || currentTheme]
       }`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={handleKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
     >
       <h2 className="text-xl font-bold mb-2">反馈表单</h2>
       <form onSubmit={handleSubmit} className="mb-4">
@@ -70,51 +95,57 @@ const Feedback = ({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="请输入反馈..."
+          maxLength={maxLength}
           className={`border-${borderWidth} rounded-lg p-2 w-full h-32 transition duration-300 focus:outline-none focus:ring focus:ring-blue-500 resize-none ${
             themeClasses[theme || currentTheme]
           }`}
         />
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`mt-2 p-2 rounded flex items-center justify-center transition duration-300 transform hover:scale-105 ${
-            isSubmitting
-              ? "bg-gray-600 cursor-wait"
-              : "bg-blue-500 hover:bg-blue-700"
-          } ${themeClasses[theme || currentTheme]}`}
-          title={tooltip}
-        >
-          {isSubmitting ? (
-            <div className="flex items-center justify-center">
-              <svg
-                className="animate-spin h-5 w-5 mr-2"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12c0-4.418 1.791-8.365 4.688-11.264l5.688 5.688C9.472 6.112 7.314 9.836 8 12h-4z"
-                />
-              </svg>
-              提交中...
-            </div>
-          ) : (
-            <>
-              {icon && <span className="mr-2">{icon}</span>}
-              提交反馈
-            </>
-          )}
-        </button>
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-sm text-gray-500">
+            {message.length}/{maxLength}
+          </span>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`p-2 rounded flex items-center justify-center transition duration-300 transform hover:scale-105 ${
+              isSubmitting
+                ? "bg-gray-600 cursor-wait"
+                : "bg-blue-500 hover:bg-blue-700"
+            } ${themeClasses[theme || currentTheme]}`}
+            title={tooltip}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12c0-4.418 1.791-8.365 4.688-11.264l5.688 5.688C9.472 6.112 7.314 9.836 8 12h-4z"
+                  />
+                </svg>
+                提交中...
+              </div>
+            ) : (
+              <>
+                {icon && <span className="mr-2">{icon}</span>}
+                提交反馈
+              </>
+            )}
+          </button>
+        </div>
       </form>
       {responseMessage && (
         <p

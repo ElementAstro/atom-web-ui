@@ -12,11 +12,20 @@ const Calendar = ({
   showTimeSelect = true,
   locale = "en-US",
   clearable = false,
-  theme, 
-  position = "bottom-left", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  showWeekNumbers = false, 
-  highlightToday = false, 
+  theme,
+  position = "bottom-left",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  showWeekNumbers = false,
+  highlightToday = false,
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "Calendar",
+  rangeSelect = false,
 }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isCalendarOpen, setCalendarOpen] = useState(false);
@@ -53,6 +62,26 @@ const Calendar = ({
     setSelectedDate(null);
     if (onDateChange) onDateChange(null);
     if (onTimeChange) onTimeChange(null);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowLeft") {
+      handleDateChange({
+        target: {
+          value: new Date(selectedDate.setDate(selectedDate.getDate() - 1))
+            .toISOString()
+            .slice(0, 10),
+        },
+      });
+    } else if (e.key === "ArrowRight") {
+      handleDateChange({
+        target: {
+          value: new Date(selectedDate.setDate(selectedDate.getDate() + 1))
+            .toISOString()
+            .slice(0, 10),
+        },
+      });
+    }
   };
 
   const themeClasses = {
@@ -95,6 +124,7 @@ const Calendar = ({
         onClick={handleToggleCalendar}
         className="calendar__button border border-gray-300 rounded-lg p-2 transition duration-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-600"
         disabled={disabled}
+        aria-label={ariaLabel}
       >
         {selectedDate ? selectedDate.toLocaleDateString(locale) : "Select Date"}
       </button>
@@ -106,6 +136,12 @@ const Calendar = ({
           } ${
             themeClasses[theme || currentTheme]
           } border rounded-lg mt-1 shadow-lg z-10 p-4 ${animation}`}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
+          onAnimationEnd={onAnimationEnd}
         >
           <div className="calendar__header flex justify-between items-center mb-2">
             <button

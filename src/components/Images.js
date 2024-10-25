@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
 const Images = ({
@@ -11,9 +11,33 @@ const Images = ({
   borderWidth = "2", // 新增属性
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   fullscreen = false, // 新增属性
+  autoClose = false, // 新增属性
+  autoCloseDuration = 5000, // 新增属性
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "图片画廊",
 }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedImage && autoClose) {
+      timerRef.current = setTimeout(() => {
+        setSelectedImage(null);
+      }, autoCloseDuration);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [selectedImage, autoClose, autoCloseDuration]);
 
   const handleImageClick = (image) => {
     setSelectedImage(image);
@@ -41,10 +65,21 @@ const Images = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
   };
 
   return (
-    <div className={`grid grid-cols-3 gap-4 ${customClass}`}>
+    <div
+      className={`grid grid-cols-3 gap-4 ${customClass}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
+    >
       {images.map((image, index) => (
         <div
           key={index}
@@ -82,6 +117,13 @@ const Images = ({
           </div>
         </div>
       )}
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .grid-cols-3 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+          }
+        }
+      `}</style>
     </div>
   );
 };

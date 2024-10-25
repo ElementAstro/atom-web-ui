@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import {
+  AiOutlineClose,
+  AiOutlineExpand,
+  AiOutlineCompress,
+  AiOutlineFullscreen,
+  AiOutlineFullscreenExit,
+} from "react-icons/ai";
 
 const Offcanvas = ({
   isOpen,
@@ -17,12 +24,22 @@ const Offcanvas = ({
   tooltip = "", // 新增属性
   borderWidth = "2", // 新增属性
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
-  icon = "✕", // 新增属性
+  icon = <AiOutlineClose />, // 新增属性
   fullscreen = false, // 新增属性
+  autoClose = false, // 新增属性
+  autoCloseDuration = 5000, // 新增属性
+  iconColor = "text-gray-400", // 新增属性
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onAnimationEnd,
+  onDoubleClick,
+  ariaLabel = "Offcanvas",
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const offcanvasRef = useRef(null);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && onOpen) {
@@ -45,6 +62,20 @@ const Offcanvas = ({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (isOpen && autoClose) {
+      timerRef.current = setTimeout(() => {
+        onClose();
+      }, autoCloseDuration);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isOpen, autoClose, autoCloseDuration, onClose]);
 
   const handleDragStart = (e) => {
     if (draggable) {
@@ -69,6 +100,19 @@ const Offcanvas = ({
 
   const handleMaximize = () => {
     setIsMaximized(!isMaximized);
+  };
+
+  const handleFullscreen = () => {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
   };
 
   const directionClasses = {
@@ -114,11 +158,17 @@ const Offcanvas = ({
         draggable={draggable}
         onDragStart={handleDragStart}
         onDrop={handleDrop}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={onKeyDown}
+        onAnimationEnd={onAnimationEnd}
+        onDoubleClick={onDoubleClick}
+        aria-label={ariaLabel}
       >
         {closeButton && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:text-gray-400"
+            className={`absolute top-4 right-4 ${iconColor} hover:text-gray-400`}
             title={tooltip}
           >
             {icon}
@@ -127,9 +177,17 @@ const Offcanvas = ({
         {maximizable && (
           <button
             onClick={handleMaximize}
-            className="absolute top-4 right-16 text-white hover:text-gray-400"
+            className={`absolute top-4 right-16 ${iconColor} hover:text-gray-400`}
           >
-            {isMaximized ? "Restore" : "Maximize"}
+            {isMaximized ? <AiOutlineCompress /> : <AiOutlineExpand />}
+          </button>
+        )}
+        {fullscreen && (
+          <button
+            onClick={handleFullscreen}
+            className={`absolute top-4 right-28 ${iconColor} hover:text-gray-400`}
+          >
+            {fullscreen ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
           </button>
         )}
         <div className="p-4">{children}</div>

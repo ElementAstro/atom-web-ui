@@ -12,15 +12,34 @@ const Form = ({
   borderWidth = "2", // 新增属性
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   icon = null, // 新增属性
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "登录表单",
 }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [responseMessage, setResponseMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!username) newErrors.username = "用户名不能为空";
+    if (!password) newErrors.password = "密码不能为空";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setIsSubmitting(true);
     setResponseMessage("");
 
@@ -42,6 +61,7 @@ const Form = ({
   const resetForm = () => {
     setUsername("");
     setPassword("");
+    setErrors({});
   };
 
   const themeClasses = {
@@ -50,6 +70,8 @@ const Form = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
   };
 
   return (
@@ -57,6 +79,13 @@ const Form = ({
       className={`min-h-screen flex items-center justify-center ${
         themeClasses[theme || currentTheme]
       }`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
     >
       <form
         onSubmit={handleSubmit}
@@ -68,6 +97,7 @@ const Form = ({
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          error={errors.username}
         />
         <Input
           label="密码"
@@ -75,6 +105,7 @@ const Form = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          error={errors.password}
         />
         <Button
           type="submit"

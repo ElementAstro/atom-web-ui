@@ -14,12 +14,15 @@ const Button = ({
   onBlur,
   onMouseEnter,
   onMouseLeave,
-  ripple = false, 
-  icon = null, 
-  tooltip = "", 
-  fullWidth = false, 
-  outline = false, 
-  gradient = false, 
+  onKeyDown,
+  onAnimationEnd,
+  ripple = false,
+  icon = null,
+  tooltip = "",
+  fullWidth = false,
+  outline = false,
+  gradient = false,
+  ariaLabel = "",
 }) => {
   const buttonRef = useRef(null);
   const { theme } = useTheme(); // 获取当前主题
@@ -116,9 +119,12 @@ const Button = ({
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}
       onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
       onMouseDown={handleRipple}
       disabled={disabled || isLoading} // 禁用按钮或加载时禁用
       title={tooltip}
+      aria-label={ariaLabel}
     >
       {isLoading ? (
         <div className="flex items-center">

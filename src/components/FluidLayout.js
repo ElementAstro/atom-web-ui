@@ -1,5 +1,10 @@
-import React, { useState, useRef } from "react";
-import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  AiOutlineMenu,
+  AiOutlineClose,
+  AiOutlineFullscreen,
+  AiOutlineFullscreenExit,
+} from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
 const FluidLayout = ({
@@ -12,13 +17,40 @@ const FluidLayout = ({
   borderWidth = "2", // 新增属性
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   icon = null, // 新增属性
+  autoClose = false, // 新增属性
+  autoCloseDuration = 5000, // 新增属性
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "Fluid Layout",
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState("25%");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const sidebarRef = useRef(null);
   const startX = useRef(0);
   const currentX = useRef(0);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (isSidebarOpen && autoClose) {
+      timerRef.current = setTimeout(() => {
+        setSidebarOpen(false);
+        if (onSidebarToggle) onSidebarToggle(false);
+      }, autoCloseDuration);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isSidebarOpen, autoClose, autoCloseDuration, onSidebarToggle]);
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!isSidebarOpen);
@@ -69,15 +101,33 @@ const FluidLayout = ({
     document.removeEventListener("mouseup", handleResizeEnd);
   };
 
+  const handleFullscreenToggle = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
   const themeClasses = {
     light: "bg-white text-gray-900 border-gray-300",
     dark: "bg-gray-900 text-white border-gray-700",
-    astronomy: "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
+    astronomy:
+      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
   };
 
   return (
-    <div className={`flex flex-col md:flex-row md:min-h-screen ${customClass} ${themeClasses[theme || currentTheme]}`}>
+    <div
+      className={`flex flex-col md:flex-row md:min-h-screen ${customClass} ${
+        themeClasses[theme || currentTheme]
+      }`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
+    >
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
@@ -110,16 +160,33 @@ const FluidLayout = ({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-grow bg-gray-900 p-4">
+      <main
+        className={`flex-grow bg-gray-900 p-4 ${
+          isFullscreen ? "w-full h-full" : ""
+        }`}
+      >
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-white text-2xl">Main Content</h1>
-          <button
-            className="text-white md:hidden"
-            onClick={handleSidebarToggle}
-            title={tooltip}
-          >
-            {isSidebarOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-          </button>
+          <div className="flex space-x-2">
+            <button
+              className="text-white"
+              onClick={handleFullscreenToggle}
+              title="Toggle Fullscreen"
+            >
+              {isFullscreen ? (
+                <AiOutlineFullscreenExit />
+              ) : (
+                <AiOutlineFullscreen />
+              )}
+            </button>
+            <button
+              className="text-white md:hidden"
+              onClick={handleSidebarToggle}
+              title={tooltip}
+            >
+              {isSidebarOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+            </button>
+          </div>
         </div>
         {mainContent}
       </main>

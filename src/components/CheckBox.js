@@ -1,5 +1,5 @@
 // src/components/CheckBox.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 const CheckBox = ({
@@ -12,18 +12,28 @@ const CheckBox = ({
   onFocus,
   onBlur,
   onToggle,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
   customClass = "",
   customLabelClass = "",
   customBoxClass = "",
   customIconClass = "",
-  theme, 
-  tooltip = "", 
-  borderWidth = "2", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  iconPosition = "right", 
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  iconPosition = "right",
+  ariaLabel = "Checkbox",
+  indeterminate = false,
 }) => {
   const [isChecked, setIsChecked] = useState(checked);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+
+  useEffect(() => {
+    setIsChecked(checked);
+  }, [checked]);
 
   const handleChange = (event) => {
     if (disabled) return;
@@ -32,6 +42,14 @@ const CheckBox = ({
     if (onToggle) {
       onToggle(event.target.checked);
     }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === " ") {
+      event.preventDefault();
+      handleChange({ target: { checked: !isChecked } });
+    }
+    if (onKeyDown) onKeyDown(event);
   };
 
   const sizeClasses = {
@@ -53,9 +71,12 @@ const CheckBox = ({
       className={`inline-flex items-center cursor-pointer ${
         disabled ? "cursor-not-allowed opacity-50" : ""
       } ${customClass}`}
-      onMouseEnter={onHover}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       onFocus={onFocus}
       onBlur={onBlur}
+      onKeyDown={handleKeyDown}
+      onAnimationEnd={onAnimationEnd}
       title={tooltip}
     >
       <input
@@ -65,7 +86,7 @@ const CheckBox = ({
         className="sr-only"
         disabled={disabled}
         aria-checked={isChecked}
-        aria-label={label ? label : "Checkbox"}
+        aria-label={label ? label : ariaLabel}
       />
       <div
         className={`relative flex items-center justify-center ${
@@ -78,7 +99,7 @@ const CheckBox = ({
           isChecked ? "scale-105 shadow-neon" : ""
         } ${customBoxClass}`}
       >
-        {isChecked && (
+        {isChecked && !indeterminate && (
           <svg
             className={`h-3 w-3 text-white ${customIconClass}`}
             fill="currentColor"
@@ -86,6 +107,16 @@ const CheckBox = ({
             viewBox="0 0 20 20"
           >
             <path d="M6 10l2 2 6-6-1.5-1.5L8 10z" />
+          </svg>
+        )}
+        {indeterminate && (
+          <svg
+            className={`h-3 w-3 text-white ${customIconClass}`}
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+          >
+            <rect x="4" y="9" width="12" height="2" />
           </svg>
         )}
       </div>

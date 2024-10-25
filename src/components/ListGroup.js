@@ -1,5 +1,5 @@
 // src/components/ListGroup.js
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
 const ListGroup = ({
@@ -18,11 +18,36 @@ const ListGroup = ({
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   iconPosition = "left", // 新增属性
   multiSelect = false, // 新增属性
+  onContextMenu, // 新增属性
+  onDragEnd, // 新增属性
 }) => {
   const [selectedIndices, setSelectedIndices] = useState(
     multiSelect ? [] : [selected]
   );
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const listRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (listRef.current.contains(event.target)) {
+        const currentIndex = selectedIndices[0];
+        if (event.key === "ArrowDown") {
+          const nextIndex = (currentIndex + 1) % items.length;
+          setSelectedIndices([nextIndex]);
+          onItemClick && onItemClick(items[nextIndex]);
+        } else if (event.key === "ArrowUp") {
+          const prevIndex = (currentIndex - 1 + items.length) % items.length;
+          setSelectedIndices([prevIndex]);
+          onItemClick && onItemClick(items[prevIndex]);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedIndices, items, onItemClick]);
 
   const handleItemClick = (index) => {
     if (multiSelect) {
@@ -37,17 +62,25 @@ const ListGroup = ({
     onItemClick && onItemClick(items[index]);
   };
 
+  const handleDragEnd = (event) => {
+    const { oldIndex, newIndex } = event;
+    onDragEnd && onDragEnd(oldIndex, newIndex);
+  };
+
   const variantClasses = {
     primary: "bg-gray-800 text-white",
     secondary: "bg-gray-700 text-gray-300",
     alert: "bg-red-700 text-white",
     success: "bg-green-700 text-white",
+    info: "bg-blue-700 text-white", // 新增变体
+    warning: "bg-yellow-700 text-black", // 新增变体
   };
 
   const sizeClasses = {
     small: "text-sm px-2 py-1",
     medium: "text-md px-4 py-2",
     large: "text-lg px-6 py-3",
+    extraLarge: "text-xl px-8 py-4", // 新增尺寸
   };
 
   const themeClasses = {
@@ -56,10 +89,13 @@ const ListGroup = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300", // 新增主题
+    sunset: "bg-orange-100 text-orange-900 border-orange-300", // 新增主题
   };
 
   return (
     <ul
+      ref={listRef}
       className={`rounded-md shadow-md ${
         variantClasses[variant]
       } ${customClass} ${themeClasses[theme || currentTheme]}`}
@@ -76,6 +112,11 @@ const ListGroup = ({
           } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           onClick={() => !disabled && handleItemClick(index)}
           onMouseEnter={() => !disabled && onItemHover && onItemHover(item)}
+          onContextMenu={(e) =>
+            !disabled && onContextMenu && onContextMenu(e, item)
+          }
+          draggable={!disabled}
+          onDragEnd={handleDragEnd}
           role="button"
           aria-label={`List item ${index + 1}`}
           title={tooltip}

@@ -9,6 +9,10 @@ const AccordionItem = ({
   onToggle,
   onOpen,
   onClose,
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
   customClass = "",
   customTitleClass = "",
   customContentClass = "",
@@ -49,6 +53,16 @@ const AccordionItem = ({
       title: "bg-green-200",
       content: "bg-green-100 border-green-300",
     },
+    ocean: {
+      container: "bg-blue-100 text-blue-900",
+      title: "bg-blue-200",
+      content: "bg-blue-100 border-blue-300",
+    },
+    sunset: {
+      container: "bg-orange-100 text-orange-900",
+      title: "bg-orange-200",
+      content: "bg-orange-100 border-orange-300",
+    },
   };
 
   return (
@@ -57,7 +71,15 @@ const AccordionItem = ({
     >
       <div
         onClick={!disabled ? onToggle : undefined}
-        onKeyDown={(e) => !disabled && e.key === "Enter" && onToggle()}
+        onMouseEnter={onHover}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={(e) => {
+          if (!disabled) {
+            if (e.key === "Enter") onToggle();
+            if (onKeyDown) onKeyDown(e);
+          }
+        }}
         tabIndex={0}
         className={`cursor-pointer p-4 flex justify-between items-center transition-all duration-500 ease-in-out transform-gpu ${
           isOpen

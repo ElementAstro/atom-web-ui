@@ -1,18 +1,25 @@
 // src/components/Icon.js
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconContext } from "react-icons";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
 const Icon = ({
-  icon,
+  icon: IconComponent,
   onClick,
   onMouseEnter,
   onMouseLeave,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onDoubleClick,
+  onAnimationEnd,
   theme, // 新增属性
   tooltip = "", // 新增属性
   borderWidth = "2", // 新增属性
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
   size = "lg", // 新增属性
+  color = "", // 新增属性
+  ariaLabel = "图标", // 新增属性
 }) => {
   const { theme: currentTheme } = useTheme(); // 获取当前主题
 
@@ -31,9 +38,18 @@ const Icon = ({
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onDoubleClick={onDoubleClick}
+      onAnimationEnd={onAnimationEnd}
       title={tooltip}
+      aria-label={ariaLabel}
+      tabIndex={0}
     >
-      <FontAwesomeIcon icon={icon} className={`text-${size}`} />
+      <IconContext.Provider value={{ size, color }}>
+        <IconComponent />
+      </IconContext.Provider>
     </div>
   );
 };

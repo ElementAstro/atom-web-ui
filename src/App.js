@@ -57,12 +57,14 @@ import FlowLayout from "./components/FlowLayout";
 import Grid from "./components/Grid";
 import DraggableModal from "./components/DraggableModal";
 import CollapsibleSidebar from "./components/CollapsibleSidebar";
+import IconSelector from "./components/IconSelector";
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { FaCoffee, FaBeer } from "react-icons/fa";
+import { AiOutlineHome, AiOutlineUser, AiOutlineSetting } from "react-icons/ai";
 
 const Home = () => <div>Home</div>;
 const About = () => <div>About</div>;
@@ -93,7 +95,11 @@ const App = () => {
     "Item 4",
   ]);
   const sidebarItems = ['首页', '关于', '服务', '联系'];
+  const [selectedIcon, setSelectedIcon] = useState(null);
 
+  const handleIconSelect = (iconId) => {
+    setSelectedIcon(iconId);
+  };
 
   const [content, setContent] = useState("<p>Start typing...</p>");
   const [isOffcanvasOpen, setOffcanvasOpen] = useState(false);
@@ -767,6 +773,31 @@ const App = () => {
         icon="🔍"
         fullscreen={false}
       />
+
+<IconSelector
+        onSelectIcon={handleIconSelect}
+        theme="light"
+        tooltip="选择一个图标"
+        borderWidth="2"
+        animation="transform transition-transform duration-300 ease-in-out"
+        size="3rem"
+        color="blue"
+        border={true}
+        borderColor="border-gray-300"
+        searchPlaceholder="搜索图标..."
+        itemsPerPage={6}
+      />
+      {selectedIcon && (
+        <div className="mt-4">
+          <h2 className="text-xl">已选择的图标:</h2>
+          <div className="flex items-center mt-2">
+            {selectedIcon === "home" && <AiOutlineHome size="3rem" />}
+            {selectedIcon === "user" && <AiOutlineUser size="3rem" />}
+            {selectedIcon === "settings" && <AiOutlineSetting size="3rem" />}
+            {/* 添加更多图标的条件渲染 */}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

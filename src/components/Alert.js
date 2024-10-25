@@ -15,11 +15,18 @@ const Alert = ({
   pauseOnHover = true,
   icon,
   title,
-  theme, 
-  position = "top-right", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  dismissible = true, 
-  showIcon = true, 
+  theme,
+  position = "top-right",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  dismissible = true,
+  showIcon = true,
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
@@ -54,10 +61,12 @@ const Alert = ({
 
   const handleMouseEnter = () => {
     if (pauseOnHover) setIsPaused(true);
+    if (onMouseEnter) onMouseEnter();
   };
 
   const handleMouseLeave = () => {
     if (pauseOnHover) setIsPaused(false);
+    if (onMouseLeave) onMouseLeave();
   };
 
   const positionClasses = {
@@ -73,6 +82,8 @@ const Alert = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
   };
 
   return (
@@ -83,6 +94,10 @@ const Alert = ({
         } ${themeClasses[theme || currentTheme]} ${customClass}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={onKeyDown}
+        onAnimationEnd={onAnimationEnd}
       >
         <div className="alert__content flex justify-between items-center">
           {showIcon && icon && <span className="alert__icon mr-2">{icon}</span>}

@@ -13,12 +13,20 @@ const Dropdown = ({
   customInputClass = "",
   customOptionClass = "",
   customSelectedClass = "",
-  theme, 
-  tooltip = "", 
-  borderWidth = "2", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  iconPosition = "right", 
-  disabled = false, 
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  iconPosition = "right",
+  disabled = false,
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "Dropdown",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(multiSelect ? [] : options[0]);
@@ -50,22 +58,13 @@ const Dropdown = ({
     }
   };
 
-  const clearSelection = () => {
-    setSelected(multiSelect ? [] : options[0]);
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const filteredOptions = options.filter((option) =>
     option.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  useEffect(() => {
-    if (dropdownRef.current) {
-      const maxWidth = Math.max(
-        ...filteredOptions.map((option) => option.length)
-      );
-      dropdownRef.current.style.width = `${maxWidth + 4}ch`; // 根据最长选项调整宽度
-    }
-  }, [filteredOptions]);
 
   const themeClasses = {
     light: "bg-white text-gray-900 border-gray-300",
@@ -76,81 +75,92 @@ const Dropdown = ({
   };
 
   return (
-    <div className={`relative ${customClass}`} ref={dropdownRef}>
+    <div
+      className={`relative ${customClass}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
+    >
+      {label && (
+        <label className={`block text-gray-200 mb-1 ${customClass}`}>
+          {label}
+        </label>
+      )}
       <button
         onClick={toggleDropdown}
-        className={`border-${borderWidth} rounded-lg p-2 w-full text-left bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white hover:bg-gradient-to-l transition duration-300 flex justify-between items-center shadow-lg hover:shadow-neon ${customButtonClass} ${
+        className={`w-full p-2 border-${borderWidth} rounded ${
           themeClasses[theme || currentTheme]
-        }`}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        title={tooltip}
+        } focus:outline-none focus:ring focus:ring-purple-500 ${animation} ${customButtonClass}`}
         disabled={disabled}
+        title={tooltip}
       >
-        <span>
-          {multiSelect
-            ? selected.length > 0
-              ? selected.join(", ")
-              : "请选择..."
-            : selected}
-        </span>
-        <span
-          className={`ml-2 transform transition-transform ${
-            isOpen ? "rotate-180" : "rotate-0"
-          } ${iconPosition === "left" ? "order-first mr-2" : ""}`}
-        >
-          ▼
-        </span>
+        {multiSelect
+          ? selected.length > 0
+            ? selected.join(", ")
+            : "Select options"
+          : selected}
       </button>
       {isOpen && (
         <div
-          className={`absolute z-10 bg-gray-900 border border-gray-700 rounded-lg mt-1 shadow-lg ${animation}`}
+          ref={dropdownRef}
+          className={`absolute z-10 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 ${
+            themeClasses[theme || currentTheme]
+          } ${animation}`}
         >
           <input
             type="text"
-            placeholder="搜索..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`p-2 text-black rounded-t-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
-            aria-label="搜索选项"
+            onChange={handleSearch}
+            className={`w-full p-2 border-${borderWidth} rounded-t ${
+              themeClasses[theme || currentTheme]
+            } focus:outline-none focus:ring focus:ring-purple-500 ${customInputClass}`}
+            placeholder="Search..."
           />
-          <ul className="max-h-60 overflow-y-auto" role="listbox">
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((option) => (
-                <li
-                  key={option}
-                  onClick={() => selectOption(option)}
-                  className={`px-4 py-2 hover:bg-blue-600 text-white cursor-pointer transition-colors duration-150 ${
-                    multiSelect
-                      ? selected.includes(option)
-                        ? "bg-blue-500"
-                        : ""
-                      : selected === option
-                      ? "bg-blue-500"
-                      : ""
-                  } ${customOptionClass}`}
-                  role="option"
-                  aria-selected={
-                    multiSelect
-                      ? selected.includes(option)
-                      : selected === option
-                  }
+          <ul className="max-h-60 overflow-auto rounded-md py-1 text-base leading-6 shadow-xs focus:outline-none sm:text-sm sm:leading-5">
+            {filteredOptions.map((option, index) => (
+              <li
+                key={index}
+                className={`cursor-pointer select-none relative py-2 pl-3 pr-9 ${customOptionClass} ${
+                  selected.includes(option) ? customSelectedClass : ""
+                }`}
+                onClick={() => selectOption(option)}
+                onMouseEnter={onHover}
+              >
+                <span
+                  className={`block truncate ${
+                    selected.includes(option) ? "font-semibold" : "font-normal"
+                  }`}
                 >
                   {option}
-                </li>
-              ))
-            ) : (
-              <li className="px-4 py-2 text-gray-400">没有找到选项</li>
-            )}
+                </span>
+              </li>
+            ))}
           </ul>
-          <button
-            onClick={clearSelection}
-            className="w-full text-left px-4 py-2 bg-red-500 text-white hover:bg-red-700 transition-colors duration-150 rounded-b-lg"
-          >
-            清除选项
-          </button>
         </div>
       )}
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .p-2 {
+            padding: 0.5rem;
+          }
+          .text-base {
+            font-size: 1rem;
+          }
+          .leading-6 {
+            line-height: 1.5rem;
+          }
+          .mt-2 {
+            margin-top: 0.5rem;
+          }
+          .max-h-60 {
+            max-height: 15rem;
+          }
+        }
+      `}</style>
     </div>
   );
 };

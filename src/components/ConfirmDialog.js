@@ -1,5 +1,5 @@
 // src/components/ConfirmDialog.js
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 const ConfirmDialog = ({
@@ -16,13 +16,24 @@ const ConfirmDialog = ({
   confirmButtonColor = "bg-blue-600",
   cancelButtonColor = "text-gray-300",
   disableConfirm = false,
-  theme, 
-  tooltip = "", 
-  borderWidth = "2", 
-  animation = "transform transition-transform duration-300 ease-in-out", 
-  iconPosition = "top", 
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  iconPosition = "top",
+  autoClose = false,
+  autoCloseDuration = 5000,
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "确认对话框",
 }) => {
   const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && onOpen) {
@@ -30,7 +41,26 @@ const ConfirmDialog = ({
     } else if (!isOpen && onClose) {
       onClose();
     }
-  }, [isOpen, onOpen, onClose]);
+
+    if (isOpen && autoClose) {
+      timerRef.current = setTimeout(() => {
+        onCancel();
+      }, autoCloseDuration);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isOpen, onOpen, onClose, autoClose, autoCloseDuration, onCancel]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      onCancel();
+    }
+    if (onKeyDown) onKeyDown(e);
+  };
 
   if (!isOpen) return null;
 
@@ -40,11 +70,20 @@ const ConfirmDialog = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white",
     eyeCare: "bg-green-100 text-green-900",
+    ocean: "bg-blue-100 text-blue-900",
+    sunset: "bg-orange-100 text-orange-900",
   };
 
   return (
     <div
       className={`fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center transition-opacity duration-300 ease-in-out opacity-100 ${animation}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={handleKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
     >
       <div
         className={`rounded-lg shadow-lg p-6 transform transition-transform duration-300 ease-in-out scale-100 hover:scale-105 hover:shadow-neon w-full max-w-md mx-4 ${

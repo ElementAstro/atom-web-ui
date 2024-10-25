@@ -1,20 +1,36 @@
 // src/components/CodeBlock.js
-import React from "react";
+import React, { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { AiOutlineCopy } from "react-icons/ai";
+import { AiOutlineCopy, AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext";
 
 const CodeBlock = ({
   code,
   onCopySuccess,
   onCopyFailure,
-  theme, 
-  language = "javascript", 
-  lineNumbers = false, 
-  highlightLines = [], 
-  tooltip = "Copy code", 
+  theme,
+  language = "javascript",
+  lineNumbers = false,
+  highlightLines = [],
+  tooltip = "Copy code",
+  collapsible = false,
+  defaultCollapsed = false,
+  customClass = "",
+  customButtonClass = "",
+  customCodeClass = "",
+  customLineNumberClass = "",
+  customHighlightClass = "",
+  onHover,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
+  onAnimationEnd,
+  ariaLabel = "Code block",
 }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
 
   const handleCopy = () => {
@@ -27,6 +43,10 @@ const CodeBlock = ({
 
   const handleCopyFailure = () => {
     if (onCopyFailure) onCopyFailure();
+  };
+
+  const handleToggleCollapse = () => {
+    setCollapsed(!collapsed);
   };
 
   const themeClasses = {
@@ -42,8 +62,10 @@ const CodeBlock = ({
       <span
         key={index}
         className={`block text-right pr-4 ${
-          highlightLines.includes(index + 1) ? "bg-yellow-200" : ""
-        }`}
+          highlightLines.includes(index + 1)
+            ? `bg-yellow-200 ${customHighlightClass}`
+            : ""
+        } ${customLineNumberClass}`}
       >
         {index + 1}
       </span>
@@ -55,8 +77,10 @@ const CodeBlock = ({
       <span
         key={index}
         className={`block ${
-          highlightLines.includes(index + 1) ? "bg-yellow-200" : ""
-        }`}
+          highlightLines.includes(index + 1)
+            ? `bg-yellow-200 ${customHighlightClass}`
+            : ""
+        } ${customCodeClass}`}
       >
         {line}
       </span>
@@ -64,15 +88,40 @@ const CodeBlock = ({
   };
 
   return (
-    <div className={`relative ${themeClasses[theme || currentTheme]}`}>
-      <div className="absolute top-2 right-2">
+    <div
+      className={`relative ${
+        themeClasses[theme || currentTheme]
+      } ${customClass}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={ariaLabel}
+    >
+      <div className="absolute top-2 right-2 flex space-x-2">
+        {collapsible && (
+          <button
+            onClick={handleToggleCollapse}
+            className={`bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-lg p-2 hover:bg-gradient-to-l hover:from-purple-600 hover:via-pink-600 hover:to-red-600 transition duration-300 shadow-lg hover:shadow-neon focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
+            aria-label="Toggle collapse"
+            title="Toggle collapse"
+          >
+            {collapsed ? (
+              <AiOutlineDown className="transform transition duration-300" />
+            ) : (
+              <AiOutlineUp className="transform transition duration-300" />
+            )}
+          </button>
+        )}
         <CopyToClipboard
           text={code}
           onCopy={handleCopy}
           onError={handleCopyFailure}
         >
           <button
-            className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-lg p-2 hover:bg-gradient-to-l hover:from-purple-600 hover:via-pink-600 hover:to-red-600 transition duration-300 shadow-lg hover:shadow-neon focus:outline-none focus:ring-2 focus:ring-purple-600"
+            className={`bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-lg p-2 hover:bg-gradient-to-l hover:from-purple-600 hover:via-pink-600 hover:to-red-600 transition duration-300 shadow-lg hover:shadow-neon focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
             aria-label="Copy code"
             title={tooltip}
           >
@@ -85,18 +134,20 @@ const CodeBlock = ({
           </span>
         )}
       </div>
-      <div className="flex">
-        {lineNumbers && (
-          <pre className="bg-gray-800 p-4 rounded-l-lg shadow-md overflow-x-auto transition-transform duration-300">
-            <code className="text-gray-500">{renderLineNumbers(code)}</code>
+      {!collapsed && (
+        <div className="flex">
+          {lineNumbers && (
+            <pre className="bg-gray-800 p-4 rounded-l-lg shadow-md overflow-x-auto transition-transform duration-300">
+              <code className="text-gray-500">{renderLineNumbers(code)}</code>
+            </pre>
+          )}
+          <pre className="bg-gray-900 p-4 rounded-r-lg shadow-md overflow-x-auto transition-transform duration-300 hover:scale-105 hover:shadow-neon">
+            <code className="text-gray-300 whitespace-pre-wrap">
+              {renderCodeLines(code)}
+            </code>
           </pre>
-        )}
-        <pre className="bg-gray-900 p-4 rounded-r-lg shadow-md overflow-x-auto transition-transform duration-300 hover:scale-105 hover:shadow-neon">
-          <code className="text-gray-300 whitespace-pre-wrap">
-            {renderCodeLines(code)}
-          </code>
-        </pre>
-      </div>
+        </div>
+      )}
       {language && (
         <div className="absolute bottom-2 left-2 text-gray-500 text-sm">
           {language}
