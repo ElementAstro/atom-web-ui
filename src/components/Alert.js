@@ -27,9 +27,14 @@ const Alert = ({
   onMouseEnter,
   onMouseLeave,
   onAnimationEnd,
+  showProgress = false,
+  progressColor = "bg-blue-500",
+  progressHeight = "h-1",
+  onClick,
 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
 
   useEffect(() => {
@@ -48,6 +53,17 @@ const Alert = ({
     }
     return () => clearTimeout(timer);
   }, [autoClose, autoCloseDuration, isPaused, onClose]);
+
+  useEffect(() => {
+    if (autoClose && showProgress && !isPaused) {
+      const interval = setInterval(() => {
+        setProgress((prev) =>
+          Math.min(prev + 100 / (autoCloseDuration / 100), 100)
+        );
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [autoClose, autoCloseDuration, showProgress, isPaused]);
 
   const bgColor = severity === "error" ? "bg-red-900" : "bg-blue-900";
   const textColor = severity === "error" ? "text-red-300" : "text-blue-300";
@@ -98,7 +114,16 @@ const Alert = ({
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         onAnimationEnd={onAnimationEnd}
+        onClick={onClick}
       >
+        {showProgress && (
+          <div className={`absolute top-0 left-0 w-full ${progressHeight}`}>
+            <div
+              className={`${progressColor} h-full`}
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        )}
         <div className="alert__content flex justify-between items-center">
           {showIcon && icon && <span className="alert__icon mr-2">{icon}</span>}
           <div className="flex-1">

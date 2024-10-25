@@ -1,6 +1,6 @@
-// src/components/Button.js
 import React, { useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
+import Icon from "./Icon"; // 引入图标组件
 
 const Button = ({
   children,
@@ -86,6 +86,8 @@ const Button = ({
     ? "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500"
     : "";
 
+  const iconOnlyStyle = icon && !children ? "flex justify-center items-center" : "";
+
   const handleRipple = (event) => {
     if (!ripple) return;
 
@@ -111,7 +113,7 @@ const Button = ({
   return (
     <button
       ref={buttonRef}
-      className={`${baseStyle} ${variantStyle} ${sizeStyle} ${sciFiStyle} ${fullWidthStyle} ${gradientStyle} ${
+      className={`${baseStyle} ${variantStyle} ${sizeStyle} ${sciFiStyle} ${fullWidthStyle} ${gradientStyle} ${iconOnlyStyle} ${
         disabled ? disabledStyle : ""
       } ${isLoading ? loadingStyle : ""}`}
       onClick={!disabled && !isLoading ? onClick : undefined}
@@ -152,7 +154,7 @@ const Button = ({
         </div>
       ) : (
         <div className="flex items-center">
-          {icon && <span className="mr-2">{icon}</span>}
+          {icon && <Icon name={icon} className="mr-2" />} {/* 使用图标组件 */}
           {children}
         </div>
       )}

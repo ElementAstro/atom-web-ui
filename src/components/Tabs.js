@@ -26,6 +26,12 @@ const Tabs = ({
   onAnimationEnd,
   onDoubleClick,
   ariaLabel = "标签页",
+  showProgress = false,
+  progressColor = "bg-blue-500",
+  progressHeight = "h-1",
+  rippleEffect = true,
+  rippleColor = "rgba(255, 255, 255, 0.6)",
+  rippleDuration = 600,
 }) => {
   const [activeTab, setActiveTab] = useState(tabs[0].label);
   const [tabList, setTabList] = useState(tabs);
@@ -113,6 +119,23 @@ const Tabs = ({
     setTabList(tabs);
   };
 
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const ripple = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+    ripple.style.width = ripple.style.height = `${diameter}px`;
+    ripple.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    ripple.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    ripple.style.background = rippleColor;
+    ripple.classList.add("ripple");
+    button.appendChild(ripple);
+
+    setTimeout(() => {
+      ripple.remove();
+    }, rippleDuration);
+  };
+
   const Tab = ({ tab, index }) => {
     const ref = useRef(null);
     const [, drop] = useDrop({
@@ -154,7 +177,10 @@ const Tabs = ({
               ? "border-b-2 border-blue-500 scale-105 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-neon"
               : "hover:bg-gray-600"
           } focus:outline-none`}
-          onClick={() => handleTabChange(tab.label)}
+          onClick={(e) => {
+            handleTabChange(tab.label);
+            if (rippleEffect) createRipple(e);
+          }}
           onFocus={onFocus}
           onBlur={onBlur}
         >
@@ -187,6 +213,20 @@ const Tabs = ({
         fullscreen ? "w-full h-full" : ""
       }`}
     >
+      {showProgress && (
+        <div className={`absolute top-0 left-0 w-full ${progressHeight}`}>
+          <div
+            className={`${progressColor} h-full`}
+            style={{
+              width: `${
+                ((tabList.findIndex((tab) => tab.label === activeTab) + 1) *
+                  100) /
+                tabList.length
+              }%`,
+            }}
+          ></div>
+        </div>
+      )}
       <div className="flex flex-wrap border-b border-gray-700 overflow-x-auto items-center">
         {tabList.map((tab, index) => (
           <Tab key={tab.label} tab={tab} index={index} />
@@ -220,6 +260,20 @@ const Tabs = ({
           ) : null
         )}
       </div>
+      <style jsx>{`
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          transform: scale(0);
+          animation: ripple ${rippleDuration}ms linear;
+        }
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,8 +1,30 @@
-// src/components/Accordion.js
-import React, { useState, useEffect } from "react";
+// src/components/Accordion.tsx
+import React, { useState, useEffect, ReactNode, KeyboardEvent } from "react";
 import { useTheme } from "../context/ThemeContext";
 
-const AccordionItem = ({
+interface AccordionItemProps {
+  title: string;
+  children: ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+  onOpen?: () => void;
+  onClose?: () => void;
+  onHover?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onKeyDown?: (e: KeyboardEvent<HTMLDivElement>) => void;
+  customClass?: string;
+  customTitleClass?: string;
+  customContentClass?: string;
+  icon?: string;
+  disabled?: boolean;
+  animation?: string;
+  iconOpen?: string;
+  iconClose?: string;
+  iconPosition?: "left" | "right";
+}
+
+const AccordionItem: React.FC<AccordionItemProps> = ({
   title,
   children,
   isOpen,
@@ -116,7 +138,21 @@ const AccordionItem = ({
   );
 };
 
-const Accordion = ({
+interface AccordionProps {
+  children: ReactNode;
+  onItemOpen?: (index: number) => void;
+  onItemClose?: (index: number) => void;
+  customClass?: string;
+  customItemClass?: string;
+  customTitleClass?: string;
+  customContentClass?: string;
+  multiOpen?: boolean;
+  defaultOpenIndex?: number | null;
+  allOpen?: boolean;
+  allClose?: boolean;
+}
+
+const Accordion: React.FC<AccordionProps> = ({
   children,
   onItemOpen,
   onItemClose,
@@ -129,19 +165,19 @@ const Accordion = ({
   allOpen = false,
   allClose = false,
 }) => {
-  const [openIndices, setOpenIndices] = useState(
+  const [openIndices, setOpenIndices] = useState<number[]>(
     multiOpen ? [] : defaultOpenIndex !== null ? [defaultOpenIndex] : []
   );
 
   useEffect(() => {
     if (allOpen) {
-      setOpenIndices(React.Children.map(children, (_, index) => index));
+      setOpenIndices(React.Children.map(children, (_, index) => index) || []);
     } else if (allClose) {
       setOpenIndices([]);
     }
   }, [allOpen, allClose, children]);
 
-  const toggleItem = (index) => {
+  const toggleItem = (index: number) => {
     if (multiOpen) {
       setOpenIndices((prevIndices) =>
         prevIndices.includes(index)
@@ -158,7 +194,7 @@ const Accordion = ({
   return (
     <div className={`space-y-2 ${customClass}`}>
       {React.Children.map(children, (child, index) =>
-        React.cloneElement(child, {
+        React.cloneElement(child as React.ReactElement<any>, {
           isOpen: openIndices.includes(index),
           onToggle: () => toggleItem(index),
           onOpen: () => onItemOpen && onItemOpen(index),

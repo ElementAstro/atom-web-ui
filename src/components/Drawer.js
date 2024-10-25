@@ -1,24 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+// src/components/Drawer.js
+import React, { useRef, useEffect, useState } from "react";
 import {
   AiOutlineClose,
   AiOutlineExpand,
   AiOutlineCompress,
   AiOutlineFullscreen,
   AiOutlineFullscreenExit,
-  AiOutlineSetting,
-  AiOutlineInfoCircle,
 } from "react-icons/ai";
+import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
-const Offcanvas = ({
+const Drawer = ({
   isOpen,
   onClose,
-  onOpen,
-  onCloseComplete,
   children,
   customClass = "",
   closeButton = true,
-  closeButtonContent = "Close",
+  closeButtonContent = <AiOutlineClose />,
   draggable = false,
   maximizable = false,
   direction = "right", // 新增方向属性
@@ -26,17 +23,16 @@ const Offcanvas = ({
   tooltip = "", // 新增属性
   borderWidth = "2", // 新增属性
   animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
-  icon = <AiOutlineClose />, // 新增属性
+  iconColor = "text-gray-400", // 新增属性
   fullscreen = false, // 新增属性
   autoClose = false, // 新增属性
   autoCloseDuration = 5000, // 新增属性
-  iconColor = "text-gray-400", // 新增属性
   onFocus,
   onBlur,
   onKeyDown,
   onAnimationEnd,
   onDoubleClick,
-  ariaLabel = "Offcanvas",
+  ariaLabel = "Drawer",
   showProgress = false, // 新增属性
   progressColor = "bg-blue-500", // 新增属性
   progressHeight = "h-1", // 新增属性
@@ -47,9 +43,13 @@ const Offcanvas = ({
   tooltipPosition = "top", // 新增属性
   width = "64", // 新增属性，支持调整宽度
   additionalButtons = [], // 新增属性，支持更多内置按钮
+  onCloseComplete, // 新增属性
+  onOpen, // 新增属性
+  dockable = false, // 新增属性，支持 dock
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
-  const offcanvasRef = useRef(null);
+  const [isDocked, setIsDocked] = useState(false);
+  const drawerRef = useRef(null);
   const { theme: currentTheme } = useTheme(); // 获取当前主题
   const timerRef = useRef(null);
 
@@ -91,7 +91,7 @@ const Offcanvas = ({
 
   const handleDragStart = (e) => {
     if (draggable) {
-      const rect = offcanvasRef.current.getBoundingClientRect();
+      const rect = drawerRef.current.getBoundingClientRect();
       e.dataTransfer.setData(
         "text/plain",
         JSON.stringify({
@@ -105,8 +105,8 @@ const Offcanvas = ({
   const handleDrop = (e) => {
     if (draggable) {
       const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-      offcanvasRef.current.style.left = `${e.clientX - data.offsetX}px`;
-      offcanvasRef.current.style.top = `${e.clientY - data.offsetY}px`;
+      drawerRef.current.style.left = `${e.clientX - data.offsetX}px`;
+      drawerRef.current.style.top = `${e.clientY - data.offsetY}px`;
     }
   };
 
@@ -116,15 +116,31 @@ const Offcanvas = ({
 
   const handleFullscreen = () => {
     const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if (elem.mozRequestFullScreen) {
-      elem.mozRequestFullScreen();
-    } else if (elem.webkitRequestFullscreen) {
-      elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) {
-      elem.msRequestFullscreen();
+    if (!document.fullscreenElement) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
     }
+  };
+
+  const handleDock = () => {
+    setIsDocked(!isDocked);
   };
 
   const createRipple = (event) => {
@@ -198,12 +214,14 @@ const Offcanvas = ({
         </div>
       )}
       <div
-        ref={offcanvasRef}
+        ref={drawerRef}
         className={`fixed ${
           directionClasses[direction]
         } shadow-lg transform transition-transform duration-300 ${
           transformClasses[direction]
-        } ${isMaximized ? "w-full h-full" : ""} ${customClass} ${
+        } ${isMaximized ? "w-full h-full" : ""} ${
+          isDocked ? "docked" : ""
+        } ${customClass} ${
           themeClasses[theme || currentTheme]
         } border-${borderWidth} ${animation}`}
         onClick={(e) => e.stopPropagation()}
@@ -226,7 +244,7 @@ const Offcanvas = ({
             className={`absolute top-4 right-4 ${iconColor} hover:text-gray-400`}
             title={tooltip}
           >
-            {icon}
+            {closeButtonContent}
             {showTooltip && (
               <div className={`tooltip ${tooltipClasses[tooltipPosition]}`}>
                 {tooltip}
@@ -247,7 +265,19 @@ const Offcanvas = ({
             onClick={handleFullscreen}
             className={`absolute top-4 right-28 ${iconColor} hover:text-gray-400`}
           >
-            {fullscreen ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
+            {document.fullscreenElement ? (
+              <AiOutlineFullscreenExit />
+            ) : (
+              <AiOutlineFullscreen />
+            )}
+          </button>
+        )}
+        {dockable && (
+          <button
+            onClick={handleDock}
+            className={`absolute top-4 right-40 ${iconColor} hover:text-gray-400`}
+          >
+            {isDocked ? "Undock" : "Dock"}
           </button>
         )}
         {additionalButtons.map((btn, index) => (
@@ -255,7 +285,7 @@ const Offcanvas = ({
             key={index}
             onClick={btn.onClick}
             className={`absolute top-4 right-${
-              40 + index * 12
+              52 + index * 12
             } ${iconColor} hover:text-gray-400`}
             title={btn.tooltip}
           >
@@ -324,9 +354,18 @@ const Offcanvas = ({
             height: 100%;
           }
         }
+        .docked {
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          width: auto;
+          height: auto;
+        }
       `}</style>
     </div>
   );
 };
 
-export default Offcanvas;
+export default Drawer;

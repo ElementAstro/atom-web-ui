@@ -25,8 +25,20 @@ const Avatar = ({
   onMouseEnter,
   onMouseLeave,
   onAnimationEnd,
+  showBadge = false,
+  badgeContent = "",
+  badgeColor = "red",
+  badgePosition = "top-right",
+  badgeSize = "small",
+  badgeShape = "circle",
+  badgeBorderColor = "white",
+  badgeBorderWidth = "1",
+  lazyLoad = false,
+  intersectionThreshold = 0.1,
+  onClick,
 }) => {
   const [isError, setIsError] = useState(false);
+  const [isVisible, setIsVisible] = useState(!lazyLoad);
   const { theme } = useTheme(); // 获取当前主题
 
   const handleError = () => {
@@ -40,6 +52,25 @@ const Avatar = ({
     }
   }, [isError, onLoad]);
 
+  useEffect(() => {
+    if (lazyLoad) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setIsVisible(true);
+              observer.disconnect();
+            }
+          });
+        },
+        { threshold: intersectionThreshold }
+      );
+
+      observer.observe(document.querySelector(`#avatar-${alt}`));
+      return () => observer.disconnect();
+    }
+  }, [lazyLoad, intersectionThreshold, alt]);
+
   const shapeClass = shape === "circle" ? "rounded-full" : "rounded-lg";
 
   const statusPositionClasses = {
@@ -48,6 +79,22 @@ const Avatar = ({
     "bottom-left": "bottom-0 left-0",
     "bottom-right": "bottom-0 right-0",
   };
+
+  const badgePositionClasses = {
+    "top-left": "top-0 left-0",
+    "top-right": "top-0 right-0",
+    "bottom-left": "bottom-0 left-0",
+    "bottom-right": "bottom-0 right-0",
+  };
+
+  const badgeSizeClasses = {
+    small: "w-4 h-4 text-xs",
+    medium: "w-6 h-6 text-sm",
+    large: "w-8 h-8 text-md",
+  };
+
+  const badgeShapeClass =
+    badgeShape === "circle" ? "rounded-full" : "rounded-lg";
 
   const themeClasses = {
     light: "border-gray-300",
@@ -58,9 +105,31 @@ const Avatar = ({
     sunset: "border-orange-300",
   };
 
+  const handleClick = (e) => {
+    const ripple = document.createElement("span");
+    const diameter = Math.max(
+      e.currentTarget.clientWidth,
+      e.currentTarget.clientHeight
+    );
+    const radius = diameter / 2;
+    ripple.style.width = ripple.style.height = `${diameter}px`;
+    ripple.style.left = `${e.clientX - e.currentTarget.offsetLeft - radius}px`;
+    ripple.style.top = `${e.clientY - e.currentTarget.offsetTop - radius}px`;
+    ripple.classList.add("ripple");
+    const rippleContainer = e.currentTarget.querySelector(".ripple-container");
+    rippleContainer.appendChild(ripple);
+
+    setTimeout(() => {
+      ripple.remove();
+    }, 600);
+
+    if (onClick) onClick(e);
+  };
+
   return (
     <div
-      className={`relative w-${size} h-${size} group flex items-center justify-center`}
+      id={`avatar-${alt}`}
+      className={`relative w-${size} h-${size} group flex items-center justify-center cursor-pointer`}
       title={tooltip}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -68,6 +137,7 @@ const Avatar = ({
       onBlur={onBlur}
       onKeyDown={onKeyDown}
       onAnimationEnd={onAnimationEnd}
+      onClick={handleClick}
     >
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -75,12 +145,14 @@ const Avatar = ({
           {/* Loading Spinner */}
         </div>
       )}
-      <img
-        src={isError ? fallbackSrc : src}
-        alt={alt}
-        onError={handleError}
-        className={`${shapeClass} w-${size} h-${size} object-cover transition-transform duration-300 ease-in-out group-hover:${animation}`}
-      />
+      {isVisible && (
+        <img
+          src={isError ? fallbackSrc : src}
+          alt={alt}
+          onError={handleError}
+          className={`${shapeClass} w-${size} h-${size} object-cover transition-transform duration-300 ease-in-out group-hover:${animation}`}
+        />
+      )}
       <div
         className={`absolute inset-0 ${shapeClass} border-${borderWidth} border-${borderColor} group-hover:border-neon transition-all duration-300 ease-in-out ${themeClasses[theme]}`}
       ></div>
@@ -89,6 +161,14 @@ const Avatar = ({
           className={`absolute ${statusPositionClasses[statusPosition]} block w-3 h-3 bg-${statusColor}-500 border-${borderWidth} border-white ${shapeClass}`}
         ></span>
       )}
+      {showBadge && (
+        <span
+          className={`absolute ${badgePositionClasses[badgePosition]} flex items-center justify-center ${badgeSizeClasses[badgeSize]} bg-${badgeColor}-500 border-${badgeBorderWidth} border-${badgeBorderColor} ${badgeShapeClass}`}
+        >
+          {badgeContent}
+        </span>
+      )}
+      <div className="ripple-container absolute inset-0 overflow-hidden rounded-full"></div>
       <style jsx>{`
         @media (max-width: 768px) {
           .w-${size} {
@@ -96,6 +176,19 @@ const Avatar = ({
           }
           .h-${size} {
             height: ${size / 2}px;
+          }
+        }
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.6);
+          transform: scale(0);
+          animation: ripple 600ms linear;
+        }
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
           }
         }
       `}</style>

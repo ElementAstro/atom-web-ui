@@ -20,6 +20,16 @@ const ListGroup = ({
   multiSelect = false, // 新增属性
   onContextMenu, // 新增属性
   onDragEnd, // 新增属性
+  onDoubleClick, // 新增属性
+  onKeyDown, // 新增属性
+  ariaLabel = "List item", // 新增属性
+  rippleEffect = true, // 新增属性
+  rippleColor = "rgba(255, 255, 255, 0.6)", // 新增属性
+  rippleDuration = 600, // 新增属性
+  showTooltip = false, // 新增属性
+  tooltipPosition = "top", // 新增属性
+  showCheckbox = false, // 新增属性
+  onCheckboxChange, // 新增属性
 }) => {
   const [selectedIndices, setSelectedIndices] = useState(
     multiSelect ? [] : [selected]
@@ -67,6 +77,23 @@ const ListGroup = ({
     onDragEnd && onDragEnd(oldIndex, newIndex);
   };
 
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const ripple = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+    ripple.style.width = ripple.style.height = `${diameter}px`;
+    ripple.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    ripple.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    ripple.style.background = rippleColor;
+    ripple.classList.add("ripple");
+    button.appendChild(ripple);
+
+    setTimeout(() => {
+      ripple.remove();
+    }, rippleDuration);
+  };
+
   const variantClasses = {
     primary: "bg-gray-800 text-white",
     secondary: "bg-gray-700 text-gray-300",
@@ -93,6 +120,13 @@ const ListGroup = ({
     sunset: "bg-orange-100 text-orange-900 border-orange-300", // 新增主题
   };
 
+  const tooltipClasses = {
+    top: "tooltip-top",
+    bottom: "tooltip-bottom",
+    left: "tooltip-left",
+    right: "tooltip-right",
+  };
+
   return (
     <ul
       ref={listRef}
@@ -110,23 +144,46 @@ const ListGroup = ({
               ? "bg-blue-500 text-white"
               : "hover:bg-gray-700 hover:scale-105 hover:shadow-neon"
           } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-          onClick={() => !disabled && handleItemClick(index)}
+          onClick={(e) => {
+            if (!disabled) {
+              handleItemClick(index);
+              if (rippleEffect) createRipple(e);
+            }
+          }}
           onMouseEnter={() => !disabled && onItemHover && onItemHover(item)}
           onContextMenu={(e) =>
             !disabled && onContextMenu && onContextMenu(e, item)
           }
           draggable={!disabled}
           onDragEnd={handleDragEnd}
+          onDoubleClick={onDoubleClick}
+          onKeyDown={onKeyDown}
           role="button"
-          aria-label={`List item ${index + 1}`}
+          aria-label={`${ariaLabel} ${index + 1}`}
           title={tooltip}
         >
+          {showCheckbox && (
+            <input
+              type="checkbox"
+              checked={selectedIndices.includes(index)}
+              onChange={() => {
+                handleItemClick(index);
+                onCheckboxChange && onCheckboxChange(index);
+              }}
+              className="mr-2"
+            />
+          )}
           {icon && iconPosition === "left" && (
             <span className="mr-2">{icon}</span>
           )}
           {item}
           {icon && iconPosition === "right" && (
             <span className="ml-2">{icon}</span>
+          )}
+          {showTooltip && (
+            <div className={`tooltip ${tooltipClasses[tooltipPosition]}`}>
+              {tooltip}
+            </div>
           )}
         </li>
       ))}
@@ -140,6 +197,57 @@ const ListGroup = ({
           li {
             padding: 0.75rem 1.5rem;
           }
+        }
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          transform: scale(0);
+          animation: ripple ${rippleDuration}ms linear;
+        }
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+        .tooltip {
+          position: absolute;
+          background: rgba(0, 0, 0, 0.75);
+          color: white;
+          padding: 0.5rem;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+          white-space: nowrap;
+          z-index: 10;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        .tooltip-top {
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-bottom: 0.5rem;
+        }
+        .tooltip-bottom {
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-top: 0.5rem;
+        }
+        .tooltip-left {
+          right: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-right: 0.5rem;
+        }
+        .tooltip-right {
+          left: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-left: 0.5rem;
+        }
+        li:hover .tooltip {
+          opacity: 1;
         }
       `}</style>
     </ul>

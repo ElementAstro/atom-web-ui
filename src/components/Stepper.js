@@ -1,3 +1,4 @@
+// src/components/Stepper.js
 import React from "react";
 import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
 
@@ -24,6 +25,14 @@ const Stepper = ({
   onDoubleClick, // 新增属性
   onKeyDown, // 新增属性
   ariaLabel = "Stepper", // 新增属性
+  showProgress = false, // 新增属性
+  progressColor = "bg-blue-500", // 新增属性
+  progressHeight = "h-1", // 新增属性
+  rippleEffect = true, // 新增属性
+  rippleColor = "rgba(255, 255, 255, 0.6)", // 新增属性
+  rippleDuration = 600, // 新增属性
+  showTooltip = false, // 新增属性
+  tooltipPosition = "top", // 新增属性
 }) => {
   const isHorizontal = orientation === "horizontal";
   const { theme: currentTheme } = useTheme(); // 获取当前主题
@@ -44,6 +53,30 @@ const Stepper = ({
       "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-yellow-500", // 新增主题
   };
 
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const ripple = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+    ripple.style.width = ripple.style.height = `${diameter}px`;
+    ripple.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    ripple.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    ripple.style.background = rippleColor;
+    ripple.classList.add("ripple");
+    button.appendChild(ripple);
+
+    setTimeout(() => {
+      ripple.remove();
+    }, rippleDuration);
+  };
+
+  const tooltipClasses = {
+    top: "tooltip-top",
+    bottom: "tooltip-bottom",
+    left: "tooltip-left",
+    right: "tooltip-right",
+  };
+
   return (
     <div
       className={`flex ${
@@ -52,6 +85,14 @@ const Stepper = ({
         themeClasses[theme || currentTheme]
       }`}
     >
+      {showProgress && (
+        <div className={`absolute top-0 left-0 w-full ${progressHeight}`}>
+          <div
+            className={`${progressColor} h-full`}
+            style={{ width: `${((currentStep + 1) * 100) / steps.length}%` }}
+          ></div>
+        </div>
+      )}
       {steps.map((step, index) => (
         <div
           key={index}
@@ -60,7 +101,7 @@ const Stepper = ({
           } items-center`}
         >
           <div
-            className={`flex items-center justify-center rounded-full border-${borderWidth} ${animation} ${stepSize} ${
+            className={`relative flex items-center justify-center rounded-full border-${borderWidth} ${animation} ${stepSize} ${
               currentStep === index
                 ? `${activeColor} ${activeBorderColor} text-white shadow-neon`
                 : currentStep > index
@@ -71,9 +112,10 @@ const Stepper = ({
                       : "cursor-pointer"
                   }`
             }`}
-            onClick={() => {
+            onClick={(e) => {
               if (!disabledSteps.includes(index) && onStepClick) {
                 onStepClick(index);
+                if (rippleEffect) createRipple(e);
               }
             }}
             role="button"
@@ -94,6 +136,11 @@ const Stepper = ({
             title={tooltip}
           >
             {icon || index + 1}
+            {showTooltip && (
+              <div className={`tooltip ${tooltipClasses[tooltipPosition]}`}>
+                {tooltip}
+              </div>
+            )}
           </div>
           {index < steps.length - 1 && (
             <div
@@ -115,6 +162,59 @@ const Stepper = ({
           )}
         </div>
       ))}
+      <style jsx>{`
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          transform: scale(0);
+          animation: ripple ${rippleDuration}ms linear;
+        }
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+        .tooltip {
+          position: absolute;
+          background: rgba(0, 0, 0, 0.75);
+          color: white;
+          padding: 0.5rem;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+          white-space: nowrap;
+          z-index: 10;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        .tooltip-top {
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-bottom: 0.5rem;
+        }
+        .tooltip-bottom {
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-top: 0.5rem;
+        }
+        .tooltip-left {
+          right: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-right: 0.5rem;
+        }
+        .tooltip-right {
+          left: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-left: 0.5rem;
+        }
+        .ripple:hover .tooltip {
+          opacity: 1;
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,6 +1,11 @@
 // src/components/Table.js
 import React, { useState, useEffect, useRef } from "react";
-import { AiOutlineDelete, AiOutlineEdit, AiOutlineDrag } from "react-icons/ai";
+import {
+  AiOutlineDelete,
+  AiOutlineEdit,
+  AiOutlineDrag,
+  AiOutlinePlus,
+} from "react-icons/ai";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { CSVLink } from "react-csv";
@@ -16,6 +21,7 @@ const Table = ({
   onRowEdit,
   onRowsDelete,
   onRowsMove,
+  onRowAdd,
   customClass = "",
   customHeaderClass = "",
   customBodyClass = "",
@@ -97,6 +103,15 @@ const Table = ({
 
   const handleRowEdit = (row) => {
     if (onRowEdit) onRowEdit(row);
+  };
+
+  const handleRowAdd = () => {
+    const newRow = columns.reduce((acc, col) => {
+      acc[col.accessor] = "";
+      return acc;
+    }, {});
+    setTableData([...tableData, newRow]);
+    if (onRowAdd) onRowAdd(newRow);
   };
 
   const handleRowsMove = (direction) => {
@@ -272,6 +287,13 @@ const Table = ({
               title={tooltip}
             >
               下移
+            </button>
+            <button
+              onClick={handleRowAdd}
+              className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300 shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-600 ml-2`}
+              title={tooltip}
+            >
+              <AiOutlinePlus />
             </button>
             <CSVLink
               data={tableData}

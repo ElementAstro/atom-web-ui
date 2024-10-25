@@ -19,6 +19,15 @@ const Breadcrumbs = ({
   onMouseEnter,
   onMouseLeave,
   onAnimationEnd,
+  showTooltip = false,
+  tooltipPosition = "top",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  showIcon = true,
+  iconPosition = "left",
+  showProgress = false,
+  progressColor = "bg-blue-500",
+  progressHeight = "h-1",
+  onClick,
 }) => {
   const location = useLocation(); // 获取当前路径
   const { theme } = useTheme(); // 获取当前主题
@@ -49,11 +58,30 @@ const Breadcrumbs = ({
         ]
       : items;
 
+  const tooltipClasses = {
+    top: "tooltip-top",
+    bottom: "tooltip-bottom",
+    left: "tooltip-left",
+    right: "tooltip-right",
+  };
+
   return (
     <nav
       className={`text-gray-400 ${customClass} ${themeClasses[theme]}`}
       aria-label="Breadcrumb"
     >
+      {showProgress && (
+        <div className={`absolute top-0 left-0 w-full ${progressHeight}`}>
+          <div
+            className={`${progressColor} h-full`}
+            style={{
+              width: `${
+                ((location.pathname.split("/").length - 1) * 100) / items.length
+              }%`,
+            }}
+          ></div>
+        </div>
+      )}
       <ol className={`flex space-x-2 ${responsive ? "flex-wrap" : ""}`}>
         {displayedItems.map((item, index) => (
           <li
@@ -70,21 +98,36 @@ const Breadcrumbs = ({
             {item.link ? (
               <Link
                 to={item.link}
-                className={`transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-neon ${variantClasses[variant]}`}
+                className={`transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-neon ${variantClasses[variant]} ${animation}`}
                 aria-current={
                   location.pathname === item.link ? "page" : undefined
                 }
                 onClick={() => onItemClick && onItemClick(item)}
                 title={tooltip}
               >
-                {icon && <span className="mr-2">{icon}</span>}
+                {showIcon && icon && iconPosition === "left" && (
+                  <span className="mr-2">{icon}</span>
+                )}
                 {item.label}
+                {showIcon && icon && iconPosition === "right" && (
+                  <span className="ml-2">{icon}</span>
+                )}
               </Link>
             ) : (
               <span className="text-gray-200" title={tooltip}>
-                {icon && <span className="mr-2">{icon}</span>}
+                {showIcon && icon && iconPosition === "left" && (
+                  <span className="mr-2">{icon}</span>
+                )}
                 {item.label}
+                {showIcon && icon && iconPosition === "right" && (
+                  <span className="ml-2">{icon}</span>
+                )}
               </span>
+            )}
+            {showTooltip && (
+              <div className={`tooltip ${tooltipClasses[tooltipPosition]}`}>
+                {tooltip}
+              </div>
             )}
           </li>
         ))}
@@ -95,6 +138,7 @@ const Breadcrumbs = ({
           padding: 0.5rem 1rem;
           border-radius: 0.5rem;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          position: relative;
         }
         li {
           transition: all 0.3s ease;
@@ -102,6 +146,45 @@ const Breadcrumbs = ({
         li:hover {
           transform: scale(1.05);
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .tooltip {
+          position: absolute;
+          background: rgba(0, 0, 0, 0.75);
+          color: white;
+          padding: 0.5rem;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+          white-space: nowrap;
+          z-index: 10;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        .tooltip-top {
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-bottom: 0.5rem;
+        }
+        .tooltip-bottom {
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-top: 0.5rem;
+        }
+        .tooltip-left {
+          right: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-right: 0.5rem;
+        }
+        .tooltip-right {
+          left: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-left: 0.5rem;
+        }
+        li:hover .tooltip {
+          opacity: 1;
         }
       `}</style>
     </nav>

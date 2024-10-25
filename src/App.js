@@ -58,6 +58,9 @@ import Grid from "./components/Grid";
 import DraggableModal from "./components/DraggableModal";
 import CollapsibleSidebar from "./components/CollapsibleSidebar";
 import IconSelector from "./components/IconSelector";
+import Drawer from "./components/Drawer";
+import Masonry from "./components/Masonry";
+import Select from "./components/Select";
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
@@ -65,6 +68,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { FaCoffee, FaBeer } from "react-icons/fa";
 import { AiOutlineHome, AiOutlineUser, AiOutlineSetting } from "react-icons/ai";
+import { AiOutlineInfoCircle, AiOutlineClose } from "react-icons/ai";
 
 const Home = () => <div>Home</div>;
 const About = () => <div>About</div>;
@@ -94,8 +98,38 @@ const App = () => {
     "Item 3",
     "Item 4",
   ]);
-  const sidebarItems = ['首页', '关于', '服务', '联系'];
+  const sidebarItems = ["首页", "关于", "服务", "联系"];
   const [selectedIcon, setSelectedIcon] = useState(null);
+
+  const masonryItems = [
+    { label: "Item 1", link: "/item1" },
+    { label: "Item 2", link: "/item2" },
+    { label: "Item 3", link: "/item3" },
+  ];
+
+  const renderItem = (item) => (
+    <div>
+      <a href={item.link}>{item.label}</a>
+    </div>
+  );
+
+  const handleItemOpen = (index) => {
+    console.log(`Item ${index} opened`);
+  };
+
+  const handleItemClose = (index) => {
+    console.log(`Item ${index} closed`);
+  };
+
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleOpenDrawer = () => {
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+  };
 
   const handleIconSelect = (iconId) => {
     setSelectedIcon(iconId);
@@ -135,6 +169,13 @@ const App = () => {
       tooltip: "Loading...",
       loading: true,
     },
+  ];
+
+  const options = [
+    { value: "option1", label: "Option 1" },
+    { value: "option2", label: "Option 2", disabled: true },
+    { value: "option3", label: "Option 3" },
+    { value: "option4", label: "Option 4" },
   ];
 
   const sidebarContent = (
@@ -272,6 +313,20 @@ const App = () => {
   const handleDragEnd = (newItems) => {
     setItems(newItems);
     console.log("Items reordered:", newItems);
+  };
+
+  const [selectedValue, setSelectedValue] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSelectChange =(newValue) => {
+    setSelectedValue(newValue);
+  };
+
+  const handleLoadData = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
   };
 
   return (
@@ -499,11 +554,67 @@ const App = () => {
 
       <Divider title="折叠面板" />
       <Accordion>
-        <AccordionItem title="折叠面板 1">
-          <p>这里是折叠面板 1 的内容。</p>
+        <AccordionItem title="Section 1">
+          <p>Content for section 1</p>
         </AccordionItem>
-        <AccordionItem title="折叠面板 2">
-          <p>这里是折叠面板 2 的内容。</p>
+        <AccordionItem title="Section 2">
+          <p>Content for section 2</p>
+        </AccordionItem>
+        <AccordionItem title="Section 3">
+          <p>Content for section 3</p>
+        </AccordionItem>
+      </Accordion>
+
+      <Accordion
+        customClass="my-accordion"
+        customItemClass="my-item"
+        customTitleClass="my-title"
+        customContentClass="my-content"
+      >
+        <AccordionItem title="Section 1">
+          <p>Content for section 1</p>
+        </AccordionItem>
+        <AccordionItem title="Section 2">
+          <p>Content for section 2</p>
+        </AccordionItem>
+        <AccordionItem title="Section 3">
+          <p>Content for section 3</p>
+        </AccordionItem>
+      </Accordion>
+
+      <Accordion onItemOpen={handleItemOpen} onItemClose={handleItemClose}>
+        <AccordionItem title="Section 1">
+          <p>Content for section 1</p>
+        </AccordionItem>
+        <AccordionItem title="Section 2">
+          <p>Content for section 2</p>
+        </AccordionItem>
+        <AccordionItem title="Section 3">
+          <p>Content for section 3</p>
+        </AccordionItem>
+      </Accordion>
+
+      <Accordion multiOpen={true}>
+        <AccordionItem title="Section 1">
+          <p>Content for section 1</p>
+        </AccordionItem>
+        <AccordionItem title="Section 2">
+          <p>Content for section 2</p>
+        </AccordionItem>
+        <AccordionItem title="Section 3">
+          <p>Content for section 3</p>
+        </AccordionItem>
+      </Accordion>
+
+      <Accordion defaultOpenIndex={1}>
+        <AccordionItem title="Section 1">
+          <p>Content for section 1</p>
+        </AccordionItem>
+        <AccordionItem title="Section 2">
+          <p>Content for section 2</p>
+        </AccordionItem>
+        <AccordionItem title="Section 3">
+          <p>Content for section 3</p>
         </AccordionItem>
       </Accordion>
 
@@ -774,30 +885,108 @@ const App = () => {
         fullscreen={false}
       />
 
-<IconSelector
+      <IconSelector
         onSelectIcon={handleIconSelect}
-        theme="light"
-        tooltip="选择一个图标"
+        theme="dark"
+        tooltip="选择图标"
         borderWidth="2"
         animation="transform transition-transform duration-300 ease-in-out"
-        size="3rem"
+        size="lg"
         color="blue"
         border={true}
         borderColor="border-gray-300"
         searchPlaceholder="搜索图标..."
-        itemsPerPage={6}
+        itemsPerPage={20}
       />
-      {selectedIcon && (
-        <div className="mt-4">
-          <h2 className="text-xl">已选择的图标:</h2>
-          <div className="flex items-center mt-2">
-            {selectedIcon === "home" && <AiOutlineHome size="3rem" />}
-            {selectedIcon === "user" && <AiOutlineUser size="3rem" />}
-            {selectedIcon === "settings" && <AiOutlineSetting size="3rem" />}
-            {/* 添加更多图标的条件渲染 */}
-          </div>
+
+      <Divider title="抽屉" />
+      <button
+        onClick={handleOpenDrawer}
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300"
+      >
+        打开抽屉
+      </button>
+      <Drawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        customClass="custom-drawer-class"
+        closeButton={true}
+        closeButtonContent={<AiOutlineClose />}
+        draggable={true}
+        maximizable={true}
+        direction="right"
+        theme="dark"
+        tooltip="关闭"
+        borderWidth="2"
+        animation="transform transition-transform duration-300 ease-in-out"
+        iconColor="text-gray-400"
+        fullscreen={true}
+        autoClose={false}
+        autoCloseDuration={5000}
+        onFocus={() => console.log("Drawer focused")}
+        onBlur={() => console.log("Drawer blurred")}
+        onKeyDown={(e) => console.log("Key down:", e.key)}
+        onAnimationEnd={() => console.log("Animation ended")}
+        onDoubleClick={() => console.log("Drawer double-clicked")}
+        ariaLabel="Drawer"
+        showProgress={true}
+        progressColor="bg-blue-500"
+        progressHeight="h-1"
+        rippleEffect={true}
+        rippleColor="rgba(255, 255, 255, 0.6)"
+        rippleDuration={600}
+        showTooltip={true}
+        tooltipPosition="top"
+        width="64"
+        dockable={true}
+        additionalButtons={[
+          {
+            icon: <AiOutlineSetting />,
+            onClick: () => console.log("Settings clicked"),
+            tooltip: "设置",
+          },
+          {
+            icon: <AiOutlineInfoCircle />,
+            onClick: () => console.log("Info clicked"),
+            tooltip: "信息",
+          },
+        ]}
+      >
+        <div className="text-white">
+          <h2 className="text-2xl mb-4">抽屉内容</h2>
+          <p>这是抽屉中的一些内容。</p>
         </div>
-      )}
+      </Drawer>
+
+      <Divider title="瀑布流" />
+      <Masonry
+        items={masonryItems}
+        columns={4}
+        gap={6}
+        bgColor="gray-100"
+        textColor="gray-800"
+        renderItem={renderItem}
+      />
+
+      <Divider title="选择器" />
+      <button
+        onClick={handleLoadData}
+        className="mb-4 p-2 bg-blue-500 text-white rounded"
+      >
+        Load Data
+      </button>
+      <Select
+        options={options}
+        value={selectedValue}
+        onChange={handleSelectChange}
+        searchable
+        placeholder="请选择一个选项"
+        customStyles="bg-white text-gray-800"
+        clearable
+        loading={loading}
+        multiple
+        theme="dark" // 可以切换为 'light', 'astronomy', 'eyeCare'
+      />
     </div>
   );
 };
