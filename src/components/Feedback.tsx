@@ -9,13 +9,20 @@ import React, {
   MouseEvent,
   FocusEvent,
 } from "react";
-import { AiOutlineSend } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { AiOutlineSend, AiOutlineClose } from "react-icons/ai";
+import { useTheme } from "../context/ThemeContext";
 
 interface FeedbackProps {
   onSubmitSuccess?: () => void;
   onSubmitFailure?: () => void;
-  theme?: "light" | "dark" | "astronomy" | "eyeCare" | "ocean" | "sunset";
+  theme?:
+    | "light"
+    | "dark"
+    | "astronomy"
+    | "eyeCare"
+    | "ocean"
+    | "sunset"
+    | "astronomyDarkRed";
   tooltip?: string;
   borderWidth?: string;
   animation?: string;
@@ -28,6 +35,24 @@ interface FeedbackProps {
   onMouseLeave?: (event: MouseEvent<HTMLDivElement>) => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  showClearButton?: boolean;
+  clearButtonIcon?: React.ReactNode;
+  clearButtonColor?: string;
+  clearButtonPosition?:
+    | "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left";
+  customClass?: string;
+  customButtonClass?: string;
+  customTextareaClass?: string;
+  customMessageClass?: string;
+  customContainerClass?: string;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 const Feedback: React.FC<FeedbackProps> = ({
@@ -46,21 +71,33 @@ const Feedback: React.FC<FeedbackProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "反馈表单",
+  showClearButton = true,
+  clearButtonIcon = <AiOutlineClose />,
+  clearButtonColor = "text-gray-400",
+  clearButtonPosition = "top-right",
+  customClass = "",
+  customButtonClass = "",
+  customTextareaClass = "",
+  customMessageClass = "",
+  customContainerClass = "",
+  shadow = true,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
 }) => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // 模拟与外部接口交互
     try {
-      // 这里可以替换为真实的 API 调用逻辑
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // 模拟延迟
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log("User Feedback:", message);
       setResponseMessage("反馈提交成功！感谢您的意见。");
       setMessage("");
@@ -80,7 +117,7 @@ const Feedback: React.FC<FeedbackProps> = ({
           containerRef.current.querySelectorAll("textarea, button")
         ).map((el) => el.scrollWidth)
       );
-      containerRef.current.style.width = `${maxWidth + 20}px`; // 根据内容调整宽度
+      containerRef.current.style.width = `${maxWidth + 20}px`;
     }
   }, [message, isSubmitting, responseMessage]);
 
@@ -91,13 +128,18 @@ const Feedback: React.FC<FeedbackProps> = ({
     if (onKeyDown) onKeyDown(e);
   };
 
+  const handleClear = () => {
+    setMessage("");
+  };
+
   type ThemeKeys =
     | "light"
     | "dark"
     | "astronomy"
     | "eyeCare"
     | "ocean"
-    | "sunset";
+    | "sunset"
+    | "astronomyDarkRed";
 
   const themeClasses: Record<ThemeKeys, string> = {
     light: "bg-white text-gray-900 border-gray-300",
@@ -107,15 +149,24 @@ const Feedback: React.FC<FeedbackProps> = ({
     eyeCare: "bg-green-100 text-green-900 border-green-300",
     ocean: "bg-blue-100 text-blue-900 border-blue-300",
     sunset: "bg-orange-100 text-orange-900 border-orange-300",
+    astronomyDarkRed:
+      "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
   const currentThemeClass =
     themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)];
 
+  const clearButtonPositionClasses = {
+    "top-right": "top-0 right-0",
+    "top-left": "top-0 left-0",
+    "bottom-right": "bottom-0 right-0",
+    "bottom-left": "bottom-0 left-0",
+  };
+
   return (
     <div
       ref={containerRef}
-      className={`p-4 rounded-lg shadow-lg ${animation} hover:scale-105 hover:shadow-neon max-w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl ${currentThemeClass}`}
+      className={`p-4 rounded-lg shadow-lg ${animation} hover:scale-105 hover:shadow-neon max-w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl ${currentThemeClass} ${customContainerClass}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}
@@ -123,18 +174,30 @@ const Feedback: React.FC<FeedbackProps> = ({
       onKeyDown={handleKeyDown}
       onAnimationEnd={onAnimationEnd}
       aria-label={ariaLabel}
+      style={{ textTransform }}
     >
       <h2 className="text-xl font-bold mb-2">反馈表单</h2>
       <form onSubmit={handleSubmit} className="mb-4">
-        <textarea
-          value={message}
-          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-            setMessage(e.target.value)
-          }
-          placeholder="请输入反馈..."
-          maxLength={maxLength}
-          className={`border-${borderWidth} rounded-lg p-2 w-full h-32 transition duration-300 focus:outline-none focus:ring focus:ring-blue-500 resize-none ${currentThemeClass}`}
-        />
+        <div className="relative">
+          <textarea
+            value={message}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+              setMessage(e.target.value)
+            }
+            placeholder="请输入反馈..."
+            maxLength={maxLength}
+            className={`border-${borderWidth} rounded-lg p-2 w-full h-32 transition duration-300 focus:outline-none focus:ring focus:ring-blue-500 resize-none ${currentThemeClass} ${customTextareaClass}`}
+          />
+          {showClearButton && message && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className={`absolute ${clearButtonPositionClasses[clearButtonPosition]} ${clearButtonColor} hover:text-red-500 transition duration-300`}
+            >
+              {clearButtonIcon}
+            </button>
+          )}
+        </div>
         <div className="flex justify-between items-center mt-2">
           <span className="text-sm text-gray-500">
             {message.length}/{maxLength}
@@ -146,7 +209,7 @@ const Feedback: React.FC<FeedbackProps> = ({
               isSubmitting
                 ? "bg-gray-600 cursor-wait"
                 : "bg-blue-500 hover:bg-blue-700"
-            } ${currentThemeClass}`}
+            } ${currentThemeClass} ${customButtonClass}`}
             title={tooltip}
           >
             {isSubmitting ? (
@@ -186,11 +249,36 @@ const Feedback: React.FC<FeedbackProps> = ({
         <p
           className={`text-sm transition duration-300 transform ${
             responseMessage.includes("成功") ? "text-green-400" : "text-red-400"
-          }`}
+          } ${customMessageClass}`}
         >
           {responseMessage}
         </p>
       )}
+      <style>{`
+        @media (max-width: 768px) {
+          .p-4 {
+            padding: 1rem;
+          }
+          .text-xl {
+            font-size: 1.25rem;
+          }
+          .mb-2 {
+            margin-bottom: 0.5rem;
+          }
+          .mb-4 {
+            margin-bottom: 1rem;
+          }
+          .h-32 {
+            height: 8rem;
+          }
+          .text-sm {
+            font-size: 0.875rem;
+          }
+          .mt-2 {
+            margin-top: 0.5rem;
+          }
+        }
+      `}</style>
     </div>
   );
 };

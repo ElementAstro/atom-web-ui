@@ -1,7 +1,7 @@
 // src/components/FlowLayout.tsx
 import React, { useState, useRef, ChangeEvent, KeyboardEvent } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import { AiOutlineSearch } from "react-icons/ai";
+import { AiOutlineSearch, AiOutlineClose } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext";
 
 interface FlowLayoutProps {
@@ -11,11 +11,30 @@ interface FlowLayoutProps {
   onDragEnd?: (newItems: React.ReactNode[]) => void;
   customClass?: string;
   draggable?: boolean;
-  theme?: "light" | "dark" | "astronomy" | "eyeCare";
+  theme?:
+    | "light"
+    | "dark"
+    | "astronomy"
+    | "eyeCare"
+    | "ocean"
+    | "sunset"
+    | "astronomyDarkRed";
   tooltip?: string;
   borderWidth?: string;
   animation?: string;
   icon?: React.ReactNode;
+  showSearch?: boolean;
+  searchPlaceholder?: string;
+  clearable?: boolean;
+  clearIcon?: React.ReactNode;
+  searchIcon?: React.ReactNode;
+  showClearIcon?: boolean;
+  showSearchIcon?: boolean;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 interface ItemProps {
@@ -25,11 +44,23 @@ interface ItemProps {
   onItemClick?: (item: React.ReactNode) => void;
   onItemHover?: (item: React.ReactNode) => void;
   draggable: boolean;
-  theme?: "light" | "dark" | "astronomy" | "eyeCare";
+  theme?:
+    | "light"
+    | "dark"
+    | "astronomy"
+    | "eyeCare"
+    | "ocean"
+    | "sunset"
+    | "astronomyDarkRed";
   tooltip?: string;
   borderWidth?: string;
   animation?: string;
   icon?: React.ReactNode;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 const FlowLayout: React.FC<FlowLayoutProps> = ({
@@ -44,8 +75,20 @@ const FlowLayout: React.FC<FlowLayoutProps> = ({
   borderWidth = "2",
   animation = "transform transition-transform duration-300 ease-in-out",
   icon = null,
+  showSearch = true,
+  searchPlaceholder = "搜索...",
+  clearable = true,
+  clearIcon = <AiOutlineClose />,
+  searchIcon = <AiOutlineSearch />,
+  showClearIcon = true,
+  showSearchIcon = true,
+  shadow = true,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -68,6 +111,11 @@ const FlowLayout: React.FC<FlowLayoutProps> = ({
     borderWidth,
     animation,
     icon,
+    shadow,
+    hoverEffect,
+    borderStyle,
+    borderColor,
+    textTransform,
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [, drop] = useDrop({
@@ -90,7 +138,14 @@ const FlowLayout: React.FC<FlowLayoutProps> = ({
       drag(drop(ref));
     }
 
-    type ThemeKeys = "light" | "dark" | "astronomy" | "eyeCare";
+    type ThemeKeys =
+      | "light"
+      | "dark"
+      | "astronomy"
+      | "eyeCare"
+      | "ocean"
+      | "sunset"
+      | "astronomyDarkRed";
 
     const themeClasses: Record<ThemeKeys, string> = {
       light: "bg-white text-gray-900 border-gray-300",
@@ -98,16 +153,22 @@ const FlowLayout: React.FC<FlowLayoutProps> = ({
       astronomy:
         "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
       eyeCare: "bg-green-100 text-green-900 border-green-300",
+      ocean: "bg-blue-100 text-blue-900 border-blue-300",
+      sunset: "bg-orange-100 text-orange-900 border-orange-300",
+      astronomyDarkRed:
+        "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
     };
 
     return (
       <div
         ref={ref}
-        className={`flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-4 rounded shadow-lg ${animation} hover:shadow-xl hover:scale-105 hover:shadow-neon ${
-          isDragging ? "opacity-50" : "opacity-100"
-        } ${
+        className={`flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-4 rounded ${animation} ${
+          hoverEffect ? "hover:shadow-xl hover:scale-105 hover:shadow-neon" : ""
+        } ${isDragging ? "opacity-50" : "opacity-100"} ${
           themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
-        } border-${borderWidth}`}
+        } border-${borderWidth} ${shadow ? "shadow-lg" : ""} ${
+          borderStyle ? `border-${borderStyle}` : ""
+        } ${borderColor ? `border-${borderColor}` : ""}`}
         onClick={() => onItemClick && onItemClick(item)}
         onMouseEnter={() => onItemHover && onItemHover(item)}
         role="button"
@@ -119,6 +180,7 @@ const FlowLayout: React.FC<FlowLayoutProps> = ({
         }}
         title={tooltip}
         aria-label="Flow item"
+        style={{ textTransform }}
       >
         {icon && <span className="mr-2">{icon}</span>}
         {item}
@@ -130,23 +192,38 @@ const FlowLayout: React.FC<FlowLayoutProps> = ({
     setSearchTerm(e.target.value);
   };
 
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
+
   const filteredItems = items.filter((item) =>
     item?.toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className={`relative ${customClass}`} ref={containerRef}>
-      <div className="flex items-center mb-4">
-        <AiOutlineSearch className="mr-2 text-gray-400" />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={handleSearch}
-          placeholder="搜索..."
-          className={`p-2 border-${borderWidth} rounded w-full focus:outline-none focus:ring focus:ring-purple-500 ${animation}`}
-          aria-label="搜索"
-        />
-      </div>
+      {showSearch && (
+        <div className="flex items-center mb-4">
+          {showSearchIcon && <AiOutlineSearch className="mr-2 text-gray-400" />}
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={handleSearch}
+            placeholder={searchPlaceholder}
+            className={`p-2 border-${borderWidth} rounded w-full focus:outline-none focus:ring focus:ring-purple-500 ${animation}`}
+            aria-label="搜索"
+          />
+          {clearable && showClearIcon && searchTerm && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="ml-2 text-gray-400 hover:text-red-500 transition duration-300"
+            >
+              {clearIcon}
+            </button>
+          )}
+        </div>
+      )}
       <div className={`flex flex-wrap gap-4 p-4 bg-gray-900 ${customClass}`}>
         {filteredItems.map((item, index) => (
           <Item
@@ -162,6 +239,11 @@ const FlowLayout: React.FC<FlowLayoutProps> = ({
             borderWidth={borderWidth}
             animation={animation}
             icon={icon}
+            shadow={shadow}
+            hoverEffect={hoverEffect}
+            borderStyle={borderStyle}
+            borderColor={borderColor}
+            textTransform={textTransform}
           />
         ))}
       </div>

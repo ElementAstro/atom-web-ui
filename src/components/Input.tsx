@@ -1,11 +1,19 @@
 // src/components/Input.tsx
-import React, { useState, FocusEvent, ChangeEvent, KeyboardEvent, AnimationEvent, MouseEvent, FC } from "react";
+import React, {
+  useState,
+  FocusEvent,
+  ChangeEvent,
+  KeyboardEvent,
+  AnimationEvent,
+  MouseEvent,
+  FC,
+} from "react";
 import {
   AiOutlineEye,
   AiOutlineEyeInvisible,
   AiOutlineClose,
 } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface InputProps {
   label?: string;
@@ -36,6 +44,10 @@ interface InputProps {
   onAnimationEnd?: (e: AnimationEvent<HTMLDivElement>) => void;
   ariaLabel?: string;
   value?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Input: FC<InputProps> = ({
@@ -55,24 +67,28 @@ const Input: FC<InputProps> = ({
   icon,
   showPassword = false,
   maxLength,
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
-  iconPosition = "left", // 新增属性
-  clearable = false, // 新增属性
-  iconColor = "text-gray-400", // 新增属性
-  onDoubleClick, // 新增属性
-  onKeyDown, // 新增属性
-  onAnimationEnd, // 新增属性
-  ariaLabel = "输入框", // 新增属性
-  value: initialValue = "", // 新增属性
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  iconPosition = "left",
+  clearable = false,
+  iconColor = "text-gray-400",
+  onDoubleClick,
+  onKeyDown,
+  onAnimationEnd,
+  ariaLabel = "输入框",
+  value: initialValue = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [value, setValue] = useState(initialValue);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleFocus = (e: FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
@@ -95,7 +111,8 @@ const Input: FC<InputProps> = ({
 
   const clearInput = () => {
     setValue("");
-    if (onChange) onChange({ target: { value: "" } } as ChangeEvent<HTMLInputElement>);
+    if (onChange)
+      onChange({ target: { value: "" } } as ChangeEvent<HTMLInputElement>);
   };
 
   type ThemeKeys = "light" | "dark" | "astronomy" | "eyeCare";
@@ -148,8 +165,10 @@ const Input: FC<InputProps> = ({
             }
             ${errorMessage ? "border-red-500" : ""}
             ${icon ? (iconPosition === "left" ? "pl-10" : "pr-10") : ""}
-            ${themeClasses[theme as ThemeKeys || currentTheme as ThemeKeys]}
-            focus:shadow-neon focus:scale-105 ${customInputClass}`}
+            ${themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]}
+            focus:shadow-neon focus:scale-105 ${customInputClass} ${hoverColor} ${activeColor} ${
+            disabled ? disabledColor : ""
+          } ${hoverAnimation}`}
           title={tooltip}
           {...props}
         />

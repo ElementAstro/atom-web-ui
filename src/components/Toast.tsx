@@ -7,7 +7,7 @@ import React, {
   KeyboardEvent,
 } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface ToastProps {
   message: string;
@@ -42,6 +42,13 @@ interface ToastProps {
   onDoubleClick?: (event: MouseEvent<HTMLDivElement>) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
   ariaLabel?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 const Toast: React.FC<ToastProps> = ({
@@ -64,10 +71,17 @@ const Toast: React.FC<ToastProps> = ({
   onDoubleClick,
   onKeyDown,
   ariaLabel = "通知",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
   const [calculatedPosition, setCalculatedPosition] = useState(position);
   const toastRef = useRef<HTMLDivElement>(null);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   useEffect(() => {
     if (onOpen) onOpen();
@@ -76,7 +90,7 @@ const Toast: React.FC<ToastProps> = ({
     }, duration);
 
     return () => {
-      clearTimeout(timer); // 清除定时器
+      clearTimeout(timer);
       if (onCloseComplete) onCloseComplete();
     };
   }, [onClose, duration, onOpen, onCloseComplete]);
@@ -118,7 +132,7 @@ const Toast: React.FC<ToastProps> = ({
     success: "bg-gradient-to-r from-green-500 via-green-600 to-green-700",
     warning: "bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700",
     error: "bg-gradient-to-r from-red-500 via-red-600 to-red-700",
-    neutral: "bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700", // 新增颜色
+    neutral: "bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700",
   };
 
   const positionClasses = {
@@ -166,7 +180,7 @@ const Toast: React.FC<ToastProps> = ({
         variantClasses[variant]
       } text-white ${
         sizeClasses[size]
-      } rounded-lg shadow-lg transform transition-all duration-500 ease-in-out animate-fade-in hover:scale-105 hover:shadow-neon z-50 ${customClass} ${
+      } rounded-lg shadow-lg transform transition-all duration-500 ease-in-out animate-fade-in ${hoverAnimation} z-50 ${customClass} ${
         themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
       } border-${borderWidth} ${fullscreen ? "w-full h-full" : ""}`}
       role="alert"

@@ -11,7 +11,7 @@ import {
   AiOutlineFullscreen,
   AiOutlineFullscreenExit,
 } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface DraggableModalProps {
   isOpen: boolean;
@@ -41,6 +41,26 @@ interface DraggableModalProps {
   onMouseLeave?: () => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  customClass?: string;
+  customHeaderClass?: string;
+  customContentClass?: string;
+  customFooterClass?: string;
+  customButtonClass?: string;
+  customIconClass?: string;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
+  showCloseButton?: boolean;
+  closeButtonColor?: string;
+  closeButtonPosition?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
+  showFullscreenButton?: boolean;
+  fullscreenButtonColor?: string;
 }
 
 const DraggableModal: React.FC<DraggableModalProps> = ({
@@ -64,6 +84,22 @@ const DraggableModal: React.FC<DraggableModalProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "Draggable Modal",
+  customClass = "",
+  customHeaderClass = "",
+  customContentClass = "",
+  customFooterClass = "",
+  customButtonClass = "",
+  customIconClass = "",
+  shadow = true,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
+  showCloseButton = true,
+  closeButtonColor = "text-red-600",
+  closeButtonPosition = "top-right",
+  showFullscreenButton = true,
+  fullscreenButtonColor = "text-blue-600",
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -71,7 +107,7 @@ const DraggableModal: React.FC<DraggableModalProps> = ({
   const [position, setPosition] = useState({ top: "50%", left: "50%" });
   const [size, setSize] = useState({ width: "auto", height: "auto" });
   const [isFullscreen, setIsFullscreen] = useState(fullscreen);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -132,7 +168,6 @@ const DraggableModal: React.FC<DraggableModalProps> = ({
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      // Ensure the modal doesn't go out of the viewport
       const clampedTop = Math.max(
         0,
         Math.min(newTop, viewportHeight - modalRect.height)
@@ -206,6 +241,13 @@ const DraggableModal: React.FC<DraggableModalProps> = ({
       "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
+  const closeButtonPositionClasses = {
+    "top-left": "top-0 left-0",
+    "top-right": "top-0 right-0",
+    "bottom-left": "bottom-0 left-0",
+    "bottom-right": "bottom-0 right-0",
+  };
+
   return (
     <div
       className={`fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center transition-opacity duration-300 ${
@@ -226,7 +268,7 @@ const DraggableModal: React.FC<DraggableModalProps> = ({
         ref={modalRef}
         className={`rounded shadow-lg p-4 ${animation} ${
           themeClasses[theme || currentTheme]
-        } border-${borderWidth}`}
+        } border-${borderWidth} ${customClass}`}
         style={{
           position: "absolute",
           top: position.top,
@@ -238,26 +280,36 @@ const DraggableModal: React.FC<DraggableModalProps> = ({
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="flex justify-between items-center mb-4">
+        <div
+          className={`flex justify-between items-center mb-4 ${customHeaderClass}`}
+        >
           <h2 className="text-lg font-bold">{header}</h2>
           <div className="flex space-x-2">
-            <button
-              onClick={toggleFullscreen}
-              className="text-blue-600"
-              title="Toggle Fullscreen"
-            >
-              {isFullscreen ? (
-                <AiOutlineFullscreenExit />
-              ) : (
-                <AiOutlineFullscreen />
-              )}
-            </button>
-            <button onClick={onClose} className="text-red-600" title={tooltip}>
-              {icon}
-            </button>
+            {showFullscreenButton && (
+              <button
+                onClick={toggleFullscreen}
+                className={`${fullscreenButtonColor} ${customButtonClass}`}
+                title="Toggle Fullscreen"
+              >
+                {isFullscreen ? (
+                  <AiOutlineFullscreenExit className={customIconClass} />
+                ) : (
+                  <AiOutlineFullscreen className={customIconClass} />
+                )}
+              </button>
+            )}
+            {showCloseButton && (
+              <button
+                onClick={onClose}
+                className={`${closeButtonColor} ${customButtonClass}`}
+                title={tooltip}
+              >
+                {icon}
+              </button>
+            )}
           </div>
         </div>
-        {children}
+        <div className={customContentClass}>{children}</div>
         {resizable && (
           <>
             <div

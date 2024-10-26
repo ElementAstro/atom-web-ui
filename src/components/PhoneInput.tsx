@@ -7,7 +7,7 @@ import React, {
   KeyboardEvent,
 } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface PhoneInputProps {
   value: string;
@@ -31,6 +31,10 @@ interface PhoneInputProps {
   onDoubleClick?: (event: MouseEvent<HTMLDivElement>) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
   ariaLabel?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const PhoneInput: React.FC<PhoneInputProps> = ({
@@ -55,10 +59,14 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   onDoubleClick,
   onKeyDown,
   ariaLabel = "电话号码输入框",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [error, setError] = useState("");
   const [phoneValue, setPhoneValue] = useState(value || defaultValue);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   useEffect(() => {
     setPhoneValue(value);
@@ -70,8 +78,8 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
     onChange(newValue);
 
     const phonePattern = international
-      ? /^\+\d{1,3}-\d{1,4}-\d{1,4}-\d{4}$/ // 国际电话号码格式检查 +123-1234-1234-1234
-      : /^\d{3}-\d{3}-\d{4}$/; // 本地电话号码格式检查 123-456-7890
+      ? /^\+\d{1,3}-\d{1,4}-\d{1,4}-\d{4}$/
+      : /^\d{3}-\d{3}-\d{4}$/;
 
     if (phonePattern.test(newValue)) {
       setError("");
@@ -140,8 +148,8 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
           placeholder={international ? "+123-1234-1234-1234" : "123-456-7890"}
           className={`border-${borderWidth} rounded ${sizeClasses[size]} ${
             themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
-          } focus:outline-none focus:ring focus:ring-purple-500 transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-neon ${
-            disabled ? "opacity-50 cursor-not-allowed" : ""
+          } focus:outline-none focus:ring focus:ring-purple-500 transition duration-300 ease-in-out transform ${hoverAnimation} ${
+            disabled ? disabledColor : ""
           } ${customInputClass}`}
           title={tooltip}
         />

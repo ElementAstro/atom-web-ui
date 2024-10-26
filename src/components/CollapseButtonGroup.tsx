@@ -1,5 +1,5 @@
 // src/components/CollapseButtonGroup.tsx
-import React, { useState, useRef, DragEvent, MouseEvent } from "react";
+import React, { useState, useRef, DragEvent } from "react";
 import { AiOutlineRight, AiOutlineClose } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext";
 
@@ -34,6 +34,16 @@ interface CollapseButtonGroupProps {
   draggable?: boolean;
   resizable?: boolean;
   ariaLabel?: string;
+  customClass?: string;
+  customButtonClass?: string;
+  customIconClass?: string;
+  customLabelClass?: string;
+  customGroupClass?: string;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
@@ -58,9 +68,19 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
   draggable = false,
   resizable = false,
   ariaLabel = "Collapse button group",
+  customClass = "",
+  customButtonClass = "",
+  customIconClass = "",
+  customLabelClass = "",
+  customGroupClass = "",
+  shadow = true,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const buttonGroupRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
   const [groupSize, setGroupSize] = useState({ width: 200, height: 300 });
@@ -93,25 +113,24 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
   const handleResizeStart = () => {
     if (resizable) {
       setIsResizing(true);
-      document.addEventListener("mousemove", handleResize);
-      document.addEventListener("mouseup", handleResizeEnd);
+      document.addEventListener("mousemove", handleResize as EventListener);
+      document.addEventListener("mouseup", handleResizeEnd as EventListener);
     }
   };
 
-  const handleResize = (e: Event) => {
+  const handleResize = (e: globalThis.MouseEvent) => {
     if (isResizing && buttonGroupRef.current) {
-      const mouseEvent = e as unknown as MouseEvent;
       setGroupSize({
-        width: mouseEvent.clientX - buttonGroupRef.current.offsetLeft,
-        height: mouseEvent.clientY - buttonGroupRef.current.offsetTop,
+        width: e.clientX - buttonGroupRef.current.offsetLeft,
+        height: e.clientY - buttonGroupRef.current.offsetTop,
       });
     }
   };
 
   const handleResizeEnd = () => {
     setIsResizing(false);
-    document.removeEventListener("mousemove", handleResize);
-    document.removeEventListener("mouseup", handleResizeEnd);
+    document.removeEventListener("mousemove", handleResize as EventListener);
+    document.removeEventListener("mouseup", handleResizeEnd as EventListener);
   };
 
   const isVertical = direction === "vertical";
@@ -126,7 +145,6 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
       "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
-  // 定义未定义的事件处理程序
   const onMouseEnter = () => {};
   const onMouseLeave = () => {};
   const onFocus = () => {};
@@ -137,7 +155,7 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
   return (
     <div
       ref={buttonGroupRef}
-      className="relative"
+      className={`relative ${customGroupClass}`}
       draggable={draggable}
       onDragStart={handleDragStart}
       onDrop={handleDrop}
@@ -148,13 +166,19 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
       onKeyDown={onKeyDown}
       onAnimationEnd={onAnimationEnd}
       aria-label={ariaLabel}
-      style={{ width: groupSize.width, height: groupSize.height }}
+      style={{
+        width: groupSize.width,
+        height: groupSize.height,
+        textTransform,
+      }}
     >
       <button
         onClick={toggleOpen}
         className={`w-${buttonSize} h-${buttonSize} flex justify-center items-center p-3 rounded-full text-white ${buttonColor} focus:outline-none transition duration-200 ${
           isOpen ? "shadow-lg hover:shadow-neon" : ""
-        } ${themeClasses[theme || currentTheme]} border-${borderWidth}`}
+        } ${
+          themeClasses[theme || currentTheme]
+        } border-${borderWidth} ${customButtonClass}`}
         title={tooltip || mainLabel}
         disabled={disabled}
       >
@@ -184,16 +208,18 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
             onBlur={() => onButtonBlur && onButtonBlur(btn.value)}
             className={`flex justify-between items-center p-2 rounded-md text-white bg-gray-700 hover:bg-gray-600 focus:outline-none transition duration-200 ${
               themeClasses[theme || currentTheme]
-            } border-${borderWidth}`}
+            } border-${borderWidth} ${customButtonClass}`}
             title={btn.tooltip}
             disabled={btn.disabled}
           >
             {iconPosition === "left" && btn.icon && (
-              <span className="mr-2">{btn.icon}</span>
+              <span className={`mr-2 ${customIconClass}`}>{btn.icon}</span>
             )}
-            {showLabels && btn.label}
+            {showLabels && (
+              <span className={customLabelClass}>{btn.label}</span>
+            )}
             {iconPosition === "right" && btn.icon && (
-              <span className="ml-2">{btn.icon}</span>
+              <span className={`ml-2 ${customIconClass}`}>{btn.icon}</span>
             )}
             {btn.loading && (
               <svg

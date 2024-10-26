@@ -7,7 +7,7 @@ import Input from "./Input";
 import Button from "./Button";
 import LoadingSpinner from "./LoadingSpinner";
 import ProgressBar from "./ProgressBar";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface ValidatedFormProps {
   onSubmitSuccess?: (data: any) => void;
@@ -26,6 +26,31 @@ interface ValidatedFormProps {
   icon?: React.ReactNode;
   fullscreen?: boolean;
   draggable?: boolean;
+  customFormClass?: string;
+  customInputClass?: string;
+  customButtonClass?: string;
+  customErrorClass?: string;
+  customProgressBarClass?: string;
+  customFieldClass?: string;
+  formTitle?: string;
+  formDescription?: string;
+  submitButtonText?: string;
+  resetButtonText?: string;
+  addButtonText?: string;
+  deleteButtonText?: string;
+  placeholderUsername?: string;
+  placeholderPassword?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  maxWidth?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 interface FormData {
@@ -57,6 +82,31 @@ const ValidatedForm: React.FC<ValidatedFormProps> = ({
   icon = null,
   fullscreen = false,
   draggable = false,
+  customFormClass = "",
+  customInputClass = "",
+  customButtonClass = "",
+  customErrorClass = "",
+  customProgressBarClass = "",
+  customFieldClass = "",
+  formTitle = "表单标题",
+  formDescription = "表单描述",
+  submitButtonText = "提交",
+  resetButtonText = "重置",
+  addButtonText = "添加字段",
+  deleteButtonText = "删除",
+  placeholderUsername = "请输入用户名",
+  placeholderPassword = "请输入密码",
+  backgroundColor,
+  textColor,
+  borderColor,
+  maxWidth = "600px",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
   const {
     control,
@@ -75,14 +125,13 @@ const ValidatedForm: React.FC<ValidatedFormProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     setProgress(0);
     try {
       console.log(data);
-      // 模拟异步操作，例如 API 提交
       await new Promise<void>((resolve) => {
         const interval = setInterval(() => {
           setProgress((prev) => {
@@ -145,13 +194,22 @@ const ValidatedForm: React.FC<ValidatedFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className={`p-6 border-${borderWidth} rounded-lg shadow-lg bg-gradient-to-r from-gray-800 via-gray-900 to-black ${animation} max-w-lg mx-auto ${
+      className={`p-6 border-${borderWidth} rounded-lg shadow-lg ${animation} max-w-lg mx-auto ${
         fullscreen ? "w-full h-full" : ""
-      } ${themeClasses[theme || currentTheme]}`}
+      } ${themeClasses[theme || currentTheme]} ${customFormClass}`}
       draggable={draggable}
       onDragStart={handleDragStart}
       onDrop={handleDrop}
+      style={{
+        backgroundColor: backgroundColor || undefined,
+        color: textColor || undefined,
+        borderColor: borderColor || undefined,
+        maxWidth: maxWidth,
+      }}
     >
+      <h2 className="text-2xl mb-4">{formTitle}</h2>
+      <p className="mb-4">{formDescription}</p>
+
       <Controller
         name="username"
         control={control}
@@ -159,13 +217,14 @@ const ValidatedForm: React.FC<ValidatedFormProps> = ({
         render={({ field }) => (
           <Input
             label="用户名"
+            placeholder={placeholderUsername}
             {...field}
-            customClass="transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+            customClass={`transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
           />
         )}
       />
       {errors.username && (
-        <span className="text-red-500 mt-1 animate-pulse">
+        <span className={`text-red-500 mt-1 animate-pulse ${customErrorClass}`}>
           {errors.username.message}
         </span>
       )}
@@ -178,13 +237,14 @@ const ValidatedForm: React.FC<ValidatedFormProps> = ({
           <Input
             label="密码"
             type="password"
+            placeholder={placeholderPassword}
             {...field}
-            customClass="transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+            customClass={`transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
           />
         )}
       />
       {errors.password && (
-        <span className="text-red-500 mt-1 animate-pulse">
+        <span className={`text-red-500 mt-1 animate-pulse ${customErrorClass}`}>
           {errors.password.message}
         </span>
       )}
@@ -193,32 +253,32 @@ const ValidatedForm: React.FC<ValidatedFormProps> = ({
         <Button
           type="submit"
           disabled={loading || !isValid}
-          customClass={`w-full ${animation} ${
+          customClass={`w-full ${animation} ${customButtonClass} ${
             loading
               ? "bg-gray-600 cursor-wait"
               : "bg-blue-500 hover:bg-blue-700"
           }`}
           title={tooltip}
         >
-          {loading ? <LoadingSpinner /> : icon || "提交"}
+          {loading ? <LoadingSpinner /> : icon || submitButtonText}
         </Button>
         <Button
           type="button"
           onClick={handleReset}
-          customClass={`w-full mt-2 ${animation} bg-red-500 hover:bg-red-700`}
+          customClass={`w-full mt-2 ${animation} bg-red-500 hover:bg-red-700 ${customButtonClass}`}
           title={tooltip}
         >
-          {icon || "重置"}
+          {icon || resetButtonText}
         </Button>
       </div>
 
       {isSubmitting && (
-        <div className="mt-4">
+        <div className={`mt-4 ${customProgressBarClass}`}>
           <ProgressBar progress={progress} />
         </div>
       )}
 
-      <div className="mt-4">
+      <div className={`mt-4 ${customFieldClass}`}>
         <h3 className="text-white">动态字段</h3>
         {fields.map((item, index) => (
           <div key={item.id} className="flex items-center space-x-2">
@@ -230,27 +290,27 @@ const ValidatedForm: React.FC<ValidatedFormProps> = ({
                 <Input
                   label={`字段 ${index + 1}`}
                   {...field}
-                  customClass="transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  customClass={`transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
                 />
               )}
             />
             <Button
               type="button"
               onClick={() => remove(index)}
-              customClass={`bg-red-500 hover:bg-red-700 ${animation}`}
+              customClass={`bg-red-500 hover:bg-red-700 ${animation} ${customButtonClass}`}
               title={tooltip}
             >
-              {icon || "删除"}
+              {icon || deleteButtonText}
             </Button>
           </div>
         ))}
         <Button
           type="button"
           onClick={() => append({ fieldName: "" })}
-          customClass={`mt-2 bg-green-500 hover:bg-green-700 ${animation}`}
+          customClass={`mt-2 bg-green-500 hover:bg-green-700 ${animation} ${customButtonClass}`}
           title={tooltip}
         >
-          {icon || "添加字段"}
+          {icon || addButtonText}
         </Button>
       </div>
     </form>

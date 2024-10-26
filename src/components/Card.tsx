@@ -1,10 +1,17 @@
 // src/components/Card.tsx
-import React, { useRef, ReactNode, DragEvent, KeyboardEvent } from "react";
+import React, {
+  useRef,
+  ReactNode,
+  DragEvent,
+  KeyboardEvent,
+  useState,
+} from "react";
 import { useTheme } from "../context/ThemeContext";
 
 interface CardProps {
   title: string;
   children: ReactNode;
+  footer?: ReactNode;
   isCollapsed?: boolean;
   isMaximized?: boolean;
   draggable?: boolean;
@@ -14,15 +21,29 @@ interface CardProps {
   customClass?: string;
   customHeaderClass?: string;
   customContentClass?: string;
+  customFooterClass?: string;
   tooltip?: string;
   borderWidth?: string;
   animation?: string;
   icon?: ReactNode;
+  headerSize?: string;
+  headerBackground?: string;
+  footerBackground?: string;
+  headerTextColor?: string;
+  footerTextColor?: string;
+  resizable?: boolean;
+  onResize?: (width: number, height: number) => void;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 const Card: React.FC<CardProps> = ({
   title,
   children,
+  footer,
   isCollapsed = false,
   isMaximized = false,
   draggable = false,
@@ -32,13 +53,37 @@ const Card: React.FC<CardProps> = ({
   customClass = "",
   customHeaderClass = "",
   customContentClass = "",
+  customFooterClass = "",
   tooltip = "",
   borderWidth = "2",
   animation = "transform transition-transform duration-300 ease-in-out",
   icon = null,
+  headerSize = "text-xl",
+  headerBackground = "bg-gradient-to-r from-purple-900 via-pink-900 to-red-900",
+  footerBackground = "bg-gray-100",
+  headerTextColor = "text-white",
+  footerTextColor = "text-gray-900",
+  resizable = false,
+  onResize,
+  shadow = true,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme(); // 获取当前主题
+  const { theme } = useTheme();
+  const [initialPosition, setInitialPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [dimensions, setDimensions] = useState<{
+    width: number;
+    height: number;
+  }>({
+    width: 300,
+    height: 200,
+  });
 
   const handleToggleCollapse = () => {
     if (onToggleCollapse) onToggleCollapse();
@@ -55,6 +100,10 @@ const Card: React.FC<CardProps> = ({
   const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
     if (draggable && cardRef.current) {
       e.dataTransfer.setData("text/plain", cardRef.current.id);
+      setInitialPosition({
+        x: cardRef.current.offsetLeft,
+        y: cardRef.current.offsetTop,
+      });
     }
   };
 
@@ -69,6 +118,41 @@ const Card: React.FC<CardProps> = ({
           cardRef.current.nextSibling
         );
       }
+    }
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDragEnd = (e: DragEvent<HTMLDivElement>) => {
+    if (draggable && cardRef.current && initialPosition) {
+      cardRef.current.style.left = `${initialPosition.x}px`;
+      cardRef.current.style.top = `${initialPosition.y}px`;
+    }
+  };
+
+  const handleResize = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (resizable && cardRef.current) {
+      const startWidth = cardRef.current.offsetWidth;
+      const startHeight = cardRef.current.offsetHeight;
+      const startX = e.clientX;
+      const startY = e.clientY;
+
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        const newWidth = startWidth + (moveEvent.clientX - startX);
+        const newHeight = startHeight + (moveEvent.clientY - startY);
+        setDimensions({ width: newWidth, height: newHeight });
+        if (onResize) onResize(newWidth, newHeight);
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      };
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
     }
   };
 
@@ -87,20 +171,29 @@ const Card: React.FC<CardProps> = ({
   return (
     <div
       ref={cardRef}
-      className={`border-${borderWidth} rounded-lg shadow-lg ${animation} ${
-        isCollapsed ? "h-12" : "h-auto"
-      } ${isMaximized ? "fixed inset-0 z-50" : ""} ${
-        draggable ? "absolute" : ""
-      } hover:shadow-xl hover:shadow-neon transform hover:scale-105 ${customClass} ${
-        themeClasses[theme]
-      }`}
+      className={`border-${borderWidth} border-${borderColor} border-${borderStyle} rounded-lg ${
+        shadow ? "shadow-lg" : ""
+      } ${animation} ${isCollapsed ? "h-12" : "h-auto"} ${
+        isMaximized ? "fixed inset-0 z-50" : ""
+      } ${draggable ? "absolute" : ""} ${
+        hoverEffect
+          ? "hover:shadow-xl hover:shadow-neon transform hover:scale-105"
+          : ""
+      } ${customClass} ${themeClasses[theme]}`}
       draggable={draggable}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDrop={handleDrop}
+      onDragEnd={handleDragEnd}
       title={tooltip}
+      style={{
+        width: dimensions.width,
+        height: dimensions.height,
+        textTransform,
+      }}
     >
       <div
-        className={`flex justify-between items-center p-4 cursor-pointer bg-gradient-to-r from-purple-900 via-pink-900 to-red-900 ${customHeaderClass}`}
+        className={`flex justify-between items-center p-4 cursor-pointer ${headerBackground} ${customHeaderClass}`}
         onClick={handleToggleCollapse}
         onKeyDown={(e: KeyboardEvent<HTMLDivElement>) =>
           e.key === "Enter" && handleToggleCollapse()
@@ -109,7 +202,9 @@ const Card: React.FC<CardProps> = ({
       >
         <div className="flex items-center">
           {icon && <span className="mr-2">{icon}</span>}
-          <h2 className="font-bold text-xl text-white">{title}</h2>
+          <h2 className={`font-bold ${headerSize} ${headerTextColor}`}>
+            {title}
+          </h2>
         </div>
         <div className="flex space-x-2">
           <button
@@ -136,6 +231,19 @@ const Card: React.FC<CardProps> = ({
       </div>
       {!isCollapsed && (
         <div className={`p-4 ${customContentClass}`}>{children}</div>
+      )}
+      {footer && (
+        <div
+          className={`p-4 ${footerBackground} ${footerTextColor} ${customFooterClass}`}
+        >
+          {footer}
+        </div>
+      )}
+      {resizable && (
+        <div
+          className="absolute bottom-0 right-0 w-4 h-4 bg-gray-500 cursor-se-resize"
+          onMouseDown={handleResize}
+        ></div>
       )}
     </div>
   );

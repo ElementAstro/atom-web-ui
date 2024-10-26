@@ -44,10 +44,14 @@ interface NavbarProps {
   icon?: React.ReactNode;
   iconPosition?: "left" | "right";
   multiSelect?: boolean;
-  customLinkClass?: string; // 新增属性
-  customDropdownClass?: string; // 新增属性
-  customSearchClass?: string; // 新增属性
-  customUserMenuClass?: string; // 新增属性
+  customLinkClass?: string;
+  customDropdownClass?: string;
+  customSearchClass?: string;
+  customUserMenuClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -60,15 +64,19 @@ const Navbar: React.FC<NavbarProps> = ({
   userMenu = null,
   fixed = false,
   themeToggle = false,
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  icon = null, // 新增属性
-  iconPosition = "left", // 新增属性
-  multiSelect = false, // 新增属性
-  customLinkClass = "", // 解构新增属性
-  customDropdownClass = "", // 解构新增属性
-  customSearchClass = "", // 解构新增属性
-  customUserMenuClass = "", // 解构新增属性
+  theme,
+  tooltip = "",
+  icon = null,
+  iconPosition = "left",
+  multiSelect = false,
+  customLinkClass = "",
+  customDropdownClass = "",
+  customSearchClass = "",
+  customUserMenuClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>(
@@ -85,7 +93,7 @@ const Navbar: React.FC<NavbarProps> = ({
       );
     } else {
       setSelectedIndices([index]);
-      setMobileMenuOpen(false); // 关闭移动端菜单
+      setMobileMenuOpen(false);
     }
     if (onLinkClick) onLinkClick(link);
   };
@@ -116,7 +124,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   selectedIndices.includes(index)
                     ? "border-b-2 border-white"
                     : ""
-                } ${customLinkClass}`} // 使用 customLinkClass 属性
+                } ${customLinkClass} ${hoverColor} ${activeColor} ${hoverAnimation}`}
                 onClick={() => handleLinkClick(link, index)}
                 title={tooltip}
               >
@@ -131,8 +139,6 @@ const Navbar: React.FC<NavbarProps> = ({
             ))}
             {dropdown && (
               <div className={`relative ${customDropdownClass}`}>
-                {" "}
-                {/* 使用 customDropdownClass 属性 */}
                 <button className="text-gray-200 hover:text-white transition duration-300 ease-in-out transform hover:scale-105">
                   {dropdown.label}
                 </button>
@@ -152,8 +158,6 @@ const Navbar: React.FC<NavbarProps> = ({
             )}
             {search && (
               <div className={`relative ${customSearchClass}`}>
-                {" "}
-                {/* 使用 customSearchClass 属性 */}
                 <input
                   type="text"
                   className="px-4 py-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -164,8 +168,6 @@ const Navbar: React.FC<NavbarProps> = ({
             )}
             {userMenu && (
               <div className={`relative ${customUserMenuClass}`}>
-                {" "}
-                {/* 使用 customUserMenuClass 属性 */}
                 <button className="text-gray-200 hover:text-white transition duration-300 ease-in-out transform hover:scale-105">
                   <AiOutlineUser />
                 </button>
@@ -213,7 +215,7 @@ const Navbar: React.FC<NavbarProps> = ({
             to={link.path}
             className={`block px-4 py-2 text-gray-200 hover:text-white transition duration-300 ease-in-out transform hover:scale-105 ${
               selectedIndices.includes(index) ? "border-b-2 border-white" : ""
-            } ${customLinkClass}`} // 使用 customLinkClass 属性
+            } ${customLinkClass} ${hoverColor} ${activeColor} ${hoverAnimation}`}
             onClick={() => handleLinkClick(link, index)}
             title={tooltip}
           >
@@ -228,8 +230,6 @@ const Navbar: React.FC<NavbarProps> = ({
         ))}
         {dropdown && (
           <div className={`px-4 py-2 ${customDropdownClass}`}>
-            {" "}
-            {/* 使用 customDropdownClass 属性 */}
             <button className="text-gray-200 hover:text-white transition duration-300 ease-in-out transform hover:scale-105">
               {dropdown.label}
             </button>
@@ -249,8 +249,6 @@ const Navbar: React.FC<NavbarProps> = ({
         )}
         {search && (
           <div className={`px-4 py-2 ${customSearchClass}`}>
-            {" "}
-            {/* 使用 customSearchClass 属性 */}
             <input
               type="text"
               className="w-full px-4 py-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -260,8 +258,6 @@ const Navbar: React.FC<NavbarProps> = ({
         )}
         {userMenu && (
           <div className={`px-4 py-2 ${customUserMenuClass}`}>
-            {" "}
-            {/* 使用 customUserMenuClass 属性 */}
             <button className="text-gray-200 hover:text-white transition duration-300 ease-in-out transform hover:scale-105">
               <AiOutlineUser />
             </button>

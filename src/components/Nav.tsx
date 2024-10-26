@@ -1,6 +1,6 @@
 // src/components/Nav.tsx
 import React, { useState } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface NavItem {
   label: string;
@@ -31,8 +31,12 @@ interface NavProps {
   icon?: React.ReactNode;
   iconPosition?: "left" | "right";
   multiSelect?: boolean;
-  customItemClass?: string; // 新增属性
-  customIconClass?: string; // 新增属性
+  customItemClass?: string;
+  customIconClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Navs: React.FC<NavProps> = ({
@@ -42,20 +46,24 @@ const Navs: React.FC<NavProps> = ({
   onFocus,
   onBlur,
   customClass = "",
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
-  icon = null, // 新增属性
-  iconPosition = "left", // 新增属性
-  multiSelect = false, // 新增属性
-  customItemClass = "", // 解构新增属性
-  customIconClass = "", // 解构新增属性
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  icon = null,
+  iconPosition = "left",
+  multiSelect = false,
+  customItemClass = "",
+  customIconClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [selectedIndices, setSelectedIndices] = useState<number[]>(
     multiSelect ? [] : [items.findIndex((item) => item.selected)]
   );
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleNavClick = (index: number) => {
     if (multiSelect) {
@@ -106,19 +114,21 @@ const Navs: React.FC<NavProps> = ({
               onMouseEnter={() => onHover && onHover(item.value)}
               onFocus={() => onFocus && onFocus(item.value)}
               onBlur={() => onBlur && onBlur(item.value)}
-              className={`w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition duration-200 transform hover:scale-105 hover:shadow-neon focus:outline-none border-${borderWidth} ${animation} ${
+              className={`w-full text-left px-4 py-2 rounded transition duration-200 transform focus:outline-none border-${borderWidth} ${animation} ${
                 selectedIndices.includes(index) ? "bg-blue-500 text-white" : ""
-              } ${customItemClass}`} // 使用 customItemClass 属性
+              } ${customItemClass} ${hoverColor} ${activeColor} ${
+                item.disabled ? disabledColor : ""
+              } ${hoverAnimation}`}
               disabled={item.disabled}
               aria-disabled={item.disabled}
               title={tooltip}
             >
               {icon && iconPosition === "left" && (
-                <span className={`mr-2 ${customIconClass}`}>{icon}</span> // 使用 customIconClass 属性
+                <span className={`mr-2 ${customIconClass}`}>{icon}</span>
               )}
               {item.label}
               {icon && iconPosition === "right" && (
-                <span className={`ml-2 ${customIconClass}`}>{icon}</span> // 使用 customIconClass 属性
+                <span className={`ml-2 ${customIconClass}`}>{icon}</span>
               )}
             </button>
           </li>

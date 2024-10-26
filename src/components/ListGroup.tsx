@@ -8,7 +8,7 @@ import React, {
   KeyboardEvent,
   DragEvent,
 } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface ListGroupProps {
   items: string[];
@@ -38,9 +38,13 @@ interface ListGroupProps {
   tooltipPosition?: "top" | "bottom" | "left" | "right";
   showCheckbox?: boolean;
   onCheckboxChange?: (index: number) => void;
-  customItemClass?: string; // 新增属性
-  customIconClass?: string; // 新增属性
-  customTooltipClass?: string; // 新增属性
+  customItemClass?: string;
+  customIconClass?: string;
+  customTooltipClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const ListGroup: FC<ListGroupProps> = ({
@@ -74,11 +78,15 @@ const ListGroup: FC<ListGroupProps> = ({
   customItemClass = "",
   customIconClass = "",
   customTooltipClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [selectedIndices, setSelectedIndices] = useState<number[]>(
     multiSelect ? [] : selected !== null ? [selected] : []
   );
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -144,15 +152,15 @@ const ListGroup: FC<ListGroupProps> = ({
     secondary: "bg-gray-700 text-gray-300",
     alert: "bg-red-700 text-white",
     success: "bg-green-700 text-white",
-    info: "bg-blue-700 text-white", // 新增变体
-    warning: "bg-yellow-700 text-black", // 新增变体
+    info: "bg-blue-700 text-white",
+    warning: "bg-yellow-700 text-black",
   };
 
   const sizeClasses = {
     small: "text-sm px-2 py-1",
     medium: "text-md px-4 py-2",
     large: "text-lg px-6 py-3",
-    extraLarge: "text-xl px-8 py-4", // 新增尺寸
+    extraLarge: "text-xl px-8 py-4",
   };
 
   const themeClasses: Record<string, string> = {
@@ -161,8 +169,8 @@ const ListGroup: FC<ListGroupProps> = ({
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
-    ocean: "bg-blue-100 text-blue-900 border-blue-300", // 新增主题
-    sunset: "bg-orange-100 text-orange-900 border-orange-300", // 新增主题
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
   };
 
   const tooltipClasses = {
@@ -187,10 +195,10 @@ const ListGroup: FC<ListGroupProps> = ({
           } border-${borderWidth} border-gray-600 last:border-b-0 transition-colors duration-200 transform ${animation} ${
             selectedIndices.includes(index)
               ? "bg-blue-500 text-white"
-              : "hover:bg-gray-700 hover:scale-105 hover:shadow-neon"
-          } ${
+              : "hover:bg-gray-700"
+          } ${hoverColor} ${activeColor} ${
             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-          } ${customItemClass}`} // 使用 customItemClass 属性
+          } ${customItemClass} ${hoverAnimation}`}
           onClick={(e) => {
             if (!disabled) {
               handleItemClick(index);
@@ -221,18 +229,16 @@ const ListGroup: FC<ListGroupProps> = ({
             />
           )}
           {icon && iconPosition === "left" && (
-            <span className={`mr-2 ${customIconClass}`}>{icon}</span> // 使用 customIconClass 属性
+            <span className={`mr-2 ${customIconClass}`}>{icon}</span>
           )}
           {item}
           {icon && iconPosition === "right" && (
-            <span className={`ml-2 ${customIconClass}`}>{icon}</span> // 使用 customIconClass 属性
+            <span className={`ml-2 ${customIconClass}`}>{icon}</span>
           )}
           {showTooltip && (
             <div
               className={`tooltip ${tooltipClasses[tooltipPosition]} ${customTooltipClass}`}
             >
-              {" "}
-              // 使用 customTooltipClass 属性
               {tooltip}
             </div>
           )}

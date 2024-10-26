@@ -22,6 +22,16 @@ interface AccordionItemProps {
   iconOpen?: string;
   iconClose?: string;
   iconPosition?: "left" | "right";
+  maxHeight?: string;
+  titleBgColor?: string;
+  titleTextColor?: string;
+  contentBgColor?: string;
+  contentTextColor?: string;
+  borderColor?: string;
+  borderWidth?: string;
+  hoverBgColor?: string;
+  hoverTextColor?: string;
+  tooltip?: string;
 }
 
 type Theme =
@@ -53,6 +63,16 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
   iconOpen = "▼",
   iconClose = "▲",
   iconPosition = "right",
+  maxHeight = "max-h-screen",
+  titleBgColor,
+  titleTextColor,
+  contentBgColor,
+  contentTextColor,
+  borderColor,
+  borderWidth = "border-b",
+  hoverBgColor,
+  hoverTextColor,
+  tooltip = "",
 }) => {
   const { theme } = useTheme() as { theme: Theme };
 
@@ -130,7 +150,8 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
             : themeClasses[theme].title
         } focus:outline-none focus:ring-2 focus:ring-purple-600 ${customTitleClass} ${
           disabled ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        } ${titleBgColor} ${titleTextColor} ${hoverBgColor} ${hoverTextColor}`}
+        title={tooltip}
       >
         <h3 className="font-semibold">{title}</h3>
         <span
@@ -143,11 +164,11 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
       </div>
       <div
         className={`overflow-hidden transition-max-height duration-500 ease-in-out ${
-          isOpen ? "max-h-screen" : "max-h-0"
+          isOpen ? maxHeight : "max-h-0"
         }`}
       >
         <div
-          className={`p-4 ${themeClasses[theme].content} ${customContentClass}`}
+          className={`p-4 ${themeClasses[theme].content} ${customContentClass} ${contentBgColor} ${contentTextColor} ${borderColor} ${borderWidth}`}
         >
           {children}
         </div>

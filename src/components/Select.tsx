@@ -1,7 +1,7 @@
 // src/components/Select.tsx
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { useTheme } from "../context/ThemeContext"; // 引入 useTheme 钩子
+import { useTheme } from "../context/ThemeContext";
 
 interface Option {
   value: string;
@@ -17,9 +17,20 @@ interface SelectProps {
   searchable?: boolean;
   placeholder?: string;
   customStyles?: string;
-  clearable?: boolean; // 新增属性
-  loading?: boolean; // 新增属性
-  theme?: "light" | "dark" | "astronomy" | "eyeCare" | "sunset" | "ocean" | "astronomyDarkRed"; // 新增属性
+  clearable?: boolean;
+  loading?: boolean;
+  theme?:
+    | "light"
+    | "dark"
+    | "astronomy"
+    | "eyeCare"
+    | "sunset"
+    | "ocean"
+    | "astronomyDarkRed";
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -30,13 +41,17 @@ const Select: React.FC<SelectProps> = ({
   searchable = false,
   placeholder = "",
   customStyles = "",
-  clearable = false, // 新增属性
-  loading = false, // 新增属性
-  theme = "light", // 新增属性
+  clearable = false,
+  loading = false,
+  theme = "light",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const filteredOptions = options.filter((option) =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -141,7 +156,7 @@ const Select: React.FC<SelectProps> = ({
                     value.includes(option.value)
                       ? "bg-gray-100"
                       : ""
-                  }`}
+                  } ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
                   onClick={() => handleSelect(option.value)}
                 >
                   {multiple && (
@@ -203,7 +218,6 @@ Select.propTypes = {
     PropTypes.shape({
       value: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
-      //disabled: PropTypes.bool,
     }).isRequired
   ).isRequired,
   value: PropTypes.oneOfType([
@@ -215,8 +229,8 @@ Select.propTypes = {
   searchable: PropTypes.bool,
   placeholder: PropTypes.string,
   customStyles: PropTypes.string,
-  clearable: PropTypes.bool, // 新增属性
-  loading: PropTypes.bool, // 新增属性
+  clearable: PropTypes.bool,
+  loading: PropTypes.bool,
   theme: PropTypes.oneOf([
     "light",
     "dark",
@@ -225,7 +239,11 @@ Select.propTypes = {
     "sunset",
     "ocean",
     "astronomyDarkRed",
-  ]), // 新增属性
+  ]),
+  hoverColor: PropTypes.string,
+  activeColor: PropTypes.string,
+  disabledColor: PropTypes.string,
+  hoverAnimation: PropTypes.string,
 };
 
 export default Select;

@@ -23,6 +23,13 @@ interface CalendarProps {
   onMouseLeave?: () => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  showMonthDropdown?: boolean;
+  showYearDropdown?: boolean;
+  customClass?: string;
+  customButtonClass?: string;
+  customInputClass?: string;
+  customDropdownClass?: string;
+  customClearButtonClass?: string;
 }
 
 const Calendar: React.FC<CalendarProps> = ({
@@ -46,10 +53,17 @@ const Calendar: React.FC<CalendarProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "Calendar",
+  showMonthDropdown = false,
+  showYearDropdown = false,
+  customClass = "",
+  customButtonClass = "",
+  customInputClass = "",
+  customDropdownClass = "",
+  customClearButtonClass = "",
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [isCalendarOpen, setCalendarOpen] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newDate = new Date(e.target.value);
@@ -66,6 +80,15 @@ const Calendar: React.FC<CalendarProps> = ({
     if (selectedDate) {
       const newDate = new Date(selectedDate);
       newDate.setFullYear(newDate.getFullYear() + increment);
+      setSelectedDate(newDate);
+      if (onDateChange) onDateChange(newDate);
+    }
+  };
+
+  const handleMonthChange = (increment: number) => {
+    if (selectedDate) {
+      const newDate = new Date(selectedDate);
+      newDate.setMonth(newDate.getMonth() + increment);
       setSelectedDate(newDate);
       if (onDateChange) onDateChange(newDate);
     }
@@ -127,10 +150,10 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   return (
-    <div className="calendar relative inline-block">
+    <div className={`calendar relative inline-block ${customClass}`}>
       <button
         onClick={handleToggleCalendar}
-        className="calendar__button border border-gray-300 rounded-lg p-2 transition duration-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-600"
+        className={`calendar__button border border-gray-300 rounded-lg p-2 transition duration-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
         disabled={disabled}
         aria-label={ariaLabel}
       >
@@ -143,7 +166,7 @@ const Calendar: React.FC<CalendarProps> = ({
             positionClasses[position]
           } ${
             themeClasses[theme || currentTheme]
-          } border rounded-lg mt-1 shadow-lg z-10 p-4 ${animation}`}
+          } border rounded-lg mt-1 shadow-lg z-10 p-4 ${animation} ${customDropdownClass}`}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
           onFocus={onFocus}
@@ -169,11 +192,33 @@ const Calendar: React.FC<CalendarProps> = ({
             </button>
           </div>
 
+          {showMonthDropdown && (
+            <div className="calendar__month-dropdown flex justify-between items-center mb-2">
+              <button
+                onClick={() => handleMonthChange(-1)}
+                className="calendar__month-button text-gray-400 hover:text-gray-200 transition duration-200"
+              >
+                ❮
+              </button>
+              <span className="calendar__month font-semibold">
+                {selectedDate
+                  ? selectedDate.toLocaleString(locale, { month: "long" })
+                  : ""}
+              </span>
+              <button
+                onClick={() => handleMonthChange(1)}
+                className="calendar__month-button text-gray-400 hover:text-gray-200 transition duration-200"
+              >
+                ❯
+              </button>
+            </div>
+          )}
+
           <input
             type="date"
             value={selectedDate ? selectedDate.toISOString().slice(0, 10) : ""}
             onChange={handleDateChange}
-            className="calendar__date-input border rounded-lg p-2 mb-2 w-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+            className={`calendar__date-input border rounded-lg p-2 mb-2 w-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
             min={minDate ? minDate.toISOString().slice(0, 10) : ""}
             max={maxDate ? maxDate.toISOString().slice(0, 10) : ""}
             disabled={disabled}
@@ -194,7 +239,7 @@ const Calendar: React.FC<CalendarProps> = ({
                     })}
                   </p>
                   <select
-                    className="calendar__time-select border rounded-lg p-2 w-full mb-2 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    className={`calendar__time-select border rounded-lg p-2 w-full mb-2 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
                     onChange={handleTimeChange}
                     disabled={disabled}
                   >
@@ -225,7 +270,7 @@ const Calendar: React.FC<CalendarProps> = ({
           {clearable && (
             <button
               onClick={handleClear}
-              className="calendar__clear-button mt-2 bg-red-500 text-white p-2 rounded-lg transition duration-300 hover:bg-red-700"
+              className={`calendar__clear-button mt-2 bg-red-500 text-white p-2 rounded-lg transition duration-300 hover:bg-red-700 ${customClearButtonClass}`}
             >
               清除
             </button>

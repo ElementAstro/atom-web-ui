@@ -1,4 +1,3 @@
-// src/context/ThemeContext.tsx
 import React, {
   createContext,
   useContext,
@@ -16,6 +15,13 @@ interface ThemeContextProps {
   addTheme: (themeName: string, themeClass: string) => void;
   removeTheme: (themeName: string) => void;
   previewTheme: (themeName: string) => string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
@@ -35,11 +41,18 @@ interface ThemeProviderProps {
   persist?: boolean;
   availableThemes?: string[];
   customThemes?: Record<string, string>;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 export const ThemeProvider: FC<ThemeProviderProps> = ({
   children,
-  initialTheme = "light",
+  initialTheme = "astronomyDarkRed",
   onThemeChange,
   persist = false,
   availableThemes = [
@@ -50,9 +63,16 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
     "sunset",
     "ocean",
     "forest",
-    "astronomyDarkRed", // 新增的主题
+    "astronomyDarkRed",
   ],
   customThemes = {},
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
   const [theme, setTheme] = useState<string>(() => {
     if (persist) {
@@ -73,7 +93,7 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
       ocean: "bg-gradient-to-r from-blue-500 to-teal-500 text-white",
       forest: "bg-gradient-to-r from-green-500 to-green-900 text-white",
       astronomyDarkRed:
-        "bg-gradient-to-r from-red-900 via-red-800 to-black text-white", // 新增的主题样式
+        "bg-gradient-to-r from-red-900 via-red-800 to-black text-white",
     };
     return { ...defaultThemes, ...customThemes };
   });
@@ -144,6 +164,13 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
         addTheme,
         removeTheme,
         previewTheme,
+        hoverColor,
+        activeColor,
+        disabledColor,
+        hoverAnimation,
+        showLabels,
+        labelColor,
+        labelActiveColor,
       }}
     >
       <div

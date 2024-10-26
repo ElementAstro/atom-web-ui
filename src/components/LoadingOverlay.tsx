@@ -6,7 +6,7 @@ import React, {
   ReactNode,
   KeyboardEvent,
 } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface LoadingOverlayProps {
   loadingText?: string;
@@ -28,10 +28,32 @@ interface LoadingOverlayProps {
   progress?: number | null;
   onClose?: () => void;
   closable?: boolean;
-  customClass?: string; // 新增属性
-  customIconClass?: string; // 新增属性
-  customProgressClass?: string; // 新增属性
-  customButtonClass?: string; // 新增属性
+  customClass?: string;
+  customIconClass?: string;
+  customProgressClass?: string;
+  customButtonClass?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  iconSize?: string;
+  iconColor?: string;
+  textSize?: string;
+  progressBarColor?: string;
+  progressBarHeight?: string;
+  closeButtonText?: string;
+  closeButtonPosition?:
+    | "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left";
+  animationType?: "spin" | "pulse" | "bounce";
+  animationDuration?: string;
+  overlayOpacity?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabled?: boolean;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const LoadingOverlay: FC<LoadingOverlayProps> = ({
@@ -46,12 +68,30 @@ const LoadingOverlay: FC<LoadingOverlayProps> = ({
   progress = null,
   onClose,
   closable = true,
-  customClass = "", // 解构新增属性
-  customIconClass = "", // 解构新增属性
-  customProgressClass = "", // 解构新增属性
-  customButtonClass = "", // 解构新增属性
+  customClass = "",
+  customIconClass = "",
+  customProgressClass = "",
+  customButtonClass = "",
+  backgroundColor,
+  textColor,
+  borderColor,
+  iconSize = "h-12 w-12",
+  iconColor = "text-gray-300",
+  textSize = "text-lg",
+  progressBarColor = "bg-blue-600",
+  progressBarHeight = "h-2.5",
+  closeButtonText = "Close",
+  closeButtonPosition = "bottom-right",
+  animationType = "spin",
+  animationDuration = "duration-300",
+  overlayOpacity = "bg-opacity-70",
+  hoverColor = "",
+  activeColor = "",
+  disabled = false,
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -103,47 +143,73 @@ const LoadingOverlay: FC<LoadingOverlayProps> = ({
     astronomyDarkRed: "bg-red-100 text-red-900 border-red-300",
   };
 
+  const animationClasses = {
+    spin: "animate-spin",
+    pulse: "animate-pulse",
+    bounce: "animate-bounce",
+  };
+
+  const buttonPositionClasses = {
+    "top-right": "top-4 right-4",
+    "top-left": "top-4 left-4",
+    "bottom-right": "bottom-4 right-4",
+    "bottom-left": "bottom-4 left-4",
+  };
+
   if (!isVisible) return null;
 
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 ${customClass} ${
+      className={`fixed inset-0 flex items-center justify-center bg-black ${overlayOpacity} z-50 ${customClass} ${
         themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
       }`}
       role="alert"
       aria-live="assertive"
       title={tooltip}
+      style={{
+        backgroundColor: backgroundColor || undefined,
+        color: textColor || undefined,
+        borderColor: borderColor || undefined,
+      }}
     >
       <div className="flex flex-col items-center space-y-4">
         {icon ? (
-          <div className={`h-12 w-12 ${animation} ${customIconClass}`}>
+          <div
+            className={`${iconSize} ${animationClasses[animationType]} ${animationDuration} ${customIconClass}`}
+            style={{ color: iconColor }}
+          >
             {icon}
           </div>
         ) : (
           <div
-            className={`h-12 w-12 border-${borderWidth} border-gray-300 border-t-transparent rounded-full shadow-neon ${animation} ${customIconClass}`}
+            className={`${iconSize} border-${borderWidth} ${iconColor} border-t-transparent rounded-full shadow-neon ${animationClasses[animationType]} ${animationDuration} ${customIconClass}`}
           ></div>
         )}
-        <span className="text-white text-lg font-semibold">{loadingText}</span>
+        <span
+          className={`${textSize} font-semibold`}
+          style={{ color: textColor }}
+        >
+          {loadingText}
+        </span>
         {progress !== null && (
           <div
-            className={`w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 ${customProgressClass}`}
+            className={`w-full bg-gray-200 rounded-full ${progressBarHeight} dark:bg-gray-700 ${customProgressClass}`}
           >
             <div
-              className="bg-blue-600 h-2.5 rounded-full"
+              className={`${progressBarColor} ${progressBarHeight} rounded-full`}
               style={{ width: `${progress}%` }}
             ></div>
           </div>
         )}
         {closable && (
           <button
-            className={`mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 ${customButtonClass}`}
+            className={`absolute ${buttonPositionClasses[closeButtonPosition]} px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 ${customButtonClass}`}
             onClick={() => {
               setIsVisible(false);
               onClose && onClose();
             }}
           >
-            Close
+            {closeButtonText}
           </button>
         )}
       </div>

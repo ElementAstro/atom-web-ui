@@ -1,7 +1,7 @@
 // src/components/Tag.tsx
 import React, { MouseEvent, FocusEvent, DragEvent } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface TagProps {
   children: React.ReactNode;
@@ -30,6 +30,13 @@ interface TagProps {
   animation?: string;
   fullscreen?: boolean;
   draggable?: boolean;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 const Tag: React.FC<TagProps> = ({
@@ -52,8 +59,15 @@ const Tag: React.FC<TagProps> = ({
   animation = "transition duration-300 transform hover:scale-105",
   fullscreen = false,
   draggable = false,
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const sizeClasses = {
     small: "text-xs px-2 py-1",
@@ -109,9 +123,11 @@ const Tag: React.FC<TagProps> = ({
     <span
       className={`inline-flex items-center ${color} text-white font-bold ${rounded} cursor-pointer ${animation} ${
         sizeClasses[size]
-      } ${disabled ? "cursor-not-allowed opacity-50" : ""} ${border} ${
+      } ${disabled ? disabledColor : ""} ${border} ${
         themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
-      } border-${borderWidth} ${fullscreen ? "w-full h-full" : ""}`}
+      } border-${borderWidth} ${
+        fullscreen ? "w-full h-full" : ""
+      } ${hoverColor} ${activeColor} ${hoverAnimation}`}
       onClick={!disabled ? onClick : undefined}
       onMouseEnter={onHover}
       onFocus={onFocus}
@@ -130,7 +146,7 @@ const Tag: React.FC<TagProps> = ({
         <button
           className="ml-2 text-white hover:text-red-400 transition duration-300"
           onClick={(e) => {
-            e.stopPropagation(); // Prevent triggering the tag onClick
+            e.stopPropagation();
             onRemove && onRemove();
           }}
           aria-label="Remove tag"

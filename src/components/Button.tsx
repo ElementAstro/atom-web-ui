@@ -1,7 +1,7 @@
 // src/components/Button.tsx
 import React, { useRef, MouseEvent, KeyboardEvent } from "react";
 import { useTheme } from "../context/ThemeContext";
-import Icon from "./Icon"; // 引入图标组件
+import Icon from "./Icon";
 
 interface ButtonProps {
   children?: React.ReactNode;
@@ -22,10 +22,14 @@ interface ButtonProps {
   outline?: boolean;
   gradient?: boolean;
   ariaLabel?: string;
-  title?: string; // 新增 title 属性
-  type?: "button" | "submit" | "reset"; // 新增 type 属性
-  customClass?: string; // 新增 customClass 属性
-  customIconClass?: string; // 新增 customIconClass 属性
+  title?: string;
+  type?: "button" | "submit" | "reset";
+  customClass?: string;
+  customIconClass?: string;
+  shadow?: boolean;
+  borderRadius?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
+  hoverEffect?: boolean;
 }
 
 type Theme =
@@ -56,16 +60,20 @@ const Button: React.FC<ButtonProps> = ({
   outline = false,
   gradient = false,
   ariaLabel = "",
-  title = "", // 解构 title 属性
-  type = "button", // 解构 type 属性并设置默认值
-  customClass = "", // 解构 customClass 属性
-  customIconClass = "", // 解构 customIconClass 属性
+  title = "",
+  type = "button",
+  customClass = "",
+  customIconClass = "",
+  shadow = false,
+  borderRadius = "rounded",
+  textTransform = "none",
+  hoverEffect = true,
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const { theme } = useTheme() as { theme: Theme }; // 获取当前主题
+  const { theme } = useTheme() as { theme: Theme };
 
   const baseStyle =
-    "px-4 py-2 rounded focus:outline-none transition duration-300 ease-in-out transform";
+    "px-4 py-2 focus:outline-none transition duration-300 ease-in-out transform";
 
   const themeClasses: Record<Theme, Record<string, string>> = {
     light: {
@@ -134,13 +142,14 @@ const Button: React.FC<ButtonProps> = ({
       ? "text-xs px-2 py-1"
       : size === "large"
       ? "text-lg px-6 py-3"
-      : "text-md px-4 py-2"; // 默认大小
+      : "text-md px-4 py-2";
 
-  const disabledStyle = "opacity-50 cursor-not-allowed"; // 禁用样式
+  const disabledStyle = "opacity-50 cursor-not-allowed";
   const loadingStyle = "cursor-wait";
 
-  const sciFiStyle =
-    "hover:shadow-neon hover:scale-105 focus:ring-2 focus:ring-purple-600";
+  const sciFiStyle = hoverEffect
+    ? "hover:shadow-neon hover:scale-105 focus:ring-2 focus:ring-purple-600"
+    : "";
 
   const fullWidthStyle = fullWidth ? "w-full" : "";
 
@@ -150,6 +159,8 @@ const Button: React.FC<ButtonProps> = ({
 
   const iconOnlyStyle =
     icon && !children ? "flex justify-center items-center" : "";
+
+  const shadowStyle = shadow ? "shadow-lg" : "";
 
   const handleRipple = (event: MouseEvent<HTMLButtonElement>) => {
     if (!ripple) return;
@@ -178,9 +189,9 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       ref={buttonRef}
-      className={`${baseStyle} ${variantStyle} ${sizeStyle} ${sciFiStyle} ${fullWidthStyle} ${gradientStyle} ${iconOnlyStyle} ${
+      className={`${baseStyle} ${variantStyle} ${sizeStyle} ${sciFiStyle} ${fullWidthStyle} ${gradientStyle} ${iconOnlyStyle} ${shadowStyle} ${borderRadius} ${textTransform} ${
         disabled ? disabledStyle : ""
-      } ${isLoading ? loadingStyle : ""} ${customClass}`} // 使用 customClass 属性
+      } ${isLoading ? loadingStyle : ""} ${customClass}`}
       onClick={!disabled && !isLoading ? onClick : undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -189,10 +200,10 @@ const Button: React.FC<ButtonProps> = ({
       onKeyDown={onKeyDown}
       onAnimationEnd={onAnimationEnd}
       onMouseDown={handleRipple}
-      disabled={disabled || isLoading} // 禁用按钮或加载时禁用
-      title={title} // 使用 title 属性
+      disabled={disabled || isLoading}
+      title={title}
       aria-label={ariaLabel}
-      type={type} // 使用 type 属性
+      type={type}
     >
       {isLoading ? (
         <div className="flex items-center">
@@ -220,7 +231,7 @@ const Button: React.FC<ButtonProps> = ({
         </div>
       ) : (
         <div className="flex items-center">
-          {icon && <Icon name={icon} customClass={customIconClass} />} {/* 使用 customIconClass 属性 */}
+          {icon && <Icon name={icon} customClass={customIconClass} />}
           {children}
         </div>
       )}

@@ -13,7 +13,7 @@ import {
   AiOutlineClose,
   AiOutlineAudio,
 } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface SearchBoxProps {
   placeholder?: string;
@@ -43,6 +43,10 @@ interface SearchBoxProps {
   onDoubleClick?: (e: MouseEvent<HTMLDivElement>) => void;
   onKeyDown?: (e: KeyboardEvent<HTMLDivElement>) => void;
   ariaLabel?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({
@@ -66,12 +70,16 @@ const SearchBox: React.FC<SearchBoxProps> = ({
   onDoubleClick,
   onKeyDown,
   ariaLabel = "搜索框",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

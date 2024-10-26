@@ -26,7 +26,6 @@ const CodeBlockExample: React.FC = () => {
         customLineNumberClass="my-custom-line-number"
         customHighlightClass="my-custom-highlight"
         onCopySuccess={() => console.log("Code copied successfully!")}
-        onCopyFailure={() => console.log("Failed to copy code.")}
         onFocus={() => console.log("Code block focused")}
         onBlur={() => console.log("Code block blurred")}
         onKeyDown={(e) => console.log("Key down on code block", e)}

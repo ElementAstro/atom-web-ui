@@ -1,6 +1,6 @@
 // src/components/Breadcrumbs.tsx
 import React from "react";
-import { Link, useLocation } from "react-router-dom"; // 使用 useLocation 代替 useContext
+import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 
 interface BreadcrumbItem {
@@ -32,6 +32,14 @@ interface BreadcrumbsProps {
   showProgress?: boolean;
   progressColor?: string;
   progressHeight?: string;
+  showBadge?: boolean;
+  badgeContent?: string;
+  badgeColor?: string;
+  badgePosition?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  badgeSize?: "small" | "medium" | "large";
+  badgeShape?: "circle" | "square";
+  badgeBorderColor?: string;
+  badgeBorderWidth?: string;
 }
 
 type Theme =
@@ -67,9 +75,17 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   showProgress = false,
   progressColor = "bg-blue-500",
   progressHeight = "h-1",
+  showBadge = false,
+  badgeContent = "",
+  badgeColor = "red",
+  badgePosition = "top-right",
+  badgeSize = "small",
+  badgeShape = "circle",
+  badgeBorderColor = "white",
+  badgeBorderWidth = "1",
 }) => {
-  const location = useLocation(); // 获取当前路径
-  const { theme } = useTheme() as { theme: Theme }; // 获取当前主题
+  const location = useLocation();
+  const { theme } = useTheme() as { theme: Theme };
 
   const variantClasses = {
     primary: "text-gray-400 hover:text-white",
@@ -105,6 +121,22 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     left: "tooltip-left",
     right: "tooltip-right",
   };
+
+  const badgePositionClasses = {
+    "top-left": "top-0 left-0",
+    "top-right": "top-0 right-0",
+    "bottom-left": "bottom-0 left-0",
+    "bottom-right": "bottom-0 right-0",
+  };
+
+  const badgeSizeClasses = {
+    small: "w-4 h-4 text-xs",
+    medium: "w-6 h-6 text-sm",
+    large: "w-8 h-8 text-md",
+  };
+
+  const badgeShapeClass =
+    badgeShape === "circle" ? "rounded-full" : "rounded-lg";
 
   return (
     <nav
@@ -169,6 +201,13 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               <div className={`tooltip ${tooltipClasses[tooltipPosition]}`}>
                 {tooltip}
               </div>
+            )}
+            {showBadge && (
+              <span
+                className={`absolute ${badgePositionClasses[badgePosition]} flex items-center justify-center ${badgeSizeClasses[badgeSize]} bg-${badgeColor}-500 border-${badgeBorderWidth} border-${badgeBorderColor} ${badgeShapeClass}`}
+              >
+                {badgeContent}
+              </span>
             )}
           </li>
         ))}

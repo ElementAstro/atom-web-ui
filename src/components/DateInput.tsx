@@ -26,6 +26,31 @@ interface DateInputProps {
   animation?: string;
   iconPosition?: "left" | "right";
   ariaLabel?: string;
+  showClearButton?: boolean;
+  showCalendarIcon?: boolean;
+  calendarIcon?: React.ReactNode;
+  clearIcon?: React.ReactNode;
+  dateFormat?: string;
+  placeholder?: string;
+  autoFocus?: boolean;
+  required?: boolean;
+  readOnly?: boolean;
+  name?: string;
+  id?: string;
+  tabIndex?: number;
+  autoComplete?: string;
+  spellCheck?: boolean;
+  maxLength?: number;
+  pattern?: string;
+  inputMode?:
+    | "search"
+    | "text"
+    | "email"
+    | "tel"
+    | "url"
+    | "none"
+    | "numeric"
+    | "decimal";
 }
 
 const DateInput: React.FC<DateInputProps> = ({
@@ -49,11 +74,28 @@ const DateInput: React.FC<DateInputProps> = ({
   animation = "transform transition-transform duration-300 ease-in-out",
   iconPosition = "right",
   ariaLabel = "日期输入",
+  showClearButton = true,
+  showCalendarIcon = true,
+  calendarIcon = <AiOutlineCalendar />,
+  clearIcon = <AiOutlineClose />,
+  dateFormat = "yyyy-MM-dd",
+  placeholder = "请选择日期",
+  autoFocus = false,
+  required = false,
+  readOnly = false,
+  name,
+  id,
+  tabIndex,
+  autoComplete,
+  spellCheck,
+  maxLength,
+  pattern,
+  inputMode,
 }) => {
   const [error, setError] = useState("");
   const [dateValue, setDateValue] = useState(value || defaultValue);
   const [isDatePickerOpen, setDatePickerOpen] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleChange = (date: Date | null) => {
     const newValue = date ? date.toISOString().split("T")[0] : "";
@@ -116,17 +158,31 @@ const DateInput: React.FC<DateInputProps> = ({
           max={maxDate}
           title={tooltip}
           aria-label={ariaLabel}
+          placeholder={placeholder}
+          autoFocus={autoFocus}
+          required={required}
+          readOnly={readOnly}
+          name={name}
+          id={id}
+          tabIndex={tabIndex}
+          autoComplete={autoComplete}
+          spellCheck={spellCheck}
+          maxLength={maxLength}
+          pattern={pattern}
+          inputMode={inputMode}
         />
-        <button
-          type="button"
-          onClick={handleToggleDatePicker}
-          className={`absolute ${
-            iconPosition === "right" ? "right-2" : "left-2"
-          } top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition duration-300`}
-        >
-          <AiOutlineCalendar />
-        </button>
-        {dateValue && (
+        {showCalendarIcon && (
+          <button
+            type="button"
+            onClick={handleToggleDatePicker}
+            className={`absolute ${
+              iconPosition === "right" ? "right-2" : "left-2"
+            } top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition duration-300`}
+          >
+            {calendarIcon}
+          </button>
+        )}
+        {showClearButton && dateValue && (
           <button
             type="button"
             onClick={handleClear}
@@ -134,7 +190,7 @@ const DateInput: React.FC<DateInputProps> = ({
               iconPosition === "right" ? "right-8" : "left-8"
             } top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-300`}
           >
-            <AiOutlineClose />
+            {clearIcon}
           </button>
         )}
         {isDatePickerOpen && (
@@ -146,6 +202,7 @@ const DateInput: React.FC<DateInputProps> = ({
             maxDate={maxDate ? new Date(maxDate) : undefined}
             excludeDates={disabledDates.map((date) => new Date(date))}
             className="absolute z-10 mt-2"
+            dateFormat={dateFormat}
           />
         )}
       </div>

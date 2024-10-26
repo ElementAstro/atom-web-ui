@@ -9,7 +9,7 @@ import React, {
   AnimationEvent,
 } from "react";
 import Divider from "./Divider";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 import { AiOutlineClose } from "react-icons/ai";
 
 interface ModalProps {
@@ -49,6 +49,11 @@ interface ModalProps {
   onAnimationEnd?: (e: AnimationEvent<HTMLDivElement>) => void;
   onDoubleClick?: (e: MouseEvent<HTMLDivElement>) => void;
   ariaLabel?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabled?: boolean;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -66,29 +71,38 @@ const Modal: React.FC<ModalProps> = ({
   customHeaderClass = "",
   customFooterClass = "",
   customContentClass = "",
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  icon = <AiOutlineClose />, // 新增属性
-  fullscreen = false, // 新增属性
-  autoClose = false, // 新增属性
-  autoCloseDuration = 5000, // 新增属性
-  iconColor = "text-gray-400", // 新增属性
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  icon = <AiOutlineClose />,
+  fullscreen = false,
+  autoClose = false,
+  autoCloseDuration = 5000,
+  iconColor = "text-gray-400",
   onFocus,
   onBlur,
   onKeyDown,
   onAnimationEnd,
   onDoubleClick,
-  ariaLabel = "模态框", // 新增属性
+  ariaLabel = "模态框",
+  hoverColor = "",
+  activeColor = "",
+  disabled = false,
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleClose = (e: MouseEvent<HTMLDivElement>) => {
-    // 确保用户单击的是背景而不是模态框内部
     if (e.target === e.currentTarget) {
       onClose();
     }
+  };
+
+  const handleButtonClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    onClose();
   };
 
   useEffect(() => {
@@ -174,11 +188,15 @@ const Modal: React.FC<ModalProps> = ({
       aria-label={ariaLabel}
     >
       <div
-        className={`${variantClasses[variant]} ${sizeClasses[size]} rounded-lg p-6 transform transition-transform duration-300 ease-in-out scale-95 opacity-0 animate-fade-in hover:shadow-neon relative border-${borderWidth}`}
+        className={`${variantClasses[variant]} ${
+          sizeClasses[size]
+        } rounded-lg p-6 transform transition-transform duration-300 ease-in-out scale-95 opacity-0 animate-fade-in hover:shadow-neon relative border-${borderWidth} ${hoverColor} ${activeColor} ${
+          disabled ? disabledColor : ""
+        } ${hoverAnimation}`}
       >
         <button
           className={`absolute top-3 right-3 ${iconColor} hover:text-red-500 transition duration-300`}
-          onClick={onClose}
+          onClick={handleButtonClick}
           title={tooltip}
         >
           {icon}

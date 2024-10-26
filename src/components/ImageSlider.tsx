@@ -8,7 +8,7 @@ import {
   KeyboardEventHandler,
   AnimationEventHandler,
 } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface ImageSliderProps {
   images: string[];
@@ -29,6 +29,11 @@ interface ImageSliderProps {
   onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
   onAnimationEnd?: AnimationEventHandler<HTMLDivElement>;
   ariaLabel?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabled?: boolean;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const ImageSlider: FC<ImageSliderProps> = ({
@@ -39,21 +44,26 @@ const ImageSlider: FC<ImageSliderProps> = ({
   pauseOnHover = true,
   showIndicators = true,
   showArrows = true,
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  animation = "transition-transform duration-700 ease-in-out", // 新增属性
-  fullscreen = false, // 新增属性
-  showThumbnails = false, // 新增属性
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transition-transform duration-700 ease-in-out",
+  fullscreen = false,
+  showThumbnails = false,
   onFocus,
   onBlur,
   onKeyDown,
   onAnimationEnd,
   ariaLabel = "图片滑块",
+  hoverColor = "",
+  activeColor = "",
+  disabled = false,
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -131,7 +141,7 @@ const ImageSlider: FC<ImageSliderProps> = ({
       {showArrows && (
         <button
           onClick={prevSlide}
-          className="image-slider__button absolute left-0 z-10 bg-gray-800 bg-opacity-50 rounded-full p-2 m-2 transition duration-300 transform hover:scale-110 hover:shadow-neon"
+          className={`image-slider__button absolute left-0 z-10 bg-gray-800 bg-opacity-50 rounded-full p-2 m-2 transition duration-300 transform hover:scale-110 ${hoverAnimation}`}
           title={tooltip}
         >
           ◀
@@ -155,7 +165,7 @@ const ImageSlider: FC<ImageSliderProps> = ({
       {showArrows && (
         <button
           onClick={nextSlide}
-          className="image-slider__button absolute right-0 z-10 bg-gray-800 bg-opacity-50 rounded-full p-2 m-2 transition duration-300 transform hover:scale-110 hover:shadow-neon"
+          className={`image-slider__button absolute right-0 z-10 bg-gray-800 bg-opacity-50 rounded-full p-2 m-2 transition duration-300 transform hover:scale-110 ${hoverAnimation}`}
           title={tooltip}
         >
           ▶
@@ -190,7 +200,7 @@ const ImageSlider: FC<ImageSliderProps> = ({
             height: auto;
           }
           .image-slider__image {
-            height: 48vw; /* 48% of viewport width */
+            height: 48vw;
           }
           .image-slider__button {
             p-1;

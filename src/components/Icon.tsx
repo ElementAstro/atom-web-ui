@@ -7,11 +7,11 @@ import {
   AnimationEventHandler,
 } from "react";
 import { IconContext, IconType } from "react-icons";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface IconProps {
   icon?: IconType;
-  name?: string; // 新增 name 属性
+  name?: string;
   onClick?: MouseEventHandler<HTMLDivElement>;
   onMouseEnter?: MouseEventHandler<HTMLDivElement>;
   onMouseLeave?: MouseEventHandler<HTMLDivElement>;
@@ -28,8 +28,13 @@ interface IconProps {
   color?: string;
   ariaLabel?: string;
   border?: boolean;
-  borderColor?: string; // 新增 borderColor 属性
-  customClass?: string; // 新增 customClass 属性
+  borderColor?: string;
+  customClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabled?: boolean;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Icon: FC<IconProps> = ({
@@ -50,11 +55,16 @@ const Icon: FC<IconProps> = ({
   size = "lg",
   color = "",
   ariaLabel = "图标",
-  border = false, // 解构 border 属性
-  borderColor = "", // 解构 borderColor 属性
-  customClass = "", // 解构 customClass 属性
+  border = false,
+  borderColor = "",
+  customClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabled = false,
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-125 hover:rotate-12 hover:shadow-neon",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   type ThemeKeys = "light" | "dark" | "astronomy" | "eyeCare" | "sunset" | "ocean" | "forest" | "astronomyDarkRed";
 
@@ -71,22 +81,28 @@ const Icon: FC<IconProps> = ({
 
   return (
     <div
-      className={`inline-block ${animation} hover:scale-125 hover:rotate-12 hover:shadow-neon ${
+      className={`inline-block ${animation} ${hoverAnimation} ${
         border ? `border-${borderWidth} ${borderColor}` : ""
-      } ${themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]} ${customClass}`} // 使用 customClass 属性
-      onClick={onClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-      onDoubleClick={onDoubleClick}
+      } ${themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]} ${
+        disabled ? disabledColor : ""
+      } ${customClass}`}
+      onClick={disabled ? undefined : onClick}
+      onMouseEnter={disabled ? undefined : onMouseEnter}
+      onMouseLeave={disabled ? undefined : onMouseLeave}
+      onFocus={disabled ? undefined : onFocus}
+      onBlur={disabled ? undefined : onBlur}
+      onKeyDown={disabled ? undefined : onKeyDown}
+      onDoubleClick={disabled ? undefined : onDoubleClick}
       onAnimationEnd={onAnimationEnd}
-      title={name || tooltip} // 使用 name 或 tooltip 作为 title
-      aria-label={name || ariaLabel} // 使用 name 或 ariaLabel 作为 aria-label
+      title={name || tooltip}
+      aria-label={name || ariaLabel}
       tabIndex={0}
+      style={{
+        color: disabled ? undefined : color,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
     >
-      <IconContext.Provider value={{ size, color }}>
+      <IconContext.Provider value={{ size, color: disabled ? undefined : color }}>
         {IconComponent ? <IconComponent /> : name}
       </IconContext.Provider>
     </div>

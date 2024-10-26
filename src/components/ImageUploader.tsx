@@ -1,8 +1,8 @@
 // src/components/ImageUploader.tsx
 import React, { useState, useRef, useEffect, ChangeEvent, FC } from "react";
-import { AiOutlineCloudUpload } from "react-icons/ai";
-import LoadingSpinner from "./LoadingSpinner"; // 确保有 LoadingSpinner 组件
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { AiOutlineCloudUpload, AiOutlineClose } from "react-icons/ai";
+import LoadingSpinner from "./LoadingSpinner";
+import { useTheme } from "../context/ThemeContext";
 
 interface ImageUploaderProps {
   onUpload?: (file: File) => void;
@@ -12,7 +12,6 @@ interface ImageUploaderProps {
   maxFileSize?: number;
   preview?: boolean;
   theme?: "light" | "dark" | "astronomy" | "eyeCare";
-  tooltip?: string;
   borderWidth?: string;
   animation?: string;
   icon?: React.ReactNode;
@@ -27,6 +26,28 @@ interface ImageUploaderProps {
   onMouseLeave?: React.MouseEventHandler<HTMLDivElement>;
   onAnimationEnd?: React.AnimationEventHandler<HTMLDivElement>;
   ariaLabel?: string;
+  uploadButtonText?: string;
+  uploadButtonClass?: string;
+  previewImageClass?: string;
+  errorClass?: string;
+  loadingAnimation?: string;
+  loadingDuration?: string;
+  removeButtonIcon?: React.ReactNode;
+  removeButtonColor?: string;
+  removeButtonClass?: string;
+  uploadButtonTooltip?: string;
+  previewImageTooltip?: string;
+  uploadButtonAnimation?: string;
+  previewImageAnimation?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  customClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabled?: boolean;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const ImageUploader: FC<ImageUploaderProps> = ({
@@ -34,17 +55,16 @@ const ImageUploader: FC<ImageUploaderProps> = ({
   onImageLoad,
   onImageError,
   multiple = false,
-  maxFileSize = 5 * 1024 * 1024, // 默认最大文件大小为5MB
+  maxFileSize = 5 * 1024 * 1024,
   preview = true,
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
-  icon = <AiOutlineCloudUpload />, // 新增属性
-  maxImages = 10, // 新增属性
-  iconColor = "text-gray-400", // 新增属性
-  autoClose = false, // 新增属性
-  autoCloseDuration = 5000, // 新增属性
+  theme,
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  icon = <AiOutlineCloudUpload />,
+  maxImages = 10,
+  iconColor = "text-gray-400",
+  autoClose = false,
+  autoCloseDuration = 5000,
   onFocus,
   onBlur,
   onKeyDown,
@@ -52,11 +72,33 @@ const ImageUploader: FC<ImageUploaderProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "图片上传器",
+  uploadButtonText = "点击上传图片",
+  uploadButtonClass = "",
+  previewImageClass = "",
+  errorClass = "",
+  loadingAnimation = "animate-spin",
+  loadingDuration = "duration-300",
+  removeButtonIcon = <AiOutlineClose />,
+  removeButtonColor = "bg-red-500",
+  removeButtonClass = "",
+  uploadButtonTooltip = "",
+  previewImageTooltip = "",
+  uploadButtonAnimation = "hover:scale-105",
+  previewImageAnimation = "hover:scale-105 hover:rotate-6",
+  backgroundColor,
+  textColor,
+  borderColor,
+  customClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabled = false,
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -87,13 +129,13 @@ const ImageUploader: FC<ImageUploaderProps> = ({
       return;
     }
 
-    setLoading(true); // 开始加载
+    setLoading(true);
     const imageUrls = validFiles.map((file) => URL.createObjectURL(file));
     setSelectedImages((prevImages) => [...prevImages, ...imageUrls]);
     if (onUpload) {
       validFiles.forEach((file) => onUpload(file));
     }
-    setLoading(false); // 结束加载
+    setLoading(false);
   };
 
   const removeImage = (imageUrl: string) => {
@@ -116,7 +158,7 @@ const ImageUploader: FC<ImageUploaderProps> = ({
     <div
       className={`image-uploader flex flex-col items-center p-4 border-${borderWidth} rounded-lg ${animation} ${
         themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
-      } shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-neon`}
+      } shadow-lg transition-transform duration-300 ${uploadButtonAnimation} ${customClass}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}
@@ -124,14 +166,21 @@ const ImageUploader: FC<ImageUploaderProps> = ({
       onKeyDown={onKeyDown}
       onAnimationEnd={onAnimationEnd}
       aria-label={ariaLabel}
+      style={{
+        backgroundColor: backgroundColor || undefined,
+        color: textColor || undefined,
+        borderColor: borderColor || undefined,
+      }}
     >
       <label
         htmlFor="file-upload"
-        className="image-uploader__label flex flex-col items-center cursor-pointer"
-        title={tooltip}
+        className={`image-uploader__label flex flex-col items-center cursor-pointer ${uploadButtonClass}`}
+        title={uploadButtonTooltip}
       >
         {icon && <span className={iconColor}>{icon}</span>}
-        <span className="image-uploader__text text-gray-400">点击上传图片</span>
+        <span className="image-uploader__text text-gray-400">
+          {uploadButtonText}
+        </span>
         <input
           id="file-upload"
           type="file"
@@ -141,29 +190,38 @@ const ImageUploader: FC<ImageUploaderProps> = ({
           multiple={multiple}
         />
       </label>
-      {loading && <LoadingSpinner />}
+      {loading && (
+        <LoadingSpinner
+          customClass={`${loadingAnimation} ${loadingDuration}`}
+        />
+      )}
       {error && (
-        <div className="image-uploader__error text-red-500 mt-2">{error}</div>
+        <div
+          className={`image-uploader__error text-red-500 mt-2 ${errorClass}`}
+        >
+          {error}
+        </div>
       )}
       {preview && selectedImages.length > 0 && (
         <div className="image-uploader__preview mt-4 grid grid-cols-2 gap-4">
           {selectedImages.map((imageUrl, index) => (
             <div
               key={index}
-              className="image-uploader__image-container relative"
+              className={`image-uploader__image-container relative ${previewImageClass}`}
+              title={previewImageTooltip}
             >
               <img
                 src={imageUrl}
                 alt={`Selected ${index}`}
                 onLoad={onImageLoad}
                 onError={onImageError}
-                className="image-uploader__image w-32 h-32 object-cover rounded-lg shadow-lg transition-transform duration-300 transform hover:scale-105 hover:rotate-6"
+                className={`image-uploader__image w-32 h-32 object-cover rounded-lg shadow-lg transition-transform duration-300 ${previewImageAnimation}`}
               />
               <button
                 onClick={() => removeImage(imageUrl)}
-                className="image-uploader__remove-button absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full hover:bg-red-700 transition duration-300"
+                className={`image-uploader__remove-button absolute top-0 right-0 ${removeButtonColor} text-white p-1 rounded-full hover:bg-red-700 transition duration-300 ${removeButtonClass}`}
               >
-                ✕
+                {removeButtonIcon}
               </button>
             </div>
           ))}

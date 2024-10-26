@@ -1,6 +1,6 @@
 // MainApp.tsx
-import React, { useState, FC, ReactNode, ChangeEvent } from "react";
-import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import React, { FC } from "react";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import AccordionExample from "./examples/AccordionExample";
 import AlertExample from "./examples/AlertExample";
@@ -67,73 +67,142 @@ import TooltipExample from "./examples/TooltipExample";
 import ValidatedFormExample from "./examples/ValidatedFormExample";
 import VerticalMenuExample from "./examples/VerticalMenuExample";
 
+import Divider from "./components/Divider";
+
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+
 const App: FC = () => {
   return (
-    <div className="p-4">
-      <AccordionExample />
-      <AlertExample />
-      <AvatarExample />
-      {/*<BreadcrumbsExample />*/}
-      <ButtonExample />
-      <ButtonGroupExample />
-      {/*<CalendarExample />*/}
-      <CardExample />
-      <CarouselExample />
-      <ChartWrapperExample />
-      <CheckBoxExample />
-      <CodeBlockExample />
-      <CollapseButtonGroupExample />
-      <CollapsibleSidebarExample />
-      <ConfirmDialogExample />
-      <DateInputExample />
-      <DividerExample />
-      <DraggableModalExample />
-      <DrawerExample />
-      <DropdownExample />
-      <FeedbackExample />
-      {/*<FlowLayoutExample />*/}
-      {/*<FluidLayoutExample />*/}
-      <FormExample />
-      <GridExample />
-      <IconExample />
-      <IconSelectorExample />
-      <ImagesExample />
-      <ImageSliderExample />
-      <ImageUploaderExample />
-      <InputExample />
-      <ListGroupExample />
-      <LoadingOverlayExample />
-      <LoadingSpinnerExample />
-      <LoadMoreExample />
-      <MasonryExample />
-      <MenuExample />
-      <ModalExample />
-      <NavExample />
-      {/*<NavbarExample />*/}
-      <NotificationExample />
-      <NumberInputExample />
-      <OffcanvasExample />
-      <PaginationExample />
-      <PhoneInputExample />
-      <ProgressExample />
-      <ProgressBarExample />
-      <RatingExample />
-      <RichTextEditorExample />
-      <SearchBoxExample />
-      <SidebarExample />
-      <SkeletonScreenExample />
-      <SlidesExample />
-      <StepperExample />
-      <SwitchExample />
-      <TableExample />
-      {/*<TabsExample />*/}
-      <TagExample />
-      <TagInputExample />
-      <TimeInputExample />
-      <ToastExample />
-      <TooltipExample />
-      <ValidatedFormExample />
-      <VerticalMenuExample />
+    <div className="p-4 space-y-4">
+      <DndProvider backend={HTML5Backend}>
+        <Divider />
+        <AccordionExample />
+        <Divider />
+        <AlertExample />
+        <Divider />
+        <AvatarExample />
+        <Divider />
+        <BreadcrumbsExample />
+        <Divider />
+        <ButtonExample />
+        <Divider />
+        <ButtonGroupExample />
+        <Divider />
+        <CardExample />
+        <Divider />
+        <CarouselExample />
+        <Divider />
+        <ChartWrapperExample />
+        <Divider />
+        <CheckBoxExample />
+        <Divider />
+        <CodeBlockExample />
+        <Divider />
+        <CollapseButtonGroupExample />
+        <Divider />
+        <CollapsibleSidebarExample />
+        <Divider />
+        <ConfirmDialogExample />
+        <Divider />
+        <DateInputExample />
+        <Divider />
+        <DividerExample />
+        <Divider />
+        <DraggableModalExample />
+        <Divider />
+        <DrawerExample />
+        <Divider />
+        <DropdownExample />
+        <Divider />
+        <FeedbackExample />
+        <Divider />
+        <FlowLayoutExample />
+        <Divider />
+        <FluidLayoutExample />
+        <Divider />
+        <FormExample />
+        <Divider />
+        <GridExample />
+        <Divider />
+        <IconExample />
+        <Divider />
+        <IconSelectorExample />
+        <Divider />
+        <ImagesExample />
+        <Divider />
+        <ImageSliderExample />
+        <Divider />
+        <ImageUploaderExample />
+        <Divider />
+        <InputExample />
+        <Divider />
+        <ListGroupExample />
+        <Divider />
+        <LoadingOverlayExample />
+        <Divider />
+        <LoadingSpinnerExample />
+        <Divider />
+        <LoadMoreExample />
+        <Divider />
+        <MasonryExample />
+        <Divider />
+        <MenuExample />
+        <Divider />
+        <ModalExample />
+        <Divider />
+        <NavExample />
+        <Divider />
+        <NavbarExample />
+        <Divider />
+        <NotificationExample />
+        <Divider />
+        <NumberInputExample />
+        <Divider />
+        <OffcanvasExample />
+        <Divider />
+        <PaginationExample />
+        <Divider />
+        <PhoneInputExample />
+        <Divider />
+        <ProgressExample />
+        <Divider />
+        <ProgressBarExample />
+        <Divider />
+        <RatingExample />
+        <Divider />
+        <RichTextEditorExample />
+        <Divider />
+        <SearchBoxExample />
+        <Divider />
+        <SidebarExample />
+        <Divider />
+        <SkeletonScreenExample />
+        <Divider />
+        <SlidesExample />
+        <Divider />
+        <StepperExample />
+        <Divider />
+        <SwitchExample />
+        <Divider />
+        <TableExample />
+        <Divider />
+        <TabsExample />
+        <Divider />
+        <TagExample />
+        <Divider />
+        <TagInputExample />
+        <Divider />
+        <TimeInputExample />
+        <Divider />
+        <ToastExample />
+        <Divider />
+        <TooltipExample />
+        <Divider />
+        <ValidatedFormExample />
+        <Divider />
+        <VerticalMenuExample />
+      </DndProvider>
     </div>
   );
 };

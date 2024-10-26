@@ -1,5 +1,11 @@
 // src/components/Avatar.tsx
-import React, { useState, useEffect, useRef, MouseEvent, KeyboardEvent } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  MouseEvent,
+  KeyboardEvent,
+} from "react";
 import { useTheme } from "../context/ThemeContext";
 
 interface AvatarProps {
@@ -92,11 +98,11 @@ const Avatar: React.FC<AvatarProps> = ({
 }) => {
   const [isError, setIsError] = useState(false);
   const [isVisible, setIsVisible] = useState(!lazyLoad);
-  const { theme } = useTheme() as { theme: Theme }; // 获取当前主题
+  const { theme } = useTheme() as { theme: Theme };
   const avatarRef = useRef<HTMLDivElement>(null);
 
   const handleError = () => {
-    setIsError(true); // 若图片加载失败，则显示默认头像
+    setIsError(true);
     if (onError) onError();
   };
 
@@ -198,8 +204,7 @@ const Avatar: React.FC<AvatarProps> = ({
     >
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>{" "}
-          {/* Loading Spinner */}
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       )}
       {isVisible && (

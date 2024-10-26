@@ -1,6 +1,6 @@
 // src/components/Notification.tsx
 import React, { useEffect, useState, ReactNode } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface NotificationProps {
   message: string;
@@ -27,9 +27,13 @@ interface NotificationProps {
   borderWidth?: string;
   animation?: string;
   fullscreen?: boolean;
-  customClass?: string; // 新增属性
-  customIconClass?: string; // 新增属性
-  customButtonClass?: string; // 新增属性
+  customClass?: string;
+  customIconClass?: string;
+  customButtonClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Notification: React.FC<NotificationProps> = ({
@@ -44,17 +48,21 @@ const Notification: React.FC<NotificationProps> = ({
   closable = true,
   autoClose = true,
   pauseOnHover = true,
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  animation = "transform transition-transform duration-500 ease-in-out", // 新增属性
-  fullscreen = false, // 新增属性
-  customClass = "", // 解构新增属性
-  customIconClass = "", // 解构新增属性
-  customButtonClass = "", // 解构新增属性
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-500 ease-in-out",
+  fullscreen = false,
+  customClass = "",
+  customIconClass = "",
+  customButtonClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [isPaused, setIsPaused] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const bgColor =
     type === "success"
@@ -73,7 +81,7 @@ const Notification: React.FC<NotificationProps> = ({
     }
 
     return () => {
-      clearTimeout(timer); // 清除定时器
+      clearTimeout(timer);
       if (onCloseComplete) onCloseComplete();
     };
   }, [onClose, duration, onOpen, onCloseComplete, autoClose]);
@@ -129,9 +137,9 @@ const Notification: React.FC<NotificationProps> = ({
     <div
       className={`fixed ${positionClasses[position]} ${bgColor} ${
         themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
-      } text-white p-4 rounded-lg shadow-lg flex justify-between items-center ${animation} hover:scale-105 hover:shadow-neon border-${borderWidth} ${
+      } text-white p-4 rounded-lg shadow-lg flex justify-between items-center ${animation} border-${borderWidth} ${
         fullscreen ? "w-full h-full" : ""
-      } ${customClass}`}
+      } ${customClass} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
       style={{ maxWidth: "90%", width: "auto" }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

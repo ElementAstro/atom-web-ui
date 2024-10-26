@@ -5,7 +5,7 @@ import React, {
   KeyboardEvent,
   AnimationEvent,
 } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface SwitchProps {
   checked: boolean;
@@ -37,6 +37,13 @@ interface SwitchProps {
   onDoubleClick?: (e: MouseEvent<HTMLLabelElement>) => void;
   onKeyDown?: (e: KeyboardEvent<HTMLLabelElement>) => void;
   ariaLabel?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 const Switch: React.FC<SwitchProps> = ({
@@ -62,8 +69,15 @@ const Switch: React.FC<SwitchProps> = ({
   onDoubleClick,
   onKeyDown,
   ariaLabel = "Toggle switch",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled || loading) return;
@@ -77,14 +91,14 @@ const Switch: React.FC<SwitchProps> = ({
     small: "w-12 h-6",
     medium: "w-16 h-8",
     large: "w-20 h-10",
-    extraLarge: "w-24 h-12", // 新增尺寸
+    extraLarge: "w-24 h-12",
   };
 
   const knobSizeClasses = {
-    small: "w-6 h-6",
-    medium: "w-8 h-8",
-    large: "w-10 h-10",
-    extraLarge: "w-12 h-12", // 新增尺寸
+    small: "w-5 h-5",
+    medium: "w-7 h-7",
+    large: "w-9 h-9",
+    extraLarge: "w-11 h-11",
   };
 
   const colorClasses = {
@@ -92,8 +106,8 @@ const Switch: React.FC<SwitchProps> = ({
     green: "bg-gradient-to-r from-green-500 to-teal-500",
     red: "bg-gradient-to-r from-red-500 to-pink-500",
     yellow: "bg-gradient-to-r from-yellow-500 to-orange-500",
-    purple: "bg-gradient-to-r from-purple-500 to-indigo-500", // 新增颜色
-    cyan: "bg-gradient-to-r from-cyan-500 to-blue-500", // 新增颜色
+    purple: "bg-gradient-to-r from-purple-500 to-indigo-500",
+    cyan: "bg-gradient-to-r from-cyan-500 to-blue-500",
   };
 
   type ThemeKeys =
@@ -112,17 +126,17 @@ const Switch: React.FC<SwitchProps> = ({
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
     sunset:
-      "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-pink-500", // 新增主题
+      "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-pink-500",
     ocean:
-      "bg-gradient-to-r from-blue-500 to-teal-500 text-white border-teal-500", // 新增主题
+      "bg-gradient-to-r from-blue-500 to-teal-500 text-white border-teal-500",
     astronomyDarkRed:
-      "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500", // 新增主题
+      "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
   return (
     <label
       className={`inline-flex items-center cursor-pointer ${
-        disabled || loading ? "cursor-not-allowed opacity-50" : ""
+        disabled || loading ? disabledColor : ""
       } ${fullscreen ? "w-full h-full" : ""} ${
         themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
       }`}
@@ -135,7 +149,7 @@ const Switch: React.FC<SwitchProps> = ({
       aria-label={ariaLabel}
     >
       {label && labelPosition === "left" && (
-        <span className="mr-3 text-gray-200">{label}</span>
+        <span className={`mr-3 ${labelColor}`}>{label}</span>
       )}
       <input
         type="checkbox"
@@ -150,7 +164,7 @@ const Switch: React.FC<SwitchProps> = ({
       <div
         className={`relative ${animation} transform ${sizeClasses[size]} ${
           checked ? colorClasses[color] : "bg-gray-600"
-        } rounded-full shadow-lg border-${borderWidth}`}
+        } rounded-full shadow-lg border-${borderWidth} transition-colors duration-300 ease-in-out`}
       >
         <div
           className={`absolute bg-white rounded-full shadow-md transition-transform duration-200 ease-in-out transform ${
@@ -182,25 +196,37 @@ const Switch: React.FC<SwitchProps> = ({
               />
             </svg>
           )}
-          {icon && !loading && <span className="text-gray-900">{icon}</span>}
+          {icon && !loading && (
+            <span className="flex items-center justify-center h-full w-full">
+              {icon}
+            </span>
+          )}
         </div>
-        <div
-          className={`absolute top-1/2 transform -translate-y-1/2 transition-opacity duration-300 ${
-            checked ? "opacity-100" : "opacity-0"
-          } text-gray-900 text-sm`}
-        >
-          ON
-        </div>
-        <div
-          className={`absolute top-1/2 transform -translate-y-1/2 transition-opacity duration-300 ${
-            checked ? "opacity-0" : "opacity-100"
-          } text-gray-900 text-sm`}
-        >
-          OFF
-        </div>
+        {showLabels && (
+          <>
+            <div
+              className={`absolute top-1/2 transform -translate-y-1/2 transition-opacity duration-300 ${
+                checked
+                  ? `opacity-100 left-2 ${labelActiveColor}`
+                  : "opacity-0 right-2"
+              } text-sm`}
+            >
+              ON
+            </div>
+            <div
+              className={`absolute top-1/2 transform -translate-y-1/2 transition-opacity duration-300 ${
+                checked
+                  ? "opacity-0 left-2"
+                  : `opacity-100 right-2 ${labelColor}`
+              } text-sm`}
+            >
+              OFF
+            </div>
+          </>
+        )}
       </div>
       {label && labelPosition === "right" && (
-        <span className="ml-3 text-gray-200">{label}</span>
+        <span className={`ml-3 ${labelColor}`}>{label}</span>
       )}
     </label>
   );

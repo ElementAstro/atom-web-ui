@@ -1,7 +1,7 @@
 // src/components/TagInput.tsx
 import React, { useState, KeyboardEvent, ChangeEvent, DragEvent } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface TagInputProps {
   onTagAdd?: (tag: string) => void;
@@ -25,6 +25,13 @@ interface TagInputProps {
   icon?: React.ReactNode;
   fullscreen?: boolean;
   draggable?: boolean;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 const TagInput: React.FC<TagInputProps> = ({
@@ -42,10 +49,17 @@ const TagInput: React.FC<TagInputProps> = ({
   icon = null,
   fullscreen = false,
   draggable = false,
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue && tags.length < maxTags) {
@@ -123,7 +137,7 @@ const TagInput: React.FC<TagInputProps> = ({
         {tags.map((tag, index) => (
           <span
             key={index}
-            className={`${tagColors.background} ${tagColors.text} rounded-full px-3 py-1 mr-2 mb-2 ${animation}`}
+            className={`${tagColors.background} ${tagColors.text} rounded-full px-3 py-1 mr-2 mb-2 ${animation} ${hoverColor} ${activeColor} ${hoverAnimation}`}
             draggable={draggable}
             onDragStart={(e) => handleDragStart(e, index)}
             onDrop={(e) => handleDrop(e, index)}

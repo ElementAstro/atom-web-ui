@@ -25,6 +25,18 @@ interface CheckBoxProps {
   animation?: string;
   ariaLabel?: string;
   indeterminate?: boolean;
+  hoverColor?: string;
+  focusColor?: string;
+  checkedColor?: string;
+  indeterminateColor?: string;
+  labelPosition?: "left" | "right";
+  showTooltip?: boolean;
+  tooltipPosition?: "top" | "bottom" | "left" | "right";
+  rippleEffect?: boolean;
+  shadow?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 const CheckBox: React.FC<CheckBoxProps> = ({
@@ -50,9 +62,21 @@ const CheckBox: React.FC<CheckBoxProps> = ({
   animation = "transform transition-transform duration-300 ease-in-out",
   ariaLabel = "Checkbox",
   indeterminate = false,
+  hoverColor = "hover:bg-blue-500",
+  focusColor = "focus:ring-blue-500",
+  checkedColor = "bg-blue-500",
+  indeterminateColor = "bg-gray-500",
+  labelPosition = "right",
+  showTooltip = false,
+  tooltipPosition = "top",
+  rippleEffect = false,
+  shadow = false,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
 }) => {
   const [isChecked, setIsChecked] = useState(checked);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   useEffect(() => {
     setIsChecked(checked);
@@ -93,6 +117,41 @@ const CheckBox: React.FC<CheckBoxProps> = ({
       "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
+  const tooltipClasses = {
+    top: "tooltip-top",
+    bottom: "tooltip-bottom",
+    left: "tooltip-left",
+    right: "tooltip-right",
+  };
+
+  const handleRipple = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!rippleEffect) return;
+
+    const ripple = document.createElement("span");
+    const diameter = Math.max(
+      event.currentTarget.clientWidth,
+      event.currentTarget.clientHeight
+    );
+    const radius = diameter / 2;
+
+    ripple.style.width = ripple.style.height = `${diameter}px`;
+    ripple.style.left = `${
+      event.clientX - event.currentTarget.offsetLeft - radius
+    }px`;
+    ripple.style.top = `${
+      event.clientY - event.currentTarget.offsetTop - radius
+    }px`;
+    ripple.classList.add("ripple");
+
+    const rippleContainer =
+      event.currentTarget.querySelector(".ripple-container");
+    rippleContainer?.appendChild(ripple);
+
+    setTimeout(() => {
+      ripple.remove();
+    }, 600);
+  };
+
   return (
     <label
       className={`inline-flex items-center cursor-pointer ${
@@ -105,7 +164,11 @@ const CheckBox: React.FC<CheckBoxProps> = ({
       onKeyDown={handleKeyDown}
       onAnimationEnd={onAnimationEnd}
       title={tooltip}
+      style={{ textTransform }}
     >
+      {label && labelPosition === "left" && (
+        <span className={`mr-2 ${customLabelClass}`}>{label}</span>
+      )}
       <input
         type="checkbox"
         checked={isChecked}
@@ -118,13 +181,18 @@ const CheckBox: React.FC<CheckBoxProps> = ({
       <div
         className={`relative flex items-center justify-center ${
           sizeClasses[size]
-        } border-${borderWidth} ${
+        } border-${borderWidth} border-${borderColor} border-${borderStyle} ${
           isChecked
-            ? `border-blue-500 bg-gradient-to-r from-blue-500 to-purple-500`
+            ? `${checkedColor}`
+            : indeterminate
+            ? `${indeterminateColor}`
             : `${themeClasses[theme || currentTheme]}`
         } rounded-md ${animation} ${
           isChecked ? "scale-105 shadow-neon" : ""
-        } ${customBoxClass}`}
+        } ${hoverColor} ${focusColor} ${customBoxClass} ${
+          shadow ? "shadow-lg" : ""
+        }`}
+        onMouseDown={handleRipple}
       >
         {isChecked && !indeterminate && (
           <svg
@@ -146,12 +214,70 @@ const CheckBox: React.FC<CheckBoxProps> = ({
             <rect x="4" y="9" width="12" height="2" />
           </svg>
         )}
+        <div className="ripple-container absolute inset-0 overflow-hidden rounded-md"></div>
       </div>
-      {label && (
-        <span className={`ml-2 text-gray-200 ${customLabelClass}`}>
-          {label}
-        </span>
+      {label && labelPosition === "right" && (
+        <span className={`ml-2 ${customLabelClass}`}>{label}</span>
       )}
+      {showTooltip && (
+        <div className={`tooltip ${tooltipClasses[tooltipPosition]}`}>
+          {tooltip}
+        </div>
+      )}
+      <style>{`
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.6);
+          transform: scale(0);
+          animation: ripple 600ms linear;
+        }
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+        .tooltip {
+          position: absolute;
+          background: rgba(0, 0, 0, 0.75);
+          color: white;
+          padding: 0.5rem;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+          white-space: nowrap;
+          z-index: 10;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        .tooltip-top {
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-bottom: 0.5rem;
+        }
+        .tooltip-bottom {
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-top: 0.5rem;
+        }
+        .tooltip-left {
+          right: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-right: 0.5rem;
+        }
+        .tooltip-right {
+          left: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-left: 0.5rem;
+        }
+        label:hover .tooltip {
+          opacity: 1;
+        }
+      `}</style>
     </label>
   );
 };

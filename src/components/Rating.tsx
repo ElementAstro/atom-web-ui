@@ -1,7 +1,7 @@
 // src/components/Rating.tsx
 import React, { useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface RatingProps {
   max?: number;
@@ -23,10 +23,14 @@ interface RatingProps {
   fullscreen?: boolean;
   border?: boolean;
   borderColor?: string;
-  customClass?: string; // 新增属性
-  customLabelClass?: string; // 新增属性
-  customIconClass?: string; // 新增属性
-  customButtonClass?: string; // 新增属性
+  customClass?: string;
+  customLabelClass?: string;
+  customIconClass?: string;
+  customButtonClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Rating: React.FC<RatingProps> = ({
@@ -49,14 +53,18 @@ const Rating: React.FC<RatingProps> = ({
   fullscreen = false,
   border = false,
   borderColor = "border-gray-300",
-  customClass = "", // 解构新增属性
-  customLabelClass = "", // 解构新增属性
-  customIconClass = "", // 解构新增属性
-  customButtonClass = "", // 解构新增属性
+  customClass = "",
+  customLabelClass = "",
+  customIconClass = "",
+  customButtonClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleRate = (rate: number) => {
     if (disabled) return;
@@ -145,8 +153,8 @@ const Rating: React.FC<RatingProps> = ({
               index < (hoverRating || rating)
                 ? "text-yellow-500 scale-110"
                 : "text-gray-300"
-            } hover:scale-125 hover:text-blue-500 hover:shadow-neon ${
-              disabled ? "cursor-not-allowed opacity-50" : ""
+            } ${hoverColor} ${activeColor} ${hoverAnimation} ${
+              disabled ? disabledColor : ""
             } ${
               border ? `border ${borderColor} border-${borderWidth}` : ""
             } ${customIconClass}`}
@@ -170,8 +178,8 @@ const Rating: React.FC<RatingProps> = ({
                 index + 0.5 <= (hoverRating || rating)
                   ? "text-yellow-500 scale-110"
                   : "text-gray-300"
-              } hover:scale-125 hover:text-blue-500 hover:shadow-neon ${
-                disabled ? "cursor-not-allowed opacity-50" : ""
+              } ${hoverColor} ${activeColor} ${hoverAnimation} ${
+                disabled ? disabledColor : ""
               } ${
                 border ? `border ${borderColor} border-${borderWidth}` : ""
               } ${customIconClass}`}

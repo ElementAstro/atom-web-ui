@@ -13,7 +13,7 @@ import {
   AiOutlineCompress,
   AiOutlineFullscreen,
 } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface SkeletonScreenProps {
   width?: string;
@@ -48,9 +48,13 @@ interface SkeletonScreenProps {
   icon?: React.ReactNode;
   fullscreen?: boolean;
   iconColor?: string;
-  customClass?: string; // 新增属性
-  customButtonClass?: string; // 新增属性
-  customProgressClass?: string; // 新增属性
+  customClass?: string;
+  customButtonClass?: string;
+  customProgressClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const SkeletonScreen: React.FC<SkeletonScreenProps> = ({
@@ -79,9 +83,13 @@ const SkeletonScreen: React.FC<SkeletonScreenProps> = ({
   icon = null,
   fullscreen = false,
   iconColor = "text-gray-400",
-  customClass = "", // 解构新增属性
-  customButtonClass = "", // 解构新增属性
-  customProgressClass = "", // 解构新增属性
+  customClass = "",
+  customButtonClass = "",
+  customProgressClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [progress, setProgress] = useState(0);

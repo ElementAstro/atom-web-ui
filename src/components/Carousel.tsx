@@ -10,7 +10,7 @@ import React, {
 import { useTheme } from "../context/ThemeContext";
 
 interface CarouselProps {
-  items: { content: ReactNode; thumbnail?: string }[];
+  items: { content: ReactNode; thumbnail?: string; imageUrl?: string }[];
   onSlideChange?: (index: number) => void;
   autoPlay?: boolean;
   autoPlayInterval?: number;
@@ -30,6 +30,12 @@ interface CarouselProps {
   onMouseLeave?: () => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  showCaptions?: boolean;
+  captionPosition?: "top" | "bottom";
+  captionStyle?: string;
+  showProgressBar?: boolean;
+  progressBarColor?: string;
+  progressBarHeight?: string;
 }
 
 const Carousel: React.FC<CarouselProps> = ({
@@ -53,18 +59,26 @@ const Carousel: React.FC<CarouselProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "Carousel",
+  showCaptions = false,
+  captionPosition = "bottom",
+  captionStyle = "text-white bg-black bg-opacity-50 p-2 rounded",
+  showProgressBar = false,
+  progressBarColor = "bg-blue-500",
+  progressBarHeight = "h-1",
 }) => {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const [loadedImages, setLoadedImages] = useState<boolean[]>(
+    new Array(items.length).fill(false)
+  );
+  const { theme: currentTheme } = useTheme();
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // 自动轮播的效果
   useEffect(() => {
     if (autoPlay && !isPaused) {
       const interval = setInterval(() => {
         nextSlide();
-      }, autoPlayInterval); // 每 autoPlayInterval 毫秒切换一次
+      }, autoPlayInterval);
       return () => clearInterval(interval);
     }
   }, [current, autoPlay, autoPlayInterval, isPaused]);
@@ -141,6 +155,22 @@ const Carousel: React.FC<CarouselProps> = ({
     }
   };
 
+  const handleImageLoad = (index: number) => {
+    setLoadedImages((prevLoadedImages) => {
+      const newLoadedImages = [...prevLoadedImages];
+      newLoadedImages[index] = true;
+      return newLoadedImages;
+    });
+  };
+
+  const handleImageError = (index: number) => {
+    setLoadedImages((prevLoadedImages) => {
+      const newLoadedImages = [...prevLoadedImages];
+      newLoadedImages[index] = false;
+      return newLoadedImages;
+    });
+  };
+
   const themeClasses: Record<string, string> = {
     light: "bg-white text-gray-900",
     dark: "bg-gray-900 text-white",
@@ -187,7 +217,33 @@ const Carousel: React.FC<CarouselProps> = ({
             className="flex-shrink-0 w-full h-full flex justify-center items-center text-white text-2xl bg-gradient-to-r from-gray-700 via-gray-800 to-gray-900 transform transition-transform duration-700"
             style={{ opacity: current === index ? 1 : 0.5 }}
           >
-            {item.content}
+            {item.imageUrl ? (
+              <img
+                src={item.imageUrl}
+                alt={`Slide ${index + 1}`}
+                className={`w-full h-full object-cover ${
+                  loadedImages[index] ? "block" : "hidden"
+                }`}
+                onLoad={() => handleImageLoad(index)}
+                onError={() => handleImageError(index)}
+              />
+            ) : (
+              item.content
+            )}
+            {!loadedImages[index] && (
+              <div className="w-full h-full flex justify-center items-center bg-gray-700 text-white text-2xl">
+                Loading...
+              </div>
+            )}
+            {showCaptions && (
+              <div
+                className={`absolute ${
+                  captionPosition === "top" ? "top-0" : "bottom-0"
+                } w-full text-center ${captionStyle}`}
+              >
+                {item.content}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -236,6 +292,14 @@ const Carousel: React.FC<CarouselProps> = ({
               aria-label={`Thumbnail ${index + 1}`}
             />
           ))}
+        </div>
+      )}
+      {showProgressBar && (
+        <div className={`absolute bottom-0 left-0 w-full ${progressBarHeight}`}>
+          <div
+            className={`${progressBarColor} h-full`}
+            style={{ width: `${((current + 1) / items.length) * 100}%` }}
+          ></div>
         </div>
       )}
       <style>{`

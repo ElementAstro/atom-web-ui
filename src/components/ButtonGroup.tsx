@@ -27,6 +27,15 @@ interface ButtonGroupProps {
   onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  fullWidth?: boolean;
+  rounded?: boolean;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderWidth?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
+  ripple?: boolean;
 }
 
 type Theme =
@@ -56,8 +65,17 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
   onKeyDown,
   onAnimationEnd,
   ariaLabel = "",
+  fullWidth = false,
+  rounded = true,
+  shadow = false,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderWidth = "1",
+  borderColor = "transparent",
+  textTransform = "none",
+  ripple = false,
 }) => {
-  const { theme } = useTheme() as { theme: Theme }; // 获取当前主题
+  const { theme } = useTheme() as { theme: Theme };
 
   const sizeClasses = {
     small: "p-1 text-sm",
@@ -90,20 +108,48 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
       "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
+  const handleRipple = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!ripple) return;
+
+    const button = event.currentTarget;
+    const circle = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    circle.classList.add("ripple");
+
+    const rippleEffect = button.getElementsByClassName("ripple")[0];
+
+    if (rippleEffect) {
+      rippleEffect.remove();
+    }
+
+    button.appendChild(circle);
+  };
+
   return (
     <div
-      className={`flex ${orientationClasses[orientation]} ${className} ${themeClasses[theme]}`}
+      className={`flex ${orientationClasses[orientation]} ${className} ${
+        themeClasses[theme]
+      } ${fullWidth ? "w-full" : ""}`}
       aria-label={ariaLabel}
     >
       {buttons.map((btn, index) => (
         <button
           key={index}
-          onClick={() => !btn.disabled && !disabled && onButtonClick(btn.value)} // 禁用按钮时不触发点击事件
-          className={`flex items-center justify-center rounded-md focus:outline-none ${animation} ${
-            sizeClasses[size]
-          } ${variantClasses[variant]} ${
+          onClick={() => !btn.disabled && !disabled && onButtonClick(btn.value)}
+          className={`flex items-center justify-center ${
+            rounded ? "rounded-md" : ""
+          } focus:outline-none ${animation} ${sizeClasses[size]} ${
+            variantClasses[variant]
+          } ${
             btn.disabled || disabled ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          } ${shadow ? "shadow-lg" : ""} ${
+            hoverEffect ? "hover:shadow-neon hover:scale-105" : ""
+          } border-${borderWidth} border-${borderColor} border-${borderStyle} ${textTransform}`}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
           onFocus={onFocus}
@@ -112,6 +158,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
           onAnimationEnd={onAnimationEnd}
           title={tooltip}
           aria-label={btn.label}
+          onMouseDown={handleRipple}
         >
           {iconPosition === "left" && btn.icon && (
             <span className="mr-2">{btn.icon}</span>
@@ -122,6 +169,21 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
           )}
         </button>
       ))}
+      <style>{`
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.6);
+          transform: scale(0);
+          animation: ripple 600ms linear;
+        }
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };

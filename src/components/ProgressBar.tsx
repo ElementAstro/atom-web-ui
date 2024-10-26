@@ -1,6 +1,6 @@
 // src/components/ProgressBar.tsx
 import React, { useEffect } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface ProgressBarProps {
   progress: number;
@@ -28,7 +28,11 @@ interface ProgressBarProps {
   borderWidth?: string;
   icon?: React.ReactNode;
   fullscreen?: boolean;
-  customTooltipClass?: string; // 新增属性
+  customTooltipClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -57,9 +61,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   borderWidth = "2",
   icon = null,
   fullscreen = false,
-  customTooltipClass = "", // 解构新增属性
+  customTooltipClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const getBgColor = () => {
     switch (variant) {
@@ -125,7 +133,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       <div
         className={`${getBgColor()} ${
           sizeClasses[size]
-        } rounded-l-lg transition-all duration-500 ease-in-out transform hover:scale-105 hover:shadow-neon ${
+        } rounded-l-lg transition-all duration-500 ease-in-out transform ${hoverAnimation} ${
           striped ? "bg-stripes" : ""
         } ${animated ? "animate-stripes" : ""} ${customProgressClass}`}
         style={{ width: `${progress}%` }}

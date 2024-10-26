@@ -24,7 +24,6 @@ const ImageUploaderExample: React.FC = () => {
         maxFileSize={5 * 1024 * 1024} // 5MB
         preview={true}
         theme="light"
-        tooltip="Click to upload images"
         borderWidth="2"
         animation="transform transition-transform duration-300 ease-in-out"
         iconColor="text-gray-400"

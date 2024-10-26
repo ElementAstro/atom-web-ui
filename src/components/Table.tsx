@@ -9,7 +9,7 @@ import {
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { CSVLink } from "react-csv";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface Column {
   Header: string;
@@ -69,7 +69,7 @@ const Table: React.FC<TableProps> = ({
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
   const tableRef = useRef<HTMLTableElement>(null);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   useEffect(() => {
     setTableData(data);

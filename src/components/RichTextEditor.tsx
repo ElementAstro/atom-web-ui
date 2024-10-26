@@ -1,7 +1,7 @@
 // src/components/RichTextEditor.tsx
 import React, { useRef, useEffect, useState, FC } from "react";
 import Button from "./Button";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface RichTextEditorProps {
   value: string;
@@ -14,9 +14,14 @@ interface RichTextEditorProps {
   animation?: string;
   icon?: React.ReactNode;
   fullscreen?: boolean;
-  customClass?: string; // 新增属性
-  customButtonClass?: string; // 新增属性
-  customEditorClass?: string; // 新增属性
+  customClass?: string;
+  customButtonClass?: string;
+  customEditorClass?: string;
+  customButtonIcons?: { [key: string]: React.ReactNode };
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const RichTextEditor: FC<RichTextEditorProps> = ({
@@ -30,13 +35,18 @@ const RichTextEditor: FC<RichTextEditorProps> = ({
   animation = "transform transition-transform duration-300 ease-in-out",
   icon = null,
   fullscreen = false,
-  customClass = "", // 解构新增属性
-  customButtonClass = "", // 解构新增属性
-  customEditorClass = "", // 解构新增属性
+  customClass = "",
+  customButtonClass = "",
+  customEditorClass = "",
+  customButtonIcons = {},
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleInput = () => {
     const html = editorRef.current?.innerHTML || "";
@@ -87,7 +97,6 @@ const RichTextEditor: FC<RichTextEditorProps> = ({
   };
 
   useEffect(() => {
-    // Set initial content
     if (editorRef.current) {
       editorRef.current.innerHTML = value;
     }
@@ -123,105 +132,107 @@ const RichTextEditor: FC<RichTextEditorProps> = ({
           title="Bold"
           customClass={customButtonClass}
         >
-          {icon || "B"}
+          {customButtonIcons.bold || icon || "B"}
         </Button>
         <Button
           onClick={() => execCommand("italic")}
           title="Italic"
           customClass={customButtonClass}
         >
-          {icon || "I"}
+          {customButtonIcons.italic || icon || "I"}
         </Button>
         <Button
           onClick={() => execCommand("underline")}
           title="Underline"
           customClass={customButtonClass}
         >
-          {icon || "U"}
+          {customButtonIcons.underline || icon || "U"}
         </Button>
         <Button
           onClick={() => execCommand("justifyLeft")}
           title="Align Left"
           customClass={customButtonClass}
         >
-          {icon || "L"}
+          {customButtonIcons.justifyLeft || icon || "L"}
         </Button>
         <Button
           onClick={() => execCommand("justifyCenter")}
           title="Align Center"
           customClass={customButtonClass}
         >
-          {icon || "C"}
+          {customButtonIcons.justifyCenter || icon || "C"}
         </Button>
         <Button
           onClick={() => execCommand("justifyRight")}
           title="Align Right"
           customClass={customButtonClass}
         >
-          {icon || "R"}
+          {customButtonIcons.justifyRight || icon || "R"}
         </Button>
         <Button
           onClick={() => execCommand("insertUnorderedList")}
           title="Bullet List"
           customClass={customButtonClass}
         >
-          {icon || "•"}
+          {customButtonIcons.insertUnorderedList || icon || "•"}
         </Button>
         <Button
           onClick={() => execCommand("insertOrderedList")}
           title="Numbered List"
           customClass={customButtonClass}
         >
-          {icon || "1."}
+          {customButtonIcons.insertOrderedList || icon || "1."}
         </Button>
         <Button
           onClick={handleCopy}
           title="Copy"
           customClass={customButtonClass}
         >
-          {icon || "⎘"}
+          {customButtonIcons.copy || icon || "⎘"}
         </Button>
         <Button
           onClick={handleSelectAll}
           title="Select All"
           customClass={customButtonClass}
         >
-          {icon || "⌘A"}
+          {customButtonIcons.selectAll || icon || "⌘A"}
         </Button>
         <Button
           onClick={handleInsertImage}
           title="Insert Image"
           customClass={customButtonClass}
         >
-          {icon || "🖼️"}
+          {customButtonIcons.insertImage || icon || "🖼️"}
         </Button>
         <Button
           onClick={handleInsertLink}
           title="Insert Link"
           customClass={customButtonClass}
         >
-          {icon || "🔗"}
+          {customButtonIcons.insertLink || icon || "🔗"}
         </Button>
         <Button
           onClick={handleUndo}
           title="Undo"
           customClass={customButtonClass}
         >
-          {icon || "↶"}
+          {customButtonIcons.undo || icon || "↶"}
         </Button>
         <Button
           onClick={handleRedo}
           title="Redo"
           customClass={customButtonClass}
         >
-          {icon || "↷"}
+          {customButtonIcons.redo || icon || "↷"}
         </Button>
         <Button
           onClick={handleFullscreenToggle}
           title="Fullscreen"
           customClass={customButtonClass}
         >
-          {isFullscreen ? "🗗" : "🗖"}
+          {isFullscreen
+            ? customButtonIcons.fullscreenExit || "🗗"
+            : customButtonIcons.fullscreen || "🗖"}
         </Button>
       </div>
       <div

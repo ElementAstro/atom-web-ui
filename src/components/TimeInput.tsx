@@ -1,7 +1,7 @@
 // src/components/TimeInput.tsx
 import React, { useState, ChangeEvent, FocusEvent, MouseEvent } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface TimeInputProps {
   value?: string;
@@ -29,6 +29,13 @@ interface TimeInputProps {
   borderWidth?: string;
   icon?: React.ReactNode;
   fullscreen?: boolean;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 const TimeInput: React.FC<TimeInputProps> = ({
@@ -50,14 +57,21 @@ const TimeInput: React.FC<TimeInputProps> = ({
   borderWidth = "2",
   icon = <AiOutlineClose />,
   fullscreen = false,
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
   const [error, setError] = useState<string>("");
   const [timeValue, setTimeValue] = useState<string>(value || defaultValue);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/; // 24小时制时间格式检查
+    const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (timePattern.test(newValue)) {
       if (newValue >= minTime && newValue <= maxTime) {
         setError("");
@@ -106,7 +120,11 @@ const TimeInput: React.FC<TimeInputProps> = ({
       }`}
     >
       {label && (
-        <label className={`block text-gray-200 mb-1 ${customLabelClass}`}>
+        <label
+          className={`block mb-1 ${customLabelClass} ${
+            timeValue ? labelActiveColor : labelColor
+          }`}
+        >
           {label}
         </label>
       )}
@@ -119,8 +137,8 @@ const TimeInput: React.FC<TimeInputProps> = ({
           onBlur={onBlur}
           onMouseEnter={onHover}
           disabled={disabled}
-          className={`p-2 border-${borderWidth} rounded bg-gray-800 text-gray-200 focus:outline-none focus:ring focus:ring-purple-500 transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-neon ${
-            disabled ? "opacity-50 cursor-not-allowed" : ""
+          className={`p-2 border-${borderWidth} rounded bg-gray-800 text-gray-200 focus:outline-none focus:ring focus:ring-purple-500 transition duration-300 ease-in-out transform ${hoverAnimation} ${
+            disabled ? disabledColor : ""
           } ${customInputClass}`}
           min={minTime}
           max={maxTime}

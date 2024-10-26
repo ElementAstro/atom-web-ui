@@ -1,8 +1,15 @@
 // src/components/Form.tsx
-import React, { useState, FormEvent, ChangeEvent, MouseEvent, FocusEvent, KeyboardEvent } from "react";
+import React, {
+  useState,
+  FormEvent,
+  ChangeEvent,
+  MouseEvent,
+  FocusEvent,
+  KeyboardEvent,
+} from "react";
 import Input from "./Input";
 import Button from "./Button";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface FormProps {
   onSubmitSuccess?: () => void;
@@ -20,6 +27,14 @@ interface FormProps {
   onMouseLeave?: (event: MouseEvent<HTMLDivElement>) => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  formBackgroundColor?: string;
+  formTextColor?: string;
+  inputBackgroundColor?: string;
+  inputTextColor?: string;
+  buttonBackgroundColor?: string;
+  buttonTextColor?: string;
+  responseMessageSuccessColor?: string;
+  responseMessageFailureColor?: string;
 }
 
 const Form: React.FC<FormProps> = ({
@@ -38,13 +53,24 @@ const Form: React.FC<FormProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "登录表单",
+  formBackgroundColor = "bg-gray-800",
+  formTextColor = "text-white",
+  inputBackgroundColor = "bg-gray-700",
+  inputTextColor = "text-white",
+  buttonBackgroundColor = "bg-blue-500",
+  buttonTextColor = "text-white",
+  responseMessageSuccessColor = "text-green-400",
+  responseMessageFailureColor = "text-red-400",
 }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [responseMessage, setResponseMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const [errors, setErrors] = useState<{
+    username?: string;
+    password?: string;
+  }>({});
+  const { theme: currentTheme } = useTheme();
 
   const validateForm = () => {
     const newErrors: { username?: string; password?: string } = {};
@@ -61,9 +87,8 @@ const Form: React.FC<FormProps> = ({
     setIsSubmitting(true);
     setResponseMessage("");
 
-    // 模拟异步提交
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // 模拟延迟
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log("Username:", username, "Password:", password);
       setResponseMessage("提交成功！感谢您的反馈。");
       resetForm();
@@ -95,7 +120,10 @@ const Form: React.FC<FormProps> = ({
   return (
     <div
       className={`min-h-screen flex items-center justify-center ${
-        themeClasses[theme as keyof typeof themeClasses || currentTheme as keyof typeof themeClasses]
+        themeClasses[
+          (theme as keyof typeof themeClasses) ||
+            (currentTheme as keyof typeof themeClasses)
+        ]
       }`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -107,38 +135,40 @@ const Form: React.FC<FormProps> = ({
     >
       <form
         onSubmit={handleSubmit}
-        className={`p-6 border-${borderWidth} rounded-lg shadow-xl bg-gray-800 ${animation} hover:scale-105 hover:shadow-neon`}
+        className={`p-6 border-${borderWidth} rounded-lg shadow-xl ${formBackgroundColor} ${formTextColor} ${animation} hover:scale-105 hover:shadow-neon`}
       >
-        <h2 className="text-white text-2xl font-semibold mb-4">登录表单</h2>
+        <h2 className="text-2xl font-semibold mb-4">登录表单</h2>
         <Input
           label="用户名"
           value={username}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
-          customClass="transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setUsername(e.target.value)
+          }
+          customClass={`transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${inputBackgroundColor} ${inputTextColor}`}
           errorMessage={errors.username}
         />
         <Input
           label="密码"
           type="password"
           value={password}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-          customClass="transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value)
+          }
+          customClass={`transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${inputBackgroundColor} ${inputTextColor}`}
           errorMessage={errors.password}
         />
         <Button
           type="submit"
           disabled={isSubmitting}
-          customClass={`w-full mt-4 ${animation} hover:scale-105 ${
-            isSubmitting
-              ? "bg-gray-600 cursor-wait"
-              : "bg-blue-500 hover:bg-blue-700"
+          customClass={`w-full mt-4 ${animation} hover:scale-105 ${buttonBackgroundColor} ${buttonTextColor} ${
+            isSubmitting ? "bg-gray-600 cursor-wait" : "hover:bg-blue-700"
           }`}
           title={tooltip}
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">
               <svg
-                className="animate-spin h-5 w-5 mr-2 text-white"
+                className="animate-spin h-5 w-5 mr-2"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -170,8 +200,8 @@ const Form: React.FC<FormProps> = ({
           <p
             className={`mt-4 text-sm transition duration-300 transform ${
               responseMessage.includes("成功")
-                ? "text-green-400"
-                : "text-red-400"
+                ? responseMessageSuccessColor
+                : responseMessageFailureColor
             }`}
           >
             {responseMessage}

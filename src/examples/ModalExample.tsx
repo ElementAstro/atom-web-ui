@@ -1,3 +1,4 @@
+// src/examples/ModalExample.tsx
 import React, { useState } from "react";
 import Modal from "../components/Modal";
 
@@ -24,7 +25,22 @@ const ModalExample: React.FC = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         header={<h2>Modal Header</h2>}
-        footer={<button onClick={handleCloseModal}>Close</button>}
+        footer={
+          <div>
+            <button
+              onClick={() => console.log("Footer button clicked")}
+              className="bg-green-500 text-white px-4 py-2 rounded mr-2"
+            >
+              Footer Button
+            </button>
+            <button
+              onClick={handleCloseModal}
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Close
+            </button>
+          </div>
+        }
         size="medium"
         position="center"
         variant="primary"
@@ -48,6 +64,12 @@ const ModalExample: React.FC = () => {
         ariaLabel="示例模态框"
       >
         <p>This is the content of the modal.</p>
+        <button
+          onClick={() => console.log("Content button clicked")}
+          className="bg-yellow-500 text-white px-4 py-2 rounded mt-4"
+        >
+          Content Button
+        </button>
       </Modal>
     </div>
   );

@@ -1,16 +1,16 @@
 // src/components/IconSelector.tsx
 import { useState, ChangeEvent, FC } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
-import * as AiIcons from "react-icons/ai"; // 导入所有 Ai 图标
-import Icon from "./Icon"; // 导入现有的 Icon 组件
-import Pagination from "./Pagination"; // 导入自主实现的分页组件
-import Button from "./Button"; // 导入 Button 组件
-import Input from "./Input"; // 导入 Input 组件
+import { useTheme } from "../context/ThemeContext";
+import * as AiIcons from "react-icons/ai";
+import Icon from "./Icon";
+import Pagination from "./Pagination";
+import Button from "./Button";
+import Input from "./Input";
 import {
   AiOutlineCopy,
   AiOutlineSortAscending,
   AiOutlineSortDescending,
-} from "react-icons/ai"; // 导入排序图标
+} from "react-icons/ai";
 
 interface IconSelectorProps {
   onSelectIcon?: (iconId: string) => void;
@@ -24,55 +24,60 @@ interface IconSelectorProps {
   borderColor?: string;
   searchPlaceholder?: string;
   itemsPerPage?: number;
+  hoverColor?: string;
+  activeColor?: string;
+  disabled?: boolean;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const IconSelector: FC<IconSelectorProps> = ({
-  onSelectIcon, // 当用户选择图标时的回调函数
-  theme, // 主题
-  tooltip = "", // 工具提示
-  borderWidth = "2", // 边框宽度
-  animation = "transform transition-transform duration-300 ease-in-out", // 动画效果
-  size = "sm", // 图标大小，调整为小尺寸
-  color = "", // 图标颜色
-  border = false, // 边框可选
-  borderColor = "border-gray-300", // 边框颜色
-  searchPlaceholder = "搜索图标...", // 搜索框占位符
-  itemsPerPage = 20, // 每页显示的图标数量
+  onSelectIcon,
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  size = "sm",
+  color = "",
+  border = false,
+  borderColor = "border-gray-300",
+  searchPlaceholder = "搜索图标...",
+  itemsPerPage = 20,
+  hoverColor = "",
+  activeColor = "",
+  disabled = false,
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-125 hover:rotate-12 hover:shadow-neon",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
-  const [selectedIcon, setSelectedIcon] = useState<string | null>(null); // 保存当前选择的图标
-  const [searchTerm, setSearchTerm] = useState<string>(""); // 搜索框输入值
-  const [currentPage, setCurrentPage] = useState<number>(1); // 当前页码
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc"); // 排序顺序
+  const { theme: currentTheme } = useTheme();
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // 可用的图标列表
   const iconList = Object.keys(AiIcons).map((key) => ({
     id: key,
     component: AiIcons[key as keyof typeof AiIcons],
     label: key,
   }));
 
-  // 处理图标点击
   const handleIconClick = (icon: { id: string }) => {
-    setSelectedIcon(icon.id); // 更新选中的图标
+    setSelectedIcon(icon.id);
     if (onSelectIcon) {
-      onSelectIcon(icon.id); // 回调函数，通知父组件选择了哪个图标
+      onSelectIcon(icon.id);
     }
-    navigator.clipboard.writeText(icon.id); // 复制图标 ID 到剪贴板
+    navigator.clipboard.writeText(icon.id);
   };
 
-  // 处理搜索输入
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // 搜索时重置页码
+    setCurrentPage(1);
   };
 
-  // 处理排序
   const handleSortChange = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
-  // 过滤后的图标列表
   const filteredIcons = iconList
     .filter((icon) =>
       icon.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -85,7 +90,6 @@ const IconSelector: FC<IconSelectorProps> = ({
       }
     });
 
-  // 分页处理
   const totalPages = Math.ceil(filteredIcons.length / itemsPerPage);
   const paginatedIcons = filteredIcons.slice(
     (currentPage - 1) * itemsPerPage,
@@ -107,9 +111,9 @@ const IconSelector: FC<IconSelectorProps> = ({
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
     sunset:
-      "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-pink-500", // 新增主题
+      "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-pink-500",
     ocean:
-      "bg-gradient-to-r from-blue-500 to-teal-500 text-white border-teal-500", // 新增主题
+      "bg-gradient-to-r from-blue-500 to-teal-500 text-white border-teal-500",
   };
 
   return (
@@ -145,12 +149,16 @@ const IconSelector: FC<IconSelectorProps> = ({
               onClick={() => handleIconClick(icon)}
               tooltip={icon.label}
               size={size}
-              color={selectedIcon === icon.id ? "red" : color} // 选中时改变颜色
+              color={selectedIcon === icon.id ? activeColor : color}
               theme={theme as ThemeKeys}
               animation={animation}
-              borderWidth={selectedIcon === icon.id ? "4" : borderWidth} // 选中时加粗边框
+              borderWidth={selectedIcon === icon.id ? "4" : borderWidth}
               border={border}
               borderColor={borderColor}
+              hoverColor={hoverColor}
+              disabled={disabled}
+              disabledColor={disabledColor}
+              hoverAnimation={hoverAnimation}
             />
             <AiOutlineCopy
               className="absolute top-0 right-0 text-gray-400 hover:text-gray-600 cursor-pointer"

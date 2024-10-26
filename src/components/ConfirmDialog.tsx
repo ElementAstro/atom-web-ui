@@ -37,6 +37,24 @@ interface ConfirmDialogProps {
   onMouseLeave?: () => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  showCloseButton?: boolean;
+  closeButtonColor?: string;
+  closeButtonPosition?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
+  customClass?: string;
+  customButtonClass?: string;
+  customIconClass?: string;
+  customTitleClass?: string;
+  customMessageClass?: string;
+  customDialogClass?: string;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -67,8 +85,22 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "确认对话框",
+  showCloseButton = false,
+  closeButtonColor = "text-gray-300",
+  closeButtonPosition = "top-right",
+  customClass = "",
+  customButtonClass = "",
+  customIconClass = "",
+  customTitleClass = "",
+  customMessageClass = "",
+  customDialogClass = "",
+  shadow = true,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -112,6 +144,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       "bg-gradient-to-r from-red-900 via-black to-black text-white",
   };
 
+  const closeButtonPositionClasses = {
+    "top-left": "top-0 left-0",
+    "top-right": "top-0 right-0",
+    "bottom-left": "bottom-0 left-0",
+    "bottom-right": "bottom-0 right-0",
+  };
+
   return (
     <div
       className={`fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center transition-opacity duration-300 ease-in-out opacity-100 ${animation}`}
@@ -126,18 +165,33 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <div
         className={`rounded-lg shadow-lg p-6 transform transition-transform duration-300 ease-in-out scale-100 hover:scale-105 hover:shadow-neon w-full max-w-md mx-4 ${
           themeClasses[theme || currentTheme]
-        }`}
+        } ${customDialogClass}`}
       >
-        {icon && iconPosition === "top" && (
-          <div className="flex justify-center mb-4">{icon}</div>
+        {showCloseButton && (
+          <button
+            onClick={onCancel}
+            className={`absolute ${closeButtonPositionClasses[closeButtonPosition]} ${closeButtonColor} hover:text-gray-100 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-600`}
+            title="关闭"
+          >
+            ✕
+          </button>
         )}
-        {title && <h2 className="text-xl font-bold mb-2">{title}</h2>}
-        <h3 className="text-lg font-bold">{message}</h3>
+        {icon && iconPosition === "top" && (
+          <div className={`flex justify-center mb-4 ${customIconClass}`}>
+            {icon}
+          </div>
+        )}
+        {title && (
+          <h2 className={`text-xl font-bold mb-2 ${customTitleClass}`}>
+            {title}
+          </h2>
+        )}
+        <h3 className={`text-lg font-bold ${customMessageClass}`}>{message}</h3>
         <div className="flex justify-end mt-4">
           <button
             onClick={onCancel}
             onKeyDown={(e) => e.key === "Enter" && onCancel()}
-            className={`mr-2 ${cancelButtonColor} hover:text-gray-100 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-600 border-${borderWidth}`}
+            className={`mr-2 ${cancelButtonColor} hover:text-gray-100 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-600 border-${borderWidth} ${customButtonClass}`}
             title={tooltip}
           >
             {cancelButtonText}
@@ -145,7 +199,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <button
             onClick={onConfirm}
             onKeyDown={(e) => e.key === "Enter" && onConfirm()}
-            className={`${confirmButtonColor} text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300 shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-600 border-${borderWidth}`}
+            className={`${confirmButtonColor} text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300 shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-600 border-${borderWidth} ${customButtonClass}`}
             disabled={disableConfirm}
             title={tooltip}
           >

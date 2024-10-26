@@ -1,6 +1,6 @@
 // src/components/LoadingSpinner.tsx
 import React, { useEffect, useState, FC, KeyboardEvent } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface LoadingSpinnerProps {
   size?: string;
@@ -29,10 +29,15 @@ interface LoadingSpinnerProps {
   progress?: number | null;
   onClose?: () => void;
   customAnimation?: string;
-  customClass?: string; // 新增属性
-  customIconClass?: string; // 新增属性
-  customProgressClass?: string; // 新增属性
-  customButtonClass?: string; // 新增属性
+  customClass?: string;
+  customIconClass?: string;
+  customProgressClass?: string;
+  customButtonClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabled?: boolean;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const LoadingSpinner: FC<LoadingSpinnerProps> = ({
@@ -54,12 +59,17 @@ const LoadingSpinner: FC<LoadingSpinnerProps> = ({
   progress = null,
   onClose,
   customAnimation = "",
-  customClass = "", // 解构新增属性
-  customIconClass = "", // 解构新增属性
-  customProgressClass = "", // 解构新增属性
-  customButtonClass = "", // 解构新增属性
+  customClass = "",
+  customIconClass = "",
+  customProgressClass = "",
+  customButtonClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabled = false,
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const [isVisible, setIsVisible] = useState(true);
 
   const sizeClasses = `h-${size} w-${size}`;

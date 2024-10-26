@@ -9,7 +9,7 @@ import {
   KeyboardEventHandler,
   AnimationEventHandler,
 } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface Image {
   src: string;
@@ -35,6 +35,11 @@ interface ImagesProps {
   onMouseLeave?: MouseEventHandler<HTMLDivElement>;
   onAnimationEnd?: AnimationEventHandler<HTMLDivElement>;
   ariaLabel?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabled?: boolean;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Images: FC<ImagesProps> = ({
@@ -42,13 +47,13 @@ const Images: FC<ImagesProps> = ({
   onImageClick,
   onImageHover,
   customClass = "",
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
-  fullscreen = false, // 新增属性
-  autoClose = false, // 新增属性
-  autoCloseDuration = 5000, // 新增属性
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  fullscreen = false,
+  autoClose = false,
+  autoCloseDuration = 5000,
   onFocus,
   onBlur,
   onKeyDown,
@@ -56,9 +61,14 @@ const Images: FC<ImagesProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "图片画廊",
+  hoverColor = "",
+  activeColor = "",
+  disabled = false,
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -129,7 +139,9 @@ const Images: FC<ImagesProps> = ({
           <img
             src={image.src}
             alt={image.alt}
-            className={`w-full h-auto rounded-md shadow-md object-cover ${animation} group-hover:scale-105 group-hover:shadow-neon border-${borderWidth} ${
+            className={`w-full h-auto rounded-md shadow-md object-cover ${animation} ${hoverAnimation} group-hover:${hoverColor} group-active:${activeColor} ${
+              disabled ? disabledColor : ""
+            } border-${borderWidth} ${
               themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
             }`}
           />

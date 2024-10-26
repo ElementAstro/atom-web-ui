@@ -8,7 +8,7 @@ import React, {
   MouseEvent,
   FocusEvent,
 } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface DropdownProps {
   options: string[];
@@ -21,7 +21,14 @@ interface DropdownProps {
   customInputClass?: string;
   customOptionClass?: string;
   customSelectedClass?: string;
-  theme?: "light" | "dark" | "astronomy" | "eyeCare";
+  theme?:
+    | "light"
+    | "dark"
+    | "astronomy"
+    | "eyeCare"
+    | "ocean"
+    | "sunset"
+    | "astronomyDarkRed";
   tooltip?: string;
   borderWidth?: string;
   animation?: string;
@@ -34,6 +41,22 @@ interface DropdownProps {
   onMouseLeave?: (event: MouseEvent<HTMLDivElement>) => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  placeholder?: string;
+  showSearch?: boolean;
+  searchPlaceholder?: string;
+  clearable?: boolean;
+  clearIcon?: React.ReactNode;
+  searchIcon?: React.ReactNode;
+  dropdownIcon?: React.ReactNode;
+  showDropdownIcon?: boolean;
+  showClearIcon?: boolean;
+  showSearchIcon?: boolean;
+  maxHeight?: string;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -60,6 +83,22 @@ const Dropdown: React.FC<DropdownProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "Dropdown",
+  placeholder = "Select...",
+  showSearch = true,
+  searchPlaceholder = "Search...",
+  clearable = false,
+  clearIcon = <span>✕</span>,
+  searchIcon = <span>🔍</span>,
+  dropdownIcon = <span>▼</span>,
+  showDropdownIcon = true,
+  showClearIcon = true,
+  showSearchIcon = true,
+  maxHeight = "15rem",
+  shadow = true,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<string | string[]>(
@@ -67,7 +106,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   );
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   useEffect(() => {
     if (onDropdownToggle) {
@@ -97,19 +136,25 @@ const Dropdown: React.FC<DropdownProps> = ({
     setSearchTerm(e.target.value);
   };
 
+  const clearSelection = () => {
+    setSelected(multiSelect ? [] : "");
+    setSearchTerm("");
+  };
+
   const filteredOptions = options.filter((option) =>
     option.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const themeClasses: Record<
-    "light" | "dark" | "astronomy" | "eyeCare",
-    string
-  > = {
+  const themeClasses: Record<string, string> = {
     light: "bg-white text-gray-900 border-gray-300",
     dark: "bg-gray-900 text-white border-gray-700",
     astronomy:
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
+    ocean: "bg-blue-100 text-blue-900 border-blue-300",
+    sunset: "bg-orange-100 text-orange-900 border-orange-300",
+    astronomyDarkRed:
+      "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
   const currentThemeClass =
@@ -128,6 +173,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       onKeyDown={onKeyDown}
       onAnimationEnd={onAnimationEnd}
       aria-label={ariaLabel}
+      style={{ textTransform }}
     >
       {label && (
         <label className={`block text-gray-200 mb-1 ${customClass}`}>
@@ -143,22 +189,43 @@ const Dropdown: React.FC<DropdownProps> = ({
         {multiSelect
           ? Array.isArray(selected) && selected.length > 0
             ? selected.join(", ")
-            : "Select options"
-          : selected}
+            : placeholder
+          : selected || placeholder}
+        {showDropdownIcon && <span className="ml-2">{dropdownIcon}</span>}
       </button>
       {isOpen && (
         <div
           ref={dropdownRef}
           className={`absolute z-10 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 ${currentThemeClass} ${animation}`}
         >
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleSearch}
-            className={`w-full p-2 border-${borderWidth} rounded-t ${currentThemeClass} focus:outline-none focus:ring focus:ring-purple-500 ${customInputClass}`}
-            placeholder="Search..."
-          />
-          <ul className="max-h-60 overflow-auto rounded-md py-1 text-base leading-6 shadow-xs focus:outline-none sm:text-sm sm:leading-5">
+          {showSearch && (
+            <div className="relative">
+              {showSearchIcon && (
+                <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  {searchIcon}
+                </span>
+              )}
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={handleSearch}
+                className={`w-full p-2 pl-10 border-${borderWidth} rounded-t ${currentThemeClass} focus:outline-none focus:ring focus:ring-purple-500 ${customInputClass}`}
+                placeholder={searchPlaceholder}
+              />
+              {clearable && showClearIcon && (
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-300"
+                >
+                  {clearIcon}
+                </button>
+              )}
+            </div>
+          )}
+          <ul
+            className={`max-h-${maxHeight} overflow-auto rounded-md py-1 text-base leading-6 shadow-xs focus:outline-none sm:text-sm sm:leading-5`}
+          >
             {filteredOptions.map((option, index) => (
               <li
                 key={index}
@@ -198,8 +265,8 @@ const Dropdown: React.FC<DropdownProps> = ({
           .mt-2 {
             margin-top: 0.5rem;
           }
-          .max-h-60 {
-            max-height: 15rem;
+          .max-h-${maxHeight} {
+            max-height: ${maxHeight};
           }
         }
       `}</style>

@@ -1,7 +1,7 @@
 // src/components/LoadMore.tsx
 import React, { FC, MouseEventHandler, FocusEventHandler } from "react";
-import LoadingSpinner from "./LoadingSpinner"; // 确保已创建并导入 LoadingSpinner 组件
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import LoadingSpinner from "./LoadingSpinner";
+import { useTheme } from "../context/ThemeContext";
 
 interface LoadMoreProps {
   onClick: MouseEventHandler<HTMLButtonElement>;
@@ -27,9 +27,13 @@ interface LoadMoreProps {
   animation?: string;
   iconPosition?: "left" | "right";
   fullWidth?: boolean;
-  customClass?: string; // 新增属性
-  customIconClass?: string; // 新增属性
-  customLoadingTextClass?: string; // 新增属性
+  customClass?: string;
+  customIconClass?: string;
+  customLoadingTextClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const LoadMore: FC<LoadMoreProps> = ({
@@ -43,16 +47,20 @@ const LoadMore: FC<LoadMoreProps> = ({
   tooltip = "",
   variant = "primary",
   size = "medium",
-  theme, // 新增属性
-  borderWidth = "2", // 新增属性
-  animation = "transform transition-transform duration-300 ease-in-out", // 新增属性
-  iconPosition = "left", // 新增属性
-  fullWidth = false, // 新增属性
-  customClass = "", // 解构新增属性
-  customIconClass = "", // 解构新增属性
-  customLoadingTextClass = "", // 解构新增属性
+  theme,
+  borderWidth = "2",
+  animation = "transform transition-transform duration-300 ease-in-out",
+  iconPosition = "left",
+  fullWidth = false,
+  customClass = "",
+  customIconClass = "",
+  customLoadingTextClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const variantClasses = {
     primary:
@@ -101,7 +109,9 @@ const LoadMore: FC<LoadMoreProps> = ({
           loading || disabled ? "cursor-not-allowed opacity-50" : ""
         } ${fullWidth ? "w-full" : ""} ${
           themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
-        } border-${borderWidth}`}
+        } border-${borderWidth} ${hoverColor} ${activeColor} ${
+          disabled ? disabledColor : ""
+        } ${hoverAnimation}`}
         disabled={loading || disabled}
         title={tooltip}
       >
@@ -112,8 +122,7 @@ const LoadMore: FC<LoadMoreProps> = ({
               color="white"
               speed="fast"
               customClass={customIconClass}
-            />{" "}
-            {/* 显示加载指示器 */}
+            />
             <span className={`ml-2 animate-pulse ${customLoadingTextClass}`}>
               加载中...
             </span>

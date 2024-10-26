@@ -10,7 +10,7 @@ import {
   AiOutlineFullscreen,
   AiOutlineFullscreenExit,
 } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface SidebarItem {
   title: string;
@@ -39,11 +39,15 @@ interface SidebarProps {
   autoClose?: boolean;
   autoCloseDuration?: number;
   iconColor?: string;
-  customClass?: string; // 新增属性
-  customButtonClass?: string; // 新增属性
-  customInputClass?: string; // 新增属性
-  customItemClass?: string; // 新增属性
-  customSubItemClass?: string; // 新增属性
+  customClass?: string;
+  customButtonClass?: string;
+  customInputClass?: string;
+  customItemClass?: string;
+  customSubItemClass?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -60,11 +64,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   autoClose = false,
   autoCloseDuration = 5000,
   iconColor = "text-gray-400",
-  customClass = "", // 解构新增属性
-  customButtonClass = "", // 解构新增属性
-  customInputClass = "", // 解构新增属性
-  customItemClass = "", // 解构新增属性
-  customSubItemClass = "", // 解构新增属性
+  customClass = "",
+  customButtonClass = "",
+  customInputClass = "",
+  customItemClass = "",
+  customSubItemClass = "",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
@@ -73,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedItems, setExpandedItems] = useState<{
     [key: number]: boolean;
   }>({});
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -169,82 +177,117 @@ const Sidebar: React.FC<SidebarProps> = ({
       >
         {icon || (isOpen ? "❮" : "❯")}
       </button>
-      <button
-        onClick={handleLockToggle}
-        className={`absolute top-4 right-16 w-8 h-8 bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
-        aria-label="Lock/Unlock Sidebar"
-        title={tooltip}
-      >
-        {isLocked ? <AiOutlineLock /> : <AiOutlineUnlock />}
-      </button>
-      <button
-        onClick={handleFullscreenToggle}
-        className={`absolute top-4 right-28 w-8 h-8 bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
-        aria-label="Toggle Fullscreen"
-        title={tooltip}
-      >
-        {fullscreen ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
-      </button>
       {isOpen && (
+        <>
+          <button
+            onClick={handleLockToggle}
+            className={`absolute top-4 right-16 w-8 h-8 bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
+            aria-label="Lock/Unlock Sidebar"
+            title={tooltip}
+          >
+            {isLocked ? <AiOutlineLock /> : <AiOutlineUnlock />}
+          </button>
+          <button
+            onClick={handleFullscreenToggle}
+            className={`absolute top-4 right-28 w-8 h-8 bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
+            aria-label="Toggle Fullscreen"
+            title={tooltip}
+          >
+            {fullscreen ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
+          </button>
+        </>
+      )}
+      <div className={`p-4 ${isOpen ? "" : "hidden"}`}>
+        <h2 className="text-lg font-bold text-white mb-4">侧边栏</h2>
+        <div className="relative mb-4">
+          <AiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="搜索..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`w-full pl-10 pr-3 py-2 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
+          />
+        </div>
+        <ul>
+          {filteredItems.map((item, index) => (
+            <li key={index} className={`my-2 ${customItemClass}`}>
+              <a
+                href="#"
+                onClick={() => onItemClick && onItemClick(item)}
+                className={`flex items-center text-gray-300 hover:text-white hover:bg-blue-600 p-2 rounded-lg transition duration-300 transform ${hoverAnimation}`}
+              >
+                {item.icon === "home" && (
+                  <AiOutlineHome className={`mr-2 ${iconColor}`} />
+                )}
+                {item.icon === "user" && (
+                  <AiOutlineUser className={`mr-2 ${iconColor}`} />
+                )}
+                {item.icon === "settings" && (
+                  <AiOutlineSetting className={`mr-2 ${iconColor}`} />
+                )}
+                <span className={`${isOpen ? "" : "hidden"}`}>
+                  {item.title}
+                </span>
+                {item.subItems && (
+                  <button
+                    onClick={() => handleExpandToggle(index)}
+                    className="ml-auto text-gray-400 hover:text-white transition duration-300 w-6 h-6 flex items-center justify-center"
+                  >
+                    {expandedItems[index] ? "▲" : "▼"}
+                  </button>
+                )}
+              </a>
+              {item.subItems && expandedItems[index] && (
+                <ul className={`ml-4 mt-2 space-y-2 ${customSubItemClass}`}>
+                  {item.subItems.map((subItem, subIndex) => (
+                    <li key={subIndex} className="my-1">
+                      <a
+                        href="#"
+                        onClick={() => onItemClick && onItemClick(subItem)}
+                        className={`flex items-center text-gray-300 hover:text-white hover:bg-blue-600 p-2 rounded-lg transition duration-300 transform ${hoverAnimation}`}
+                      >
+                        <span>{subItem.title}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+      {!isOpen && (
         <div className="p-4">
-          <h2 className="text-lg font-bold text-white mb-4">侧边栏</h2>
-          <div className="relative mb-4">
-            <AiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="搜索..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-10 pr-3 py-2 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
-            />
-          </div>
           <ul>
             {filteredItems.map((item, index) => (
               <li key={index} className={`my-2 ${customItemClass}`}>
                 <a
                   href="#"
                   onClick={() => onItemClick && onItemClick(item)}
-                  className="flex items-center text-gray-300 hover:text-white hover:bg-blue-600 p-2 rounded-lg transition duration-300 transform hover:scale-105 hover:shadow-neon"
+                  className={`flex items-center justify-center text-gray-300 hover:text-white hover:bg-blue-600 p-2 rounded-lg transition duration-300 transform ${hoverAnimation}`}
                 >
                   {item.icon === "home" && (
-                    <AiOutlineHome className={`mr-2 ${iconColor}`} />
+                    <AiOutlineHome className={`${iconColor}`} />
                   )}
                   {item.icon === "user" && (
-                    <AiOutlineUser className={`mr-2 ${iconColor}`} />
+                    <AiOutlineUser className={`${iconColor}`} />
                   )}
                   {item.icon === "settings" && (
-                    <AiOutlineSetting className={`mr-2 ${iconColor}`} />
-                  )}
-                  <span className={`${!isOpen ? "hidden" : ""}`}>
-                    {item.title}
-                  </span>
-                  {item.subItems && (
-                    <button
-                      onClick={() => handleExpandToggle(index)}
-                      className="ml-auto text-gray-400 hover:text-white transition duration-300 w-6 h-6 flex items-center justify-center"
-                    >
-                      {expandedItems[index] ? "▲" : "▼"}
-                    </button>
+                    <AiOutlineSetting className={`${iconColor}`} />
                   )}
                 </a>
-                {item.subItems && expandedItems[index] && (
-                  <ul className={`ml-4 mt-2 space-y-2 ${customSubItemClass}`}>
-                    {item.subItems.map((subItem, subIndex) => (
-                      <li key={subIndex} className="my-1">
-                        <a
-                          href="#"
-                          onClick={() => onItemClick && onItemClick(subItem)}
-                          className="flex items-center text-gray-300 hover:text-white hover:bg-blue-600 p-2 rounded-lg transition duration-300 transform hover:scale-105 hover:shadow-neon"
-                        >
-                          <span>{subItem.title}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </li>
             ))}
           </ul>
+          <button
+            onClick={handleToggle}
+            className={`absolute bottom-4 right-4 w-8 h-8 bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
+            aria-label="Toggle Sidebar"
+            title={tooltip}
+          >
+            {icon || (isOpen ? "❮" : "❯")}
+          </button>
         </div>
       )}
     </div>

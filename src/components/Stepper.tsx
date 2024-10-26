@@ -1,6 +1,6 @@
 // src/components/Stepper.tsx
 import React, { FC, ReactNode } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface StepperProps {
   steps: Array<{ label?: string } | string>;
@@ -75,7 +75,7 @@ const Stepper: FC<StepperProps> = ({
   tooltipPosition = "top",
 }) => {
   const isHorizontal = orientation === "horizontal";
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   type ThemeKeys =
     | "light"

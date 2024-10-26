@@ -18,7 +18,7 @@ const MenuExample: React.FC = () => {
   return (
     <div className="p-4">
       <Menu
-        items={["Item 1", "Item 2", "Item 3"]}
+        items={[{ label: "Item 1" }, { label: "Item 2" }, { label: "Item 3" }]}
         onOpen={handleOpen}
         onClose={handleClose}
         onItemClick={handleItemClick}

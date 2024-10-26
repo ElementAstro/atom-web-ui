@@ -72,6 +72,27 @@ interface OffcanvasProps {
   customMaximizeButtonClass?: string; // 新增属性
   customFullscreenButtonClass?: string; // 新增属性
   customAdditionalButtonClass?: string; // 新增属性
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  closeButtonTooltip?: string;
+  maximizeButtonTooltip?: string;
+  fullscreenButtonTooltip?: string;
+  closeButtonPosition?:
+    | "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left";
+  maximizeButtonPosition?:
+    | "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left";
+  fullscreenButtonPosition?:
+    | "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left";
 }
 
 const Offcanvas: React.FC<OffcanvasProps> = ({
@@ -114,6 +135,15 @@ const Offcanvas: React.FC<OffcanvasProps> = ({
   customMaximizeButtonClass = "", // 解构新增属性
   customFullscreenButtonClass = "", // 解构新增属性
   customAdditionalButtonClass = "", // 解构新增属性
+  backgroundColor,
+  textColor,
+  borderColor,
+  closeButtonTooltip = "关闭",
+  maximizeButtonTooltip = "最大化",
+  fullscreenButtonTooltip = "全屏",
+  closeButtonPosition = "top-right",
+  maximizeButtonPosition = "top-right",
+  fullscreenButtonPosition = "top-right",
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const offcanvasRef = useRef<HTMLDivElement>(null);
@@ -242,6 +272,13 @@ const Offcanvas: React.FC<OffcanvasProps> = ({
     right: "tooltip-right",
   };
 
+  const buttonPositionClasses = {
+    "top-right": "top-4 right-4",
+    "top-left": "top-4 left-4",
+    "bottom-right": "bottom-4 right-4",
+    "bottom-left": "bottom-4 left-4",
+  };
+
   return (
     <div
       className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
@@ -277,6 +314,11 @@ const Offcanvas: React.FC<OffcanvasProps> = ({
         onAnimationEnd={onAnimationEnd}
         onDoubleClick={onDoubleClick}
         aria-label={ariaLabel}
+        style={{
+          backgroundColor: backgroundColor || undefined,
+          color: textColor || undefined,
+          borderColor: borderColor || undefined,
+        }}
       >
         {closeButton && (
           <button
@@ -284,8 +326,8 @@ const Offcanvas: React.FC<OffcanvasProps> = ({
               onClose();
               if (rippleEffect) createRipple(e);
             }}
-            className={`absolute top-4 right-4 ${iconColor} hover:text-gray-400 ${customCloseButtonClass}`} // 使用 customCloseButtonClass 属性
-            title={tooltip}
+            className={`absolute ${buttonPositionClasses[closeButtonPosition]} ${iconColor} hover:text-gray-400 ${customCloseButtonClass}`} // 使用 customCloseButtonClass 属性
+            title={closeButtonTooltip}
           >
             {icon}
             {showTooltip && (
@@ -298,7 +340,8 @@ const Offcanvas: React.FC<OffcanvasProps> = ({
         {maximizable && (
           <button
             onClick={handleMaximize}
-            className={`absolute top-4 right-16 ${iconColor} hover:text-gray-400 ${customMaximizeButtonClass}`} // 使用 customMaximizeButtonClass 属性
+            className={`absolute ${buttonPositionClasses[maximizeButtonPosition]} ${iconColor} hover:text-gray-400 ${customMaximizeButtonClass}`} // 使用 customMaximizeButtonClass 属性
+            title={maximizeButtonTooltip}
           >
             {isMaximized ? <AiOutlineCompress /> : <AiOutlineExpand />}
           </button>
@@ -306,7 +349,8 @@ const Offcanvas: React.FC<OffcanvasProps> = ({
         {fullscreen && (
           <button
             onClick={handleFullscreen}
-            className={`absolute top-4 right-28 ${iconColor} hover:text-gray-400 ${customFullscreenButtonClass}`} // 使用 customFullscreenButtonClass 属性
+            className={`absolute ${buttonPositionClasses[fullscreenButtonPosition]} ${iconColor} hover:text-gray-400 ${customFullscreenButtonClass}`} // 使用 customFullscreenButtonClass 属性
+            title={fullscreenButtonTooltip}
           >
             {fullscreen ? <AiOutlineFullscreenExit /> : <AiOutlineFullscreen />}
           </button>

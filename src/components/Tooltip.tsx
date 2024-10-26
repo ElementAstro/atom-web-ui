@@ -7,7 +7,7 @@ import React, {
   MouseEvent,
   KeyboardEvent,
 } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface TooltipProps {
   text: string;
@@ -36,6 +36,10 @@ interface TooltipProps {
   onDoubleClick?: (event: MouseEvent<HTMLDivElement>) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
   ariaLabel?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  maxWidth?: string;
 }
 
 const Tooltip: React.FC<TooltipProps> = ({
@@ -58,13 +62,17 @@ const Tooltip: React.FC<TooltipProps> = ({
   onDoubleClick,
   onKeyDown,
   ariaLabel = "提示",
+  backgroundColor,
+  textColor,
+  borderColor,
+  maxWidth = "200px",
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [calculatedPosition, setCalculatedPosition] = useState(position);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleShow = () => {
     if (delay > 0) {
@@ -192,10 +200,17 @@ const Tooltip: React.FC<TooltipProps> = ({
         className={`absolute ${
           positionClasses[calculatedPosition]
         } ${animation} ${
-          isVisible ? "opacity-100" : "opacity-0"
+          isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
         } bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded shadow-lg z-10 border-${borderWidth} ${customTextClass} ${
           sizeClasses[size]
         }`}
+        style={{
+          backgroundColor: backgroundColor || undefined,
+          color: textColor || undefined,
+          borderColor: borderColor || undefined,
+          maxWidth: maxWidth,
+          whiteSpace: "pre-wrap",
+        }}
       >
         {icon && <span className="mr-2">{icon}</span>}
         {text}

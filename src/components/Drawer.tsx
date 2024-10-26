@@ -14,7 +14,7 @@ import {
   AiOutlineFullscreen,
   AiOutlineFullscreenExit,
 } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface DrawerProps {
   isOpen: boolean;
@@ -65,6 +65,12 @@ interface DrawerProps {
   onCloseComplete?: () => void;
   onOpen?: () => void;
   dockable?: boolean;
+  resizable?: boolean;
+  shadow?: boolean;
+  hoverEffect?: boolean;
+  borderStyle?: string;
+  borderColor?: string;
+  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
 const Drawer: React.FC<DrawerProps> = ({
@@ -104,11 +110,17 @@ const Drawer: React.FC<DrawerProps> = ({
   onCloseComplete,
   onOpen,
   dockable = false,
+  resizable = false,
+  shadow = true,
+  hoverEffect = true,
+  borderStyle = "solid",
+  borderColor = "gray-300",
+  textTransform = "none",
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isDocked, setIsDocked] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {

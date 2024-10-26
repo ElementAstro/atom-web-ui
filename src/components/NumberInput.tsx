@@ -1,3 +1,4 @@
+// src/components/NumberInput.tsx
 import React, { useState, useCallback } from "react";
 
 interface NumberInputProps {
@@ -21,6 +22,10 @@ interface NumberInputProps {
   tooltip?: string;
   borderWidth?: string;
   animation?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -36,10 +41,13 @@ const NumberInput: React.FC<NumberInputProps> = ({
   tooltip = "",
   borderWidth = "1",
   animation = "transition-transform duration-300 ease-in-out",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [value, setValue] = useState<number>(initialValue);
 
-  // Helper to format numbers with thousand separators
   const formatNumber = useCallback(
     (num: number) => {
       return formatThousands ? num.toLocaleString() : num.toString();
@@ -73,7 +81,6 @@ const NumberInput: React.FC<NumberInputProps> = ({
   };
 
   const handleBlur = () => {
-    // Clamp value within min and max on blur
     const clampedValue = Math.min(max, Math.max(min, value || 0));
     setValue(clampedValue);
     onValueChange?.(clampedValue);
@@ -103,8 +110,8 @@ const NumberInput: React.FC<NumberInputProps> = ({
         onClick={decrement}
         className={`px-3 py-1 ${
           themeClasses[theme]
-        } hover:bg-gray-400 text-gray-700 font-semibold rounded-l-lg focus:outline-none ${
-          disabled ? "opacity-50 cursor-not-allowed" : ""
+        } ${hoverColor} ${activeColor} ${hoverAnimation} text-gray-700 font-semibold rounded-l-lg focus:outline-none ${
+          disabled ? disabledColor : ""
         }`}
         disabled={disabled || value <= min}
         style={{ borderWidth }}
@@ -130,8 +137,8 @@ const NumberInput: React.FC<NumberInputProps> = ({
         onClick={increment}
         className={`px-3 py-1 ${
           themeClasses[theme]
-        } hover:bg-gray-400 text-gray-700 font-semibold rounded-r-lg focus:outline-none ${
-          disabled ? "opacity-50 cursor-not-allowed" : ""
+        } ${hoverColor} ${activeColor} ${hoverAnimation} text-gray-700 font-semibold rounded-r-lg focus:outline-none ${
+          disabled ? disabledColor : ""
         }`}
         disabled={disabled || value >= max}
         style={{ borderWidth }}

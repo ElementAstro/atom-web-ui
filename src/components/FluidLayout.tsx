@@ -13,7 +13,7 @@ import {
   AiOutlineFullscreen,
   AiOutlineFullscreenExit,
 } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface FluidLayoutProps {
   sidebarContent: React.ReactNode;
@@ -34,6 +34,12 @@ interface FluidLayoutProps {
   onMouseLeave?: () => void;
   onAnimationEnd?: () => void;
   ariaLabel?: string;
+  sidebarBackgroundColor?: string;
+  mainBackgroundColor?: string;
+  sidebarTextColor?: string;
+  mainTextColor?: string;
+  sidebarWidth?: string;
+  mainWidth?: string;
 }
 
 const FluidLayout: React.FC<FluidLayoutProps> = ({
@@ -55,14 +61,19 @@ const FluidLayout: React.FC<FluidLayoutProps> = ({
   onMouseLeave,
   onAnimationEnd,
   ariaLabel = "Fluid Layout",
+  sidebarBackgroundColor = "bg-gray-800",
+  mainBackgroundColor = "bg-gray-900",
+  sidebarTextColor = "text-white",
+  mainTextColor = "text-white",
+  sidebarWidth = "25%",
+  mainWidth = "75%",
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState("25%");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
   const currentX = useRef(0);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -123,7 +134,7 @@ const FluidLayout: React.FC<FluidLayoutProps> = ({
   const handleResize = (e: MouseEvent) => {
     const deltaX = e.clientX - startX.current;
     const newWidth = Math.max(200, sidebarRef.current!.offsetWidth + deltaX);
-    setSidebarWidth(`${newWidth}px`);
+    sidebarRef.current!.style.width = `${newWidth}px`;
     startX.current = e.clientX;
   };
 
@@ -170,10 +181,9 @@ const FluidLayout: React.FC<FluidLayoutProps> = ({
       onAnimationEnd={onAnimationEnd}
       aria-label={ariaLabel}
     >
-      {/* Sidebar */}
       <aside
         ref={sidebarRef}
-        className={`bg-gray-800 p-4 transition-transform duration-300 ease-in-out transform ${animation} ${
+        className={`${sidebarBackgroundColor} ${sidebarTextColor} p-4 transition-transform duration-300 ease-in-out transform ${animation} ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
         style={{ width: sidebarWidth }}
@@ -182,12 +192,12 @@ const FluidLayout: React.FC<FluidLayoutProps> = ({
         onTouchEnd={handleTouchEnd}
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-white text-lg">
+          <h2 className="text-lg">
             {icon && <span className="mr-2">{icon}</span>}
             Sidebar
           </h2>
           <button
-            className="text-white md:hidden"
+            className="md:hidden"
             onClick={handleSidebarToggle}
             title={tooltip}
           >
@@ -201,20 +211,16 @@ const FluidLayout: React.FC<FluidLayoutProps> = ({
         ></div>
       </aside>
 
-      {/* Main Content */}
       <main
-        className={`flex-grow bg-gray-900 p-4 ${
+        className={`flex-grow ${mainBackgroundColor} ${mainTextColor} p-4 ${
           isFullscreen ? "w-full h-full" : ""
         }`}
+        style={{ width: mainWidth }}
       >
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-white text-2xl">Main Content</h1>
+          <h1 className="text-2xl">Main Content</h1>
           <div className="flex space-x-2">
-            <button
-              className="text-white"
-              onClick={handleFullscreenToggle}
-              title="Toggle Fullscreen"
-            >
+            <button onClick={handleFullscreenToggle} title="Toggle Fullscreen">
               {isFullscreen ? (
                 <AiOutlineFullscreenExit />
               ) : (
@@ -222,7 +228,7 @@ const FluidLayout: React.FC<FluidLayoutProps> = ({
               )}
             </button>
             <button
-              className="text-white md:hidden"
+              className="md:hidden"
               onClick={handleSidebarToggle}
               title={tooltip}
             >

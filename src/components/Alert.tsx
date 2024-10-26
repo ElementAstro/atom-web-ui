@@ -10,7 +10,7 @@ import { useTheme } from "../context/ThemeContext";
 
 interface AlertProps {
   message: string;
-  severity: "error" | "info";
+  severity: "error" | "info" | "warning" | "success";
   onClose: () => void;
   onOpen?: () => void;
   customClass?: string;
@@ -47,6 +47,8 @@ interface AlertProps {
   hideAnimation?: string;
   errorIcon?: React.ReactNode;
   infoIcon?: React.ReactNode;
+  warningIcon?: React.ReactNode;
+  successIcon?: React.ReactNode;
   onShow?: () => void;
   onHide?: () => void;
 }
@@ -83,13 +85,15 @@ const Alert: React.FC<AlertProps> = ({
   hideAnimation = "fadeOut",
   errorIcon,
   infoIcon,
+  warningIcon,
+  successIcon,
   onShow,
   onHide,
 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   useEffect(() => {
     if (isVisible && onOpen) {
@@ -108,7 +112,7 @@ const Alert: React.FC<AlertProps> = ({
         setTimeout(() => {
           onClose();
           if (onHide) onHide();
-        }, 300); // 等待动画结束后再调用 onClose 和 onHide
+        }, 300);
       }, autoCloseDuration);
     }
     return () => clearTimeout(timer);
@@ -125,17 +129,33 @@ const Alert: React.FC<AlertProps> = ({
     }
   }, [autoClose, autoCloseDuration, showProgress, isPaused]);
 
-  const bgColor = severity === "error" ? "bg-red-900" : "bg-blue-900";
-  const textColor = severity === "error" ? "text-red-300" : "text-blue-300";
-  const borderColor =
-    severity === "error" ? "border-red-500" : "border-blue-500";
+  const bgColor = {
+    error: "bg-red-900",
+    info: "bg-blue-900",
+    warning: "bg-yellow-900",
+    success: "bg-green-900",
+  }[severity];
+
+  const textColor = {
+    error: "text-red-300",
+    info: "text-blue-300",
+    warning: "text-yellow-300",
+    success: "text-green-300",
+  }[severity];
+
+  const borderColor = {
+    error: "border-red-500",
+    info: "border-blue-500",
+    warning: "border-yellow-500",
+    success: "border-green-500",
+  }[severity];
 
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(() => {
       onClose();
       if (onHide) onHide();
-    }, 300); // 等待动画结束后再调用 onClose 和 onHide
+    }, 300);
   };
 
   const handleMouseEnter = () => {
@@ -167,6 +187,13 @@ const Alert: React.FC<AlertProps> = ({
       "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
+  const iconMap = {
+    error: errorIcon,
+    info: infoIcon,
+    warning: warningIcon,
+    success: successIcon,
+  };
+
   return (
     isVisible && (
       <div
@@ -194,7 +221,7 @@ const Alert: React.FC<AlertProps> = ({
         <div className="alert__content flex justify-between items-center">
           {showIcon && (
             <span className="alert__icon mr-2">
-              {severity === "error" ? errorIcon : infoIcon}
+              {icon || iconMap[severity]}
             </span>
           )}
           <div className="flex-1">

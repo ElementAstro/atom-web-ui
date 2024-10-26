@@ -22,6 +22,7 @@ interface TabsProps {
   onTabAdd?: (newTab: Tab) => void;
   onTabRename?: (label: string, newLabel: string) => void;
   tabHeight?: string;
+  tabWidth?: string;
   draggable?: boolean;
   closable?: boolean;
   addable?: boolean;
@@ -50,6 +51,16 @@ interface TabsProps {
   rippleEffect?: boolean;
   rippleColor?: string;
   rippleDuration?: number;
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 const Tabs: React.FC<TabsProps> = ({
@@ -58,6 +69,7 @@ const Tabs: React.FC<TabsProps> = ({
   onTabClose,
   onTabAdd,
   tabHeight = "auto",
+  tabWidth = "auto",
   draggable = true,
   closable = true,
   addable = true,
@@ -78,6 +90,16 @@ const Tabs: React.FC<TabsProps> = ({
   rippleEffect = true,
   rippleColor = "rgba(255, 255, 255, 0.6)",
   rippleDuration = 600,
+  backgroundColor,
+  textColor,
+  borderColor,
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
   const [activeTab, setActiveTab] = useState(tabs[0].label);
   const [tabList, setTabList] = useState(tabs);
@@ -201,7 +223,7 @@ const Tabs: React.FC<TabsProps> = ({
         className={`relative ${
           isDragging ? "opacity-50" : "opacity-100"
         } flex-1`}
-        style={{ height: tabHeight }}
+        style={{ height: tabHeight, width: tabWidth }}
         title={tooltip}
         onDoubleClick={() => handleDragOut(tab)}
         onKeyDown={onKeyDown}
@@ -211,8 +233,8 @@ const Tabs: React.FC<TabsProps> = ({
         <button
           className={`py-2 px-4 text-white transition duration-300 transform w-full text-center ${animation} ${
             activeTab === tab.label
-              ? "border-b-2 border-blue-500 scale-105 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-neon"
-              : "hover:bg-gray-600"
+              ? `border-b-2 border-blue-500 scale-105 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-neon ${labelActiveColor}`
+              : `hover:bg-gray-600 ${labelColor}`
           } focus:outline-none`}
           onClick={(e) => {
             handleTabChange(tab.label);
@@ -272,6 +294,11 @@ const Tabs: React.FC<TabsProps> = ({
       className={`bg-gray-900 rounded-lg shadow-lg ${
         fullscreen ? "w-full h-full" : ""
       } ${themeClasses[(theme as ThemeKeys) || "light"]}`}
+      style={{
+        backgroundColor: backgroundColor || undefined,
+        color: textColor || undefined,
+        borderColor: borderColor || undefined,
+      }}
     >
       {showProgress && (
         <div className={`absolute top-0 left-0 w-full ${progressHeight}`}>

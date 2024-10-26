@@ -1,6 +1,6 @@
 // src/components/Pagination.tsx
 import React, { useState, ChangeEvent, KeyboardEvent, MouseEvent } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface PaginationProps {
   currentPage: number;
@@ -18,13 +18,17 @@ interface PaginationProps {
   iconPosition?: "left" | "right";
   showPageNumbers?: boolean;
   compact?: boolean;
-  onDoubleClickButton?: (event: MouseEvent<HTMLButtonElement>) => void; // 修改属性名
-  onDoubleClickInput?: (event: MouseEvent<HTMLInputElement>) => void; // 新增属性
+  onDoubleClickButton?: (event: MouseEvent<HTMLButtonElement>) => void;
+  onDoubleClickInput?: (event: MouseEvent<HTMLInputElement>) => void;
   onKeyDown?: (
     event: KeyboardEvent<HTMLButtonElement | HTMLInputElement>
   ) => void;
   ariaLabel?: string;
   maxPageNumbersToShow?: number;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -43,14 +47,18 @@ const Pagination: React.FC<PaginationProps> = ({
   iconPosition = "left",
   showPageNumbers = true,
   compact = false,
-  onDoubleClickButton, // 修改属性名
-  onDoubleClickInput, // 新增属性
+  onDoubleClickButton,
+  onDoubleClickInput,
   onKeyDown,
   ariaLabel = "Pagination",
   maxPageNumbersToShow = 5,
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [inputPage, setInputPage] = useState<number | string>(currentPage);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
@@ -148,11 +156,11 @@ const Pagination: React.FC<PaginationProps> = ({
               currentPage === 1
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gray-200 hover:bg-blue-300 transition duration-300"
-            } ${customButtonClass} border-${borderWidth} ${animation}`}
+            } ${customButtonClass} border-${borderWidth} ${animation} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
             onClick={() => handlePageChange(1)}
             disabled={currentPage === 1}
             title={tooltip}
-            onDoubleClick={onDoubleClickButton} // 修改属性名
+            onDoubleClick={onDoubleClickButton}
             onKeyDown={onKeyDown}
           >
             {icon && iconPosition === "left" && (
@@ -170,11 +178,11 @@ const Pagination: React.FC<PaginationProps> = ({
               currentPage === 1
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gray-200 hover:bg-blue-300 transition duration-300"
-            } ${customButtonClass} border-${borderWidth} ${animation}`}
+            } ${customButtonClass} border-${borderWidth} ${animation} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             title={tooltip}
-            onDoubleClick={onDoubleClickButton} // 修改属性名
+            onDoubleClick={onDoubleClickButton}
             onKeyDown={onKeyDown}
           >
             {icon && iconPosition === "left" && (
@@ -198,13 +206,13 @@ const Pagination: React.FC<PaginationProps> = ({
                     page === currentPage
                       ? "bg-blue-500 text-white scale-105"
                       : "bg-gray-200 hover:bg-blue-300"
-                  } ${customButtonClass} border-${borderWidth} ${animation}`}
+                  } ${customButtonClass} border-${borderWidth} ${animation} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
                   onClick={() => handlePageChange(page as number)}
                   onMouseEnter={() =>
                     onPageHover && onPageHover(page as number)
                   }
                   title={tooltip}
-                  onDoubleClick={onDoubleClickButton} // 修改属性名
+                  onDoubleClick={onDoubleClickButton}
                   onKeyDown={onKeyDown}
                 >
                   {icon && iconPosition === "left" && (
@@ -225,11 +233,11 @@ const Pagination: React.FC<PaginationProps> = ({
               currentPage === totalPages
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gray-200 hover:bg-blue-300 transition duration-300"
-            } ${customButtonClass} border-${borderWidth} ${animation}`}
+            } ${customButtonClass} border-${borderWidth} ${animation} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             title={tooltip}
-            onDoubleClick={onDoubleClickButton} // 修改属性名
+            onDoubleClick={onDoubleClickButton}
             onKeyDown={onKeyDown}
           >
             {icon && iconPosition === "left" && (
@@ -247,11 +255,11 @@ const Pagination: React.FC<PaginationProps> = ({
               currentPage === totalPages
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gray-200 hover:bg-blue-300 transition duration-300"
-            } ${customButtonClass} border-${borderWidth} ${animation}`}
+            } ${customButtonClass} border-${borderWidth} ${animation} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
             onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages}
             title={tooltip}
-            onDoubleClick={onDoubleClickButton} // 修改属性名
+            onDoubleClick={onDoubleClickButton}
             onKeyDown={onKeyDown}
           >
             {icon && iconPosition === "left" && (
@@ -272,7 +280,7 @@ const Pagination: React.FC<PaginationProps> = ({
             className={`px-1 py-1 rounded border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500 transition duration-300 ${customInputClass}`}
             placeholder="页"
             title={tooltip}
-            onDoubleClick={onDoubleClickInput} // 新增属性
+            onDoubleClick={onDoubleClickInput}
             onKeyDown={onKeyDown}
           />
         </li>

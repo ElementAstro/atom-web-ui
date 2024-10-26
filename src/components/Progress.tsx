@@ -5,7 +5,7 @@ import {
   AiOutlinePlayCircle,
   AiOutlineClose,
 } from "react-icons/ai";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface ProgressProps {
   value: number;
@@ -23,6 +23,10 @@ interface ProgressProps {
   animation?: string;
   icon?: React.ReactNode;
   fullscreen?: boolean;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Progress: React.FC<ProgressProps> = ({
@@ -41,12 +45,16 @@ const Progress: React.FC<ProgressProps> = ({
   animation = "transform transition-transform duration-500 ease-in-out",
   icon = null,
   fullscreen = false,
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [progressValue, setProgressValue] = useState(value);
   const [isPaused, setIsPaused] = useState(false);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
-  const progressPercentage = Math.min((progressValue / max) * 100, 100); // 确保不超过100%
+  const progressPercentage = Math.min((progressValue / max) * 100, 100);
 
   useEffect(() => {
     if (onProgressChange) {
@@ -104,7 +112,7 @@ const Progress: React.FC<ProgressProps> = ({
         className={`h-4 rounded-full ${animation} ${customProgressClass}`}
         style={{
           width: `${progressPercentage}%`,
-          background: color, // 自定义颜色
+          background: color,
         }}
       />
       <span
@@ -116,7 +124,7 @@ const Progress: React.FC<ProgressProps> = ({
         {isPaused ? (
           <button
             onClick={handleResume}
-            className={`text-white hover:text-green-500 transition duration-300 ${customButtonClass}`}
+            className={`text-white hover:text-green-500 transition duration-300 ${customButtonClass} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
             title={tooltip}
           >
             {icon || <AiOutlinePlayCircle />}
@@ -124,7 +132,7 @@ const Progress: React.FC<ProgressProps> = ({
         ) : (
           <button
             onClick={handlePause}
-            className={`text-white hover:text-yellow-500 transition duration-300 ${customButtonClass}`}
+            className={`text-white hover:text-yellow-500 transition duration-300 ${customButtonClass} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
             title={tooltip}
           >
             {icon || <AiOutlinePause />}
@@ -132,7 +140,7 @@ const Progress: React.FC<ProgressProps> = ({
         )}
         <button
           onClick={handleClose}
-          className={`text-white hover:text-red-500 transition duration-300 ${customButtonClass}`}
+          className={`text-white hover:text-red-500 transition duration-300 ${customButtonClass} ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
           title={tooltip}
         >
           {icon || <AiOutlineClose />}

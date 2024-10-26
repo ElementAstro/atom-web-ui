@@ -1,4 +1,3 @@
-// src/components/Menu.tsx
 import React, {
   useState,
   useEffect,
@@ -6,10 +5,15 @@ import React, {
   MouseEvent,
   ReactNode,
 } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface MenuProps {
-  items: string[];
+  items: {
+    label: string;
+    icon?: ReactNode;
+    disabled?: boolean;
+    tooltip?: string;
+  }[];
   onOpen?: () => void;
   onClose?: () => void;
   onItemClick?: (item: string) => void;
@@ -33,9 +37,20 @@ interface MenuProps {
   iconPosition?: "left" | "right";
   fullWidth?: boolean;
   multiSelect?: boolean;
-  customClass?: string; // 新增属性
-  customItemClass?: string; // 新增属性
-  customIconClass?: string; // 新增属性
+  customClass?: string;
+  customItemClass?: string;
+  customIconClass?: string;
+  customItemIconClass?: string;
+  customItemHoverClass?: string;
+  customItemSelectedClass?: string;
+  maxHeight?: string;
+  scrollBarClass?: string;
+  openAnimation?: string;
+  closeAnimation?: string;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
 }
 
 const Menu: React.FC<MenuProps> = ({
@@ -49,20 +64,31 @@ const Menu: React.FC<MenuProps> = ({
   disabled = false,
   animation = "scale-105",
   closeOnClickOutside = true,
-  theme, // 新增属性
-  tooltip = "", // 新增属性
-  borderWidth = "2", // 新增属性
-  iconPosition = "left", // 新增属性
-  fullWidth = false, // 新增属性
-  multiSelect = false, // 新增属性
-  customClass = "", // 解构新增属性
-  customItemClass = "", // 解构新增属性
-  customIconClass = "", // 解构新增属性
+  theme,
+  tooltip = "",
+  borderWidth = "2",
+  iconPosition = "left",
+  fullWidth = false,
+  multiSelect = false,
+  customClass = "",
+  customItemClass = "",
+  customIconClass = "",
+  customItemIconClass = "",
+  customItemHoverClass = "",
+  customItemSelectedClass = "",
+  maxHeight = "300px",
+  scrollBarClass = "",
+  openAnimation = "fade-in",
+  closeAnimation = "fade-out",
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "opacity-50 cursor-not-allowed",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const toggleMenu = () => {
     if (disabled) return;
@@ -163,19 +189,29 @@ const Menu: React.FC<MenuProps> = ({
         <ul
           className={`absolute ${
             positionClasses[position]
-          } bg-gray-900 text-white border border-gray-700 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:${animation} hover:shadow-neon ${
+          } bg-gray-900 text-white border border-gray-700 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform ${openAnimation} ${
             responsive ? "w-full sm:w-auto" : ""
-          }`}
+          } max-h-${maxHeight} overflow-y-auto ${scrollBarClass}`}
         >
           {items.map((item, index) => (
             <li
               key={index}
-              className={`p-2 hover:bg-blue-500 transition duration-150 cursor-pointer ${
-                selectedItems.includes(item) ? "bg-blue-500" : ""
-              } ${customItemClass}`}
-              onClick={() => handleItemClick(item)}
+              className={`p-2 flex items-center space-x-2 ${
+                item.disabled ? disabledColor : "cursor-pointer"
+              } ${
+                selectedItems.includes(item.label)
+                  ? customItemSelectedClass
+                  : ""
+              } ${customItemClass} ${customItemHoverClass} ${hoverColor} ${activeColor} ${hoverAnimation}`}
+              onClick={() => !item.disabled && handleItemClick(item.label)}
+              title={item.tooltip}
             >
-              {item}
+              {item.icon && (
+                <span className={`mr-2 ${customItemIconClass}`}>
+                  {item.icon}
+                </span>
+              )}
+              {item.label}
             </li>
           ))}
         </ul>
@@ -189,6 +225,24 @@ const Menu: React.FC<MenuProps> = ({
         @media (min-width: 640px) {
           .sm\\:w-auto {
             width: auto;
+          }
+        }
+        .fade-in {
+          opacity: 0;
+          animation: fadeIn 0.3s forwards;
+        }
+        .fade-out {
+          opacity: 1;
+          animation: fadeOut 0.3s forwards;
+        }
+        @keyframes fadeIn {
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes fadeOut {
+          to {
+            opacity: 0;
           }
         }
       `}</style>

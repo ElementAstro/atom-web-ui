@@ -1,6 +1,6 @@
 // src/components/VerticalMenu.tsx
 import React, { useState, DragEvent } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface MenuItem {
   label: string;
@@ -33,6 +33,13 @@ interface VerticalMenuProps {
   animation?: string;
   fullscreen?: boolean;
   collapsible?: boolean;
+  hoverColor?: string;
+  activeColor?: string;
+  disabledColor?: string;
+  hoverAnimation?: string;
+  showLabels?: boolean;
+  labelColor?: string;
+  labelActiveColor?: string;
 }
 
 const VerticalMenu: React.FC<VerticalMenuProps> = ({
@@ -53,12 +60,19 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
   animation = "transition duration-300 transform hover:scale-105",
   fullscreen = false,
   collapsible = false,
+  hoverColor = "",
+  activeColor = "",
+  disabledColor = "text-gray-400",
+  hoverAnimation = "hover:scale-105 hover:shadow-neon",
+  showLabels = true,
+  labelColor = "text-gray-200",
+  labelActiveColor = "text-white",
 }) => {
   const [selectedIndices, setSelectedIndices] = useState<(number | string)[]>(
     multiSelect ? [] : [activeIndex]
   );
   const [collapsedIndices, setCollapsedIndices] = useState<number[]>([]);
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   const handleItemClick = (index: number | string) => {
     if (multiSelect) {
@@ -85,7 +99,6 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
       const newItems = [...items];
       const [draggedItem] = newItems.splice(draggedIndex, 1);
       newItems.splice(index, 0, draggedItem);
-      // 这里修复类型错误，确保 onItemSelect 的参数类型正确
       onItemSelect(index);
     }
   };
@@ -135,7 +148,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
             selectedIndices.includes(index)
               ? `bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white shadow-neon ${customActiveItemClass}`
               : `hover:bg-gray-700 hover:text-white ${customItemClass}`
-          }`}
+          } ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
           draggable={draggable}
           onDragStart={(e) => handleDragStart(e, index)}
           onDrop={(e) => handleDrop(e, index)}
@@ -147,12 +160,22 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
         >
           <button
             className="flex items-center text-blue-700 bg-transparent border-none p-0 m-0 cursor-pointer"
-            onClick={() => handleItemClick(index)} // Handle item click
+            onClick={() => handleItemClick(index)}
           >
             {item.icon && (
-              <span className={`mr-2 ${customIconClass}`}>{item.icon}</span> // Include icon if present
+              <span className={`mr-2 ${customIconClass}`}>{item.icon}</span>
             )}
-            {item.label}
+            {showLabels && (
+              <span
+                className={`${
+                  selectedIndices.includes(index)
+                    ? labelActiveColor
+                    : labelColor
+                }`}
+              >
+                {item.label}
+              </span>
+            )}
             {collapsible && item.subItems && (
               <span
                 className="ml-auto"
@@ -175,7 +198,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
                     selectedIndices.includes(`${index}-${subIndex}`)
                       ? `bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white shadow-neon ${customActiveItemClass}`
                       : `hover:bg-gray-700 hover:text-white ${customItemClass}`
-                  }`}
+                  } ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
                   onClick={() => handleItemClick(`${index}-${subIndex}`)}
                 >
                   <button className="flex items-center text-blue-700 bg-transparent border-none p-0 m-0 cursor-pointer">
@@ -184,7 +207,17 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
                         {subItem.icon}
                       </span>
                     )}
-                    {subItem.label}
+                    {showLabels && (
+                      <span
+                        className={`${
+                          selectedIndices.includes(`${index}-${subIndex}`)
+                            ? labelActiveColor
+                            : labelColor
+                        }`}
+                      >
+                        {subItem.label}
+                      </span>
+                    )}
                   </button>
                 </li>
               ))}

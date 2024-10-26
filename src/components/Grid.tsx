@@ -1,6 +1,6 @@
 // src/components/Grid.tsx
 import React, { useEffect, useState, ChangeEvent } from "react";
-import { useTheme } from "../context/ThemeContext"; // 确保已创建并导入 ThemeContext
+import { useTheme } from "../context/ThemeContext";
 import { AiOutlineSearch } from "react-icons/ai";
 
 interface GridProps {
@@ -19,6 +19,14 @@ interface GridProps {
   icon?: React.ReactNode;
   itemsPerPage?: number;
   searchPlaceholder?: string;
+  gridBackgroundColor?: string;
+  gridTextColor?: string;
+  itemBackgroundColor?: string;
+  itemTextColor?: string;
+  searchInputBackgroundColor?: string;
+  searchInputTextColor?: string;
+  paginationButtonBackgroundColor?: string;
+  paginationButtonTextColor?: string;
 }
 
 const Grid: React.FC<GridProps> = ({
@@ -39,11 +47,19 @@ const Grid: React.FC<GridProps> = ({
   icon = null,
   itemsPerPage = 10,
   searchPlaceholder = "搜索...",
+  gridBackgroundColor = "bg-gray-800",
+  gridTextColor = "text-white",
+  itemBackgroundColor = "bg-gray-700",
+  itemTextColor = "text-white",
+  searchInputBackgroundColor = "bg-gray-600",
+  searchInputTextColor = "text-white",
+  paginationButtonBackgroundColor = "bg-gray-700",
+  paginationButtonTextColor = "text-gray-300",
 }) => {
   const [items, setItems] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const { theme: currentTheme } = useTheme(); // 获取当前主题
+  const { theme: currentTheme } = useTheme();
 
   useEffect(() => {
     const loadItems = async () => {
@@ -57,7 +73,7 @@ const Grid: React.FC<GridProps> = ({
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // 重置到第一页
+    setCurrentPage(1);
   };
 
   const filteredItems = items.filter((item) =>
@@ -86,7 +102,7 @@ const Grid: React.FC<GridProps> = ({
   };
 
   return (
-    <div className="p-4">
+    <div className={`p-4 ${gridBackgroundColor} ${gridTextColor}`}>
       <div className="flex items-center mb-4">
         <AiOutlineSearch className="mr-2 text-gray-400" />
         <input
@@ -94,7 +110,7 @@ const Grid: React.FC<GridProps> = ({
           value={searchTerm}
           onChange={handleSearch}
           placeholder={searchPlaceholder}
-          className={`p-2 border-${borderWidth} rounded w-full focus:outline-none focus:ring focus:ring-purple-500 ${animation}`}
+          className={`p-2 border-${borderWidth} rounded w-full focus:outline-none focus:ring focus:ring-purple-500 ${animation} ${searchInputBackgroundColor} ${searchInputTextColor}`}
           aria-label="搜索"
         />
       </div>
@@ -108,22 +124,22 @@ const Grid: React.FC<GridProps> = ({
             ? paginatedItems.map((item, index) => (
                 <div
                   key={index}
-                  className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg ${animation} hover:scale-105 hover:shadow-neon ${
+                  className={`rounded-lg overflow-hidden shadow-lg ${animation} hover:scale-105 hover:shadow-neon ${
                     themeClasses[
                       (theme as ThemeKeys) || (currentTheme as ThemeKeys)
                     ]
-                  } border-${borderWidth}`}
+                  } border-${borderWidth} ${itemBackgroundColor} ${itemTextColor}`}
                   onMouseEnter={() => onItemHover && onItemHover(item)}
                   onClick={() => onItemClick && onItemClick(item)}
                   title={tooltip}
                   aria-label="Grid item"
                 >
                   <div className="p-4">
-                    <h3 className="text-white text-xl font-semibold flex items-center">
+                    <h3 className="text-xl font-semibold flex items-center">
                       {icon && <span className="mr-2">{icon}</span>}
                       {item.title}
                     </h3>
-                    <p className="text-gray-300">{item.description}</p>
+                    <p>{item.description}</p>
                   </div>
                 </div>
               ))
@@ -138,7 +154,7 @@ const Grid: React.FC<GridProps> = ({
             className={`mx-1 px-3 py-1 rounded ${
               currentPage === index + 1
                 ? "bg-blue-500 text-white"
-                : "bg-gray-700 text-gray-300"
+                : `${paginationButtonBackgroundColor} ${paginationButtonTextColor}`
             }`}
           >
             {index + 1}
