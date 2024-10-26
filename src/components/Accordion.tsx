@@ -24,6 +24,15 @@ interface AccordionItemProps {
   iconPosition?: "left" | "right";
 }
 
+type Theme =
+  | "light"
+  | "dark"
+  | "astronomy"
+  | "eyeCare"
+  | "ocean"
+  | "sunset"
+  | "astronomyDarkRed";
+
 const AccordionItem: React.FC<AccordionItemProps> = ({
   title,
   children,
@@ -45,7 +54,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
   iconClose = "▲",
   iconPosition = "right",
 }) => {
-  const { theme } = useTheme();
+  const { theme } = useTheme() as { theme: Theme };
 
   useEffect(() => {
     if (isOpen && onOpen) {
@@ -55,7 +64,10 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
     }
   }, [isOpen, onOpen, onClose]);
 
-  const themeClasses = {
+  const themeClasses: Record<
+    Theme,
+    { container: string; title: string; content: string }
+  > = {
     light: {
       container: "bg-gray-100 text-gray-900",
       title: "bg-gray-200",
@@ -87,6 +99,12 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
       container: "bg-orange-100 text-orange-900",
       title: "bg-orange-200",
       content: "bg-orange-100 border-orange-300",
+    },
+    astronomyDarkRed: {
+      container: "bg-gradient-to-r from-red-900 via-black to-black text-white",
+      title: "bg-gradient-to-r from-red-800 via-black to-black",
+      content:
+        "bg-gradient-to-r from-red-900 via-black to-black border-gray-700",
     },
   };
 
