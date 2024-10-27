@@ -1,26 +1,35 @@
-// src/services/api.js
+// src/services/api.ts
+import axios, {
+  AxiosRequestConfig,
+  AxiosResponse,
+  AxiosError,
+  CancelTokenSource,
+  InternalAxiosRequestConfig,
+} from "axios";
 import createAxiosInstance from "../utils/axiosInstance";
 
 // 自定义错误处理函数
-const customHandleError = (error) => {
+const customHandleError = (error: AxiosError): AxiosError => {
   console.error("Custom Error:", error);
   return error;
 };
 
 // 自定义 Token 刷新函数
-const customRefreshToken = async () => {
+const customRefreshToken = async (): Promise<string> => {
   // 自定义的 Token 刷新逻辑
   return "custom_new_token";
 };
 
 // 自定义请求拦截器
-const customRequestInterceptor = (config) => {
+const customRequestInterceptor = (
+  config: InternalAxiosRequestConfig
+): InternalAxiosRequestConfig => {
   console.log("Custom Request Interceptor:", config);
   return config;
 };
 
 // 自定义响应拦截器
-const customResponseInterceptor = (response) => {
+const customResponseInterceptor = (response: AxiosResponse): AxiosResponse => {
   console.log("Custom Response Interceptor:", response);
   return response;
 };
@@ -35,13 +44,15 @@ const axiosInstance = createAxiosInstance({
   requestInterceptors: [customRequestInterceptor],
   responseInterceptors: [customResponseInterceptor],
   showProgress: true,
-  cacheOptions: { maxAge: 10 * 60 * 1000 }, // 缓存 10 分钟
-  retryOptions: { retries: 5 }, // 重试 5 次
-  logRequests: true, // 记录日志
 });
 
 // 通用请求函数
-const request = async (method, url, data = null, config = {}) => {
+const request = async (
+  method: AxiosRequestConfig["method"],
+  url: string,
+  data: any = null,
+  config: AxiosRequestConfig = {}
+): Promise<AxiosResponse> => {
   try {
     const response = await axiosInstance({
       method,
@@ -51,33 +62,51 @@ const request = async (method, url, data = null, config = {}) => {
     });
     return response;
   } catch (error) {
-    customHandleError(error);
+    customHandleError(error as AxiosError);
     throw error;
   }
 };
 
-export const getRequest = async (url, config = {}) => {
+export const getRequest = async (
+  url: string,
+  config: AxiosRequestConfig = {}
+): Promise<AxiosResponse> => {
   return await request("get", url, null, config);
 };
 
-export const postRequest = async (url, data, config = {}) => {
+export const postRequest = async (
+  url: string,
+  data: any,
+  config: AxiosRequestConfig = {}
+): Promise<AxiosResponse> => {
   return await request("post", url, data, config);
 };
 
-export const putRequest = async (url, data, config = {}) => {
+export const putRequest = async (
+  url: string,
+  data: any,
+  config: AxiosRequestConfig = {}
+): Promise<AxiosResponse> => {
   return await request("put", url, data, config);
 };
 
-export const deleteRequest = async (url, config = {}) => {
+export const deleteRequest = async (
+  url: string,
+  config: AxiosRequestConfig = {}
+): Promise<AxiosResponse> => {
   return await request("delete", url, null, config);
 };
 
-export const patchRequest = async (url, data, config = {}) => {
+export const patchRequest = async (
+  url: string,
+  data: any,
+  config: AxiosRequestConfig = {}
+): Promise<AxiosResponse> => {
   return await request("patch", url, data, config);
 };
 
 // 请求取消功能
-export const createCancelToken = () => {
+export const createCancelToken = (): CancelTokenSource => {
   const source = axios.CancelToken.source();
   return source;
 };

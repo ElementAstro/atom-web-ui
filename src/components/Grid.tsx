@@ -9,6 +9,7 @@ interface GridProps {
   onItemHover?: (item: any) => void;
   onItemClick?: (item: any) => void;
   columns?: { base: number; sm: number; md: number; lg: number };
+  rows?: number; // 新增的行参数
   gap?: number;
   loadingComponent?: React.ReactNode;
   emptyComponent?: React.ReactNode;
@@ -35,6 +36,7 @@ const Grid: React.FC<GridProps> = ({
   onItemHover,
   onItemClick,
   columns = { base: 1, sm: 2, md: 3, lg: 4 },
+  rows = 1, // 默认值为1
   gap = 4,
   loadingComponent = <div className="text-white text-center">加载中...</div>,
   emptyComponent = (
@@ -119,6 +121,7 @@ const Grid: React.FC<GridProps> = ({
       ) : (
         <div
           className={`grid grid-cols-${columns.base} sm:grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} gap-${gap}`}
+          style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }} // 使用rows参数
         >
           {paginatedItems.length > 0
             ? paginatedItems.map((item, index) => (

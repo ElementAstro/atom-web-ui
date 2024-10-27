@@ -120,13 +120,14 @@ const Rating: React.FC<RatingProps> = ({
       "bg-gradient-to-r from-red-900 via-black to-black text-white",
   };
 
+  const appliedTheme =
+    themeClasses[theme as ThemeKeys] || themeClasses[currentTheme as ThemeKeys];
+
   return (
     <div
       className={`flex flex-col items-center p-4 md:p-6 lg:p-8 ${
         fullscreen ? "w-full h-full" : ""
-      } ${
-        themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]
-      } ${customClass}`}
+      } ${appliedTheme} ${customClass}`}
     >
       {label && (
         <span className={`mb-2 text-gray-200 ${customLabelClass}`}>

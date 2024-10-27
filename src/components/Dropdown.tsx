@@ -57,6 +57,8 @@ interface DropdownProps {
   borderStyle?: string;
   borderColor?: string;
   textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
+  iconColor?: string;
+  width?: string;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -99,6 +101,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   borderStyle = "solid",
   borderColor = "gray-300",
   textTransform = "none",
+  iconColor = "currentColor",
+  width = "100%",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<string | string[]>(
@@ -173,7 +177,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       onKeyDown={onKeyDown}
       onAnimationEnd={onAnimationEnd}
       aria-label={ariaLabel}
-      style={{ textTransform }}
+      style={{ textTransform, width }}
     >
       {label && (
         <label className={`block text-gray-200 mb-1 ${customClass}`}>
@@ -191,7 +195,11 @@ const Dropdown: React.FC<DropdownProps> = ({
             ? selected.join(", ")
             : placeholder
           : selected || placeholder}
-        {showDropdownIcon && <span className="ml-2">{dropdownIcon}</span>}
+        {showDropdownIcon && (
+          <span className="ml-2" style={{ color: iconColor }}>
+            {dropdownIcon}
+          </span>
+        )}
       </button>
       {isOpen && (
         <div
@@ -201,7 +209,10 @@ const Dropdown: React.FC<DropdownProps> = ({
           {showSearch && (
             <div className="relative">
               {showSearchIcon && (
-                <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <span
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  style={{ color: iconColor }}
+                >
                   {searchIcon}
                 </span>
               )}
@@ -217,6 +228,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   type="button"
                   onClick={clearSelection}
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-300"
+                  style={{ color: iconColor }}
                 >
                   {clearIcon}
                 </button>
