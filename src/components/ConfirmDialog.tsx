@@ -1,5 +1,6 @@
 // src/components/ConfirmDialog.tsx
-import React, { useEffect, useRef, KeyboardEvent } from "react";
+import React, { useEffect, useRef, KeyboardEvent, useState } from "react";
+import styled, { css, keyframes } from "styled-components";
 import { useTheme } from "../context/ThemeContext";
 
 interface ConfirmDialogProps {
@@ -57,6 +58,87 @@ interface ConfirmDialogProps {
   textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
+const fadeOut = keyframes`
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+`;
+
+const DialogWrapper = styled.div<{ isExiting: boolean }>`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-center: center;
+  align-items: center;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 50;
+  ${(props) =>
+    props.isExiting
+      ? css`
+          animation: ${fadeOut} 0.3s forwards;
+        `
+      : css`
+          animation: ${fadeIn} 0.3s forwards;
+        `}
+`;
+
+const DialogContent = styled.div<{ themeClass: string }>`
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  max-width: 500px;
+  width: 100%;
+  ${(props) => props.themeClass}
+  ${(props) =>
+    props.themeClass.includes("bg-gradient")
+      ? css`
+          background: linear-gradient(
+            to right,
+            #ff7e5f,
+            #feb47b
+          ); /* Example gradient */
+        `
+      : ""}
+`;
+
+const Button = styled.button<{ color: string }>`
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.3s ease;
+  ${(props) =>
+    props.color &&
+    css`
+      background-color: ${props.color};
+      color: white;
+    `}
+  &:hover {
+    background-color: darken(${(props) => props.color}, 10%);
+  }
+  &:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+  }
+`;
+
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   message,
@@ -102,6 +184,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
     if (isOpen && onOpen) {
@@ -152,8 +235,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   };
 
   return (
-    <div
-      className={`fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center transition-opacity duration-300 ease-in-out opacity-100 ${animation}`}
+    <DialogWrapper
+      isExiting={isExiting}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}
@@ -162,8 +245,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       onAnimationEnd={onAnimationEnd}
       aria-label={ariaLabel}
     >
-      <div
-        className={`rounded-lg shadow-lg p-6 transform transition-transform duration-300 ease-in-out scale-100 hover:scale-105 hover:shadow-neon w-full max-w-md mx-4 ${
+      <DialogContent
+        themeClass={`${
           themeClasses[theme || currentTheme]
         } ${customDialogClass}`}
       >
@@ -188,53 +271,28 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         )}
         <h3 className={`text-lg font-bold ${customMessageClass}`}>{message}</h3>
         <div className="flex justify-end mt-4">
-          <button
+          <Button
             onClick={onCancel}
             onKeyDown={(e) => e.key === "Enter" && onCancel()}
-            className={`mr-2 ${cancelButtonColor} hover:text-gray-100 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-600 border-${borderWidth} ${customButtonClass}`}
+            color={cancelButtonColor}
+            className={`mr-2 hover:text-gray-100 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-600 border-${borderWidth} ${customButtonClass}`}
             title={tooltip}
           >
             {cancelButtonText}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onConfirm}
             onKeyDown={(e) => e.key === "Enter" && onConfirm()}
-            className={`${confirmButtonColor} text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300 shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-600 border-${borderWidth} ${customButtonClass}`}
+            color={confirmButtonColor}
+            className={`text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300 shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-600 border-${borderWidth} ${customButtonClass}`}
             disabled={disableConfirm}
             title={tooltip}
           >
             {confirmButtonText}
-          </button>
+          </Button>
         </div>
-      </div>
-      <style>{`
-        @media (max-width: 768px) {
-          .p-6 {
-            padding: 1.5rem;
-          }
-          .text-lg {
-            font-size: 1rem;
-          }
-          .text-xl {
-            font-size: 1.25rem;
-          }
-          .px-4 {
-            padding-left: 1rem;
-            padding-right: 1rem;
-          }
-          .py-2 {
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-          }
-          .mr-2 {
-            margin-right: 0.5rem;
-          }
-          .mt-4 {
-            margin-top: 1rem;
-          }
-        }
-      `}</style>
-    </div>
+      </DialogContent>
+    </DialogWrapper>
   );
 };
 

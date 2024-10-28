@@ -2,6 +2,7 @@
 import React, { useState, useRef, DragEvent } from "react";
 import { AiOutlineRight, AiOutlineClose } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext";
+import styled, { css, keyframes } from "styled-components";
 
 interface Button {
   label: string;
@@ -46,6 +47,85 @@ interface CollapseButtonGroupProps {
   textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
 }
 
+const expand = keyframes`
+  from {
+    max-height: 0;
+    max-width: 0;
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    max-height: 100vh;
+    max-width: 100vw;
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
+const collapse = keyframes`
+  from {
+    max-height: 100vh;
+    max-width: 100vw;
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    max-height: 0;
+    max-width: 0;
+    opacity: 0;
+    transform: scale(0.95);
+  }
+`;
+
+const CollapseButtonGroupWrapper = styled.div<{
+  isOpen: boolean;
+  isVertical: boolean;
+}>`
+  display: flex;
+  flex-direction: ${(props) => (props.isVertical ? "column" : "row")};
+  overflow: hidden;
+  ${(props) =>
+    props.isOpen
+      ? css`
+          animation: ${expand} 0.5s forwards;
+        `
+      : css`
+          animation: ${collapse} 0.5s forwards;
+        `}
+`;
+
+const ButtonWrapper = styled.button<{
+  themeClass: string;
+  buttonColor: string;
+  buttonSize: number;
+}>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 50%;
+  color: white;
+  ${(props) => props.themeClass}
+  ${(props) => props.buttonColor}
+  width: ${(props) => props.buttonSize}rem;
+  height: ${(props) => props.buttonSize}rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+`;
+
+const ResizeHandle = styled.div`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 1rem;
+  height: 1rem;
+  background-color: gray;
+  cursor: se-resize;
+`;
+
 const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
   mainLabel,
   buttons,
@@ -58,7 +138,7 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
   disabled = false,
   icon,
   showLabels = true,
-  buttonSize = 12,
+  buttonSize = 3, // Default button size in rem
   buttonColor = "bg-gradient-to-r from-purple-500 to-red-500",
   theme,
   tooltip = "",
@@ -136,13 +216,11 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
   const isVertical = direction === "vertical";
 
   const themeClasses: Record<string, string> = {
-    light: "bg-white text-gray-900 border-gray-300",
-    dark: "bg-gray-900 text-white border-gray-700",
-    astronomy:
-      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
-    eyeCare: "bg-green-100 text-green-900 border-green-300",
-    astronomyDarkRed:
-      "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
+    light: "text-gray-900 border-gray-300",
+    dark: "text-white border-gray-700",
+    astronomy: "text-white border-purple-500",
+    eyeCare: "text-green-900 border-green-300",
+    astronomyDarkRed: "text-white border-red-500",
   };
 
   const onMouseEnter = () => {};
@@ -170,47 +248,39 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
         width: groupSize.width,
         height: groupSize.height,
         textTransform,
+        borderStyle,
+        borderColor,
+        borderWidth,
+        backgroundColor: "transparent", // Transparent background
       }}
     >
-      <button
+      <ButtonWrapper
         onClick={toggleOpen}
-        className={`w-${buttonSize} h-${buttonSize} flex justify-center items-center p-3 rounded-full text-white ${buttonColor} focus:outline-none transition duration-200 ${
-          isOpen ? "shadow-lg hover:shadow-neon" : ""
-        } ${
-          themeClasses[theme || currentTheme]
-        } border-${borderWidth} ${customButtonClass}`}
+        themeClass={themeClasses[theme || currentTheme]}
+        buttonColor={buttonColor}
+        buttonSize={buttonSize}
         title={tooltip || mainLabel}
         disabled={disabled}
+        className={customButtonClass}
       >
         <span>
           {icon ? icon : isOpen ? <AiOutlineClose /> : <AiOutlineRight />}
         </span>
-      </button>
-      <div
-        className={`mt-2 flex ${
-          isVertical ? "flex-col space-y-1" : "flex-row space-x-1"
-        } transition-all duration-500 ease-in-out transform ${animation} ${
-          isOpen
-            ? isVertical
-              ? "max-h-screen opacity-100"
-              : "max-w-screen opacity-100"
-            : isVertical
-            ? "max-h-0 opacity-0"
-            : "max-w-0 opacity-0"
-        } overflow-hidden`}
-      >
+      </ButtonWrapper>
+      <CollapseButtonGroupWrapper isOpen={isOpen} isVertical={isVertical}>
         {buttons.map((btn, index) => (
-          <button
+          <ButtonWrapper
             key={index}
             onClick={() => onButtonClick(btn.value)}
             onMouseEnter={() => onButtonHover && onButtonHover(btn.value)}
             onFocus={() => onButtonFocus && onButtonFocus(btn.value)}
             onBlur={() => onButtonBlur && onButtonBlur(btn.value)}
-            className={`flex justify-between items-center p-2 rounded-md text-white bg-gray-700 hover:bg-gray-600 focus:outline-none transition duration-200 ${
-              themeClasses[theme || currentTheme]
-            } border-${borderWidth} ${customButtonClass}`}
+            themeClass={themeClasses[theme || currentTheme]}
+            buttonColor="bg-gray-700 hover:bg-gray-600"
+            buttonSize={buttonSize}
             title={btn.tooltip}
             disabled={btn.disabled}
+            className={customButtonClass}
           >
             {iconPosition === "left" && btn.icon && (
               <span className={`mr-2 ${customIconClass}`}>{btn.icon}</span>
@@ -243,41 +313,10 @@ const CollapseButtonGroup: React.FC<CollapseButtonGroupProps> = ({
                 />
               </svg>
             )}
-          </button>
+          </ButtonWrapper>
         ))}
-      </div>
-      {resizable && (
-        <div
-          className="absolute bottom-0 right-0 w-4 h-4 bg-gray-500 cursor-se-resize"
-          onMouseDown={handleResizeStart}
-        ></div>
-      )}
-      <style>{`
-        @media (max-width: 768px) {
-          .w-${buttonSize} {
-            width: ${buttonSize / 2}rem;
-          }
-          .h-${buttonSize} {
-            height: ${buttonSize / 2}rem;
-          }
-          .p-3 {
-            padding: 0.75rem;
-          }
-          .mt-2 {
-            margin-top: 0.5rem;
-          }
-          .space-y-1 > :not([hidden]) ~ :not([hidden]) {
-            --tw-space-y-reverse: 0;
-            margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
-            margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
-          }
-          .space-x-1 > :not([hidden]) ~ :not([hidden]) {
-            --tw-space-x-reverse: 0;
-            margin-right: calc(0.25rem * var(--tw-space-x-reverse));
-            margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
-          }
-        }
-      `}</style>
+      </CollapseButtonGroupWrapper>
+      {resizable && <ResizeHandle onMouseDown={handleResizeStart} />}
     </div>
   );
 };

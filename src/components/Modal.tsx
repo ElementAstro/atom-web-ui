@@ -2,12 +2,14 @@
 import React, {
   useEffect,
   useRef,
+  useState,
   ReactNode,
   MouseEvent,
   KeyboardEvent as ReactKeyboardEvent,
   FocusEvent,
   AnimationEvent,
 } from "react";
+import styled, { css, keyframes } from "styled-components";
 import Divider from "./Divider";
 import { useTheme } from "../context/ThemeContext";
 import { AiOutlineClose } from "react-icons/ai";
@@ -56,6 +58,56 @@ interface ModalProps {
   hoverAnimation?: string;
 }
 
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
+const fadeOut = keyframes`
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+`;
+
+const ModalWrapper = styled.div<{ isExiting: boolean; themeClass: string }>`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 50;
+  ${(props) =>
+    props.isExiting
+      ? css`
+          animation: ${fadeOut} 0.3s forwards;
+        `
+      : css`
+          animation: ${fadeIn} 0.3s forwards;
+        `}
+  ${(props) => props.themeClass}
+`;
+
+const ModalContent = styled.div<{ sizeClass: string; variantClass: string }>`
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  ${(props) => props.sizeClass}
+  ${(props) => props.variantClass}
+`;
+
 const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -93,22 +145,23 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
   const { theme: currentTheme } = useTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isExiting, setIsExiting] = useState(false);
 
   const handleClose = (e: MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      setIsExiting(true);
     }
   };
 
   const handleButtonClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    onClose();
+    setIsExiting(true);
   };
 
   useEffect(() => {
     const handleKeyDown = (e: globalThis.KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        setIsExiting(true);
       }
     };
 
@@ -125,7 +178,7 @@ const Modal: React.FC<ModalProps> = ({
   useEffect(() => {
     if (isOpen && autoClose) {
       timerRef.current = setTimeout(() => {
-        onClose();
+        setIsExiting(true);
       }, autoCloseDuration);
     }
 
@@ -136,7 +189,18 @@ const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen, autoClose, autoCloseDuration, onClose]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isExiting) {
+      const timer = setTimeout(() => {
+        onClose();
+        setIsExiting(false);
+      }, 300); // Duration of the exit animation
+
+      return () => clearTimeout(timer);
+    }
+  }, [isExiting, onClose]);
+
+  if (!isOpen && !isExiting) return null;
 
   const sizeClasses = {
     small: "w-11/12 sm:w-1/4",
@@ -173,10 +237,9 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div
-      className={`fixed inset-0 bg-black bg-opacity-70 flex ${
-        positionClasses[position]
-      } transition-opacity duration-300 ease-in-out z-50 ${customClass} ${
+    <ModalWrapper
+      isExiting={isExiting}
+      themeClass={`${positionClasses[position]} ${customClass} ${
         fullscreen ? "w-full h-full" : ""
       } ${themeClasses[theme || currentTheme]}`}
       onClick={handleClose}
@@ -187,12 +250,11 @@ const Modal: React.FC<ModalProps> = ({
       onDoubleClick={onDoubleClick}
       aria-label={ariaLabel}
     >
-      <div
-        className={`${variantClasses[variant]} ${
-          sizeClasses[size]
-        } rounded-lg p-6 transform transition-transform duration-300 ease-in-out scale-95 opacity-0 animate-fade-in hover:shadow-neon relative border-${borderWidth} ${hoverColor} ${activeColor} ${
+      <ModalContent
+        sizeClass={`${sizeClasses[size]} rounded-lg p-6 relative border-${borderWidth} ${hoverColor} ${activeColor} ${
           disabled ? disabledColor : ""
         } ${hoverAnimation}`}
+        variantClass={variantClasses[variant]}
       >
         <button
           className={`absolute top-3 right-3 ${iconColor} hover:text-red-500 transition duration-300`}
@@ -214,8 +276,8 @@ const Modal: React.FC<ModalProps> = ({
             {footer}
           </div>
         )}
-      </div>
-    </div>
+      </ModalContent>
+    </ModalWrapper>
   );
 };
 

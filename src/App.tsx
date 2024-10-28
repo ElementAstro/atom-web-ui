@@ -17,6 +17,7 @@ import CodeBlockExample from "./examples/CodeBlockExample";
 import CollapseButtonGroupExample from "./examples/CollapseButtonGroupExample";
 import CollapsibleSidebarExample from "./examples/CollapsibleSidebarExample";
 import ConfirmDialogExample from "./examples/ConfirmDialogExample";
+import CookieManagerExample from "./examples/Cookie";
 import DateInputExample from "./examples/DateInputExample";
 import DividerExample from "./examples/DividerExample";
 import DraggableModalExample from "./examples/DraggableModalExample";
@@ -89,6 +90,8 @@ const App: FC = () => {
         <Divider />
         <ButtonGroupExample />
         <Divider />
+        <CalendarExample />
+        <Divider />
         <CardExample />
         <Divider />
         <CarouselExample />
@@ -104,6 +107,8 @@ const App: FC = () => {
         <CollapsibleSidebarExample />
         <Divider />
         <ConfirmDialogExample />
+        <Divider />
+        <CookieManagerExample />
         <Divider />
         <DateInputExample />
         <Divider />

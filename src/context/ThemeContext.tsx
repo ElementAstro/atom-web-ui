@@ -52,7 +52,7 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: FC<ThemeProviderProps> = ({
   children,
-  initialTheme = "astronomyDarkRed",
+  initialTheme = "light",
   onThemeChange,
   persist = false,
   availableThemes = [

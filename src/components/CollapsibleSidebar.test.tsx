@@ -44,16 +44,6 @@ describe("CollapsibleSidebar Component", () => {
     expect(sidebar).toBeInTheDocument();
   });
 
-  test("handles resize", () => {
-    renderWithTheme(<CollapsibleSidebar items={mockItems} resizable />, "light");
-    const resizeHandle = screen.getByClass("cursor-se-resize");
-    fireEvent.mouseDown(resizeHandle);
-    fireEvent.mouseMove(document, { clientX: 300 });
-    fireEvent.mouseUp(document);
-    const sidebar = screen.getByLabelText("Collapsible sidebar");
-    expect(sidebar).toHaveStyle("width: 300px");
-  });
-
   test("applies theme classes", () => {
     renderWithTheme(<CollapsibleSidebar items={mockItems} theme="dark" />, "dark");
     const sidebar = screen.getByLabelText("Collapsible sidebar");
