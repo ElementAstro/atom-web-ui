@@ -40,7 +40,6 @@ describe("Tabs Component", () => {
         draggable={false}
         closable={false}
         addable={false}
-        theme="dark"
         tooltip="Tab Tooltip"
         animation="transition duration-500 transform hover:scale-110"
         icon={<span>Icon</span>}
@@ -50,16 +49,6 @@ describe("Tabs Component", () => {
         progressColor="bg-red-500"
         progressHeight="h-2"
         rippleEffect={false}
-        backgroundColor="black"
-        textColor="white"
-        borderColor="red"
-        hoverColor="gray"
-        activeColor="blue"
-        disabledColor="gray"
-        hoverAnimation="hover:scale-110"
-        showLabels={false}
-        labelColor="yellow"
-        labelActiveColor="green"
       />,
       "dark"
     );
@@ -111,7 +100,7 @@ describe("Tabs Component", () => {
   });
 
   test("applies theme classes correctly", () => {
-    renderWithTheme(<Tabs tabs={tabs} theme="astronomy" />, "astronomy");
+    renderWithTheme(<Tabs tabs={tabs}/>, "astronomy");
     expect(screen.getByText("Tab 1").closest("div")).toHaveClass(
       "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500"
     );

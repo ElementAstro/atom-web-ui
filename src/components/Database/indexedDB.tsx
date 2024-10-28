@@ -10,6 +10,10 @@ import {
   importData,
 } from "../../database/indexedDBService";
 import Modal from "../Modal"; // 导入项目中的 Modal 组件
+import Button from "../Button"; // 导入项目中的 Button 组件
+import Input from "../Input"; // 导入项目中的 Input 组件
+import Textarea from "../Textarea"; // 导入项目中的 Textarea 组件
+import { useTheme } from "../../context/ThemeContext"; // 导入主题上下文
 
 interface Data {
   id?: number;
@@ -17,7 +21,19 @@ interface Data {
   [key: string]: any;
 }
 
-const MyComponent: React.FC = () => {
+const IndexedDBManager: React.FC = () => {
+  const { theme } = useTheme() as {
+    theme:
+      | "light"
+      | "dark"
+      | "astronomy"
+      | "eyeCare"
+      | "sunset"
+      | "ocean"
+      | "forest"
+      | "astronomyDarkRed"
+      | undefined;
+  }; // 使用主题上下文
   const [data, setData] = useState<Data[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [editId, setEditId] = useState<number | null>(null);
@@ -26,6 +42,9 @@ const MyComponent: React.FC = () => {
   const [deletedItems, setDeletedItems] = useState<Data[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchAllData();
@@ -118,6 +137,18 @@ const MyComponent: React.FC = () => {
     }
   };
 
+  const handleSort = () => {
+    const sortedData = [...data].sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a.name.localeCompare(b.name);
+      } else {
+        return b.name.localeCompare(a.name);
+      }
+    });
+    setData(sortedData);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
   const openModal = (content: React.ReactNode) => {
     setModalContent(content);
     setIsModalOpen(true);
@@ -128,84 +159,136 @@ const MyComponent: React.FC = () => {
     setModalContent(null);
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const paginatedData = data.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
-    <div className="max-w-xl mx-auto p-5 bg-white rounded-lg shadow-md">
+    <div
+      className={`max-w-xl mx-auto p-5 rounded-lg shadow-md ${
+        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
+      }`}
+    >
       <h1 className="text-2xl font-semibold mb-4">IndexedDB 数据管理</h1>
 
-      <input
+      <Input
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         placeholder="输入数据"
-        className="border border-gray-300 rounded-md p-2 mb-2 w-full"
+        customClass="border border-gray-300 rounded-md p-2 mb-2 w-full"
       />
-      <button
+      <Button
         onClick={editId ? handleUpdateData : handleAddData}
-        className="bg-blue-500 text-white rounded-md p-2 mb-2 w-full hover:bg-blue-600"
+        customClass="bg-blue-500 text-white rounded-md p-2 mb-2 w-full hover:bg-blue-600"
       >
         {editId ? "更新数据" : "添加数据"}
-      </button>
+      </Button>
 
-      <input
+      <Input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="搜索数据"
-        className="border border-gray-300 rounded-md p-2 mb-2 w-full"
+        customClass="border border-gray-300 rounded-md p-2 mb-2 w-full"
         onKeyUp={(e) => e.key === "Enter" && handleSearch()}
       />
-      <button
+      <Button
         onClick={handleSearch}
-        className="bg-green-500 text-white rounded-md p-2 mb-2 w-full hover:bg-green-600"
+        customClass="bg-green-500 text-white rounded-md p-2 mb-2 w-full hover:bg-green-600"
       >
         搜索
-      </button>
+      </Button>
 
-      <button
+      <Button
+        onClick={handleSort}
+        customClass="bg-purple-500 text-white rounded-md p-2 mb-2 w-full hover:bg-purple-600"
+      >
+        排序 {sortOrder === "asc" ? "⬆️" : "⬇️"}
+      </Button>
+
+      <Button
         onClick={handleExportData}
-        className="bg-yellow-500 text-white rounded-md p-2 mb-2 w-full hover:bg-yellow-600"
+        customClass="bg-yellow-500 text-white rounded-md p-2 mb-2 w-full hover:bg-yellow-600"
       >
         导出数据
-      </button>
+      </Button>
 
-      <textarea
+      <Textarea
         value={importJSON}
         onChange={(e) => setImportJSON(e.target.value)}
         placeholder="粘贴JSON数据"
-        className="border border-gray-300 rounded-md p-2 mb-2 w-full"
+        customClass="border border-gray-300 rounded-md p-2 mb-2 w-full"
       />
-      <button
+      <Button
         onClick={handleImportData}
-        className="bg-indigo-500 text-white rounded-md p-2 w-full mb-2 hover:bg-indigo-600"
+        customClass="bg-indigo-500 text-white rounded-md p-2 w-full mb-2 hover:bg-indigo-600"
       >
         导入数据
-      </button>
+      </Button>
 
       <h2 className="text-xl font-semibold mt-4">数据列表</h2>
       <ul className="divide-y divide-gray-200">
-        {data.map((item) => (
+        {paginatedData.map((item) => (
           <li key={item.id} className="flex justify-between items-center py-2">
             <span>{item.name}</span>
             <div>
-              <button
+              <Button
                 onClick={() => {
                   setEditId(item.id ?? null);
                   setInputValue(item.name);
                 }}
-                className="bg-yellow-300 text-white rounded-md px-2 py-1 hover:bg-yellow-400 mr-2"
+                customClass="bg-yellow-300 text-white rounded-md px-2 py-1 hover:bg-yellow-400 mr-2"
               >
                 编辑
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleDeleteData(item.id!, item)}
-                className="bg-red-500 text-white rounded-md px-2 py-1 hover:bg-red-600"
+                customClass="bg-red-500 text-white rounded-md px-2 py-1 hover:bg-red-600"
               >
                 删除
-              </button>
+              </Button>
+              <Button
+                onClick={() =>
+                  openModal(
+                    <div>
+                      <h2 className="text-xl font-semibold">详细信息</h2>
+                      <p>ID: {item.id}</p>
+                      <p>名称: {item.name}</p>
+                      {/* Add more fields as needed */}
+                    </div>
+                  )
+                }
+                customClass="bg-blue-500 text-white rounded-md px-2 py-1 hover:bg-blue-600 ml-2"
+              >
+                查看
+              </Button>
             </div>
           </li>
         ))}
       </ul>
+
+      <div className="flex justify-between mt-4">
+        <Button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          customClass="bg-gray-300 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-400"
+        >
+          上一页
+        </Button>
+        <Button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage * itemsPerPage >= data.length}
+          customClass="bg-gray-300 text-gray-700 rounded-md px-4 py-2 hover:bg-gray-400"
+        >
+          下一页
+        </Button>
+      </div>
 
       {deletedItems.length > 0 && (
         <div className="mt-5">
@@ -217,12 +300,12 @@ const MyComponent: React.FC = () => {
                 className="flex justify-between items-center py-2"
               >
                 <span>{item.name}</span>
-                <button
+                <Button
                   onClick={() => handleRecoverData(item)}
-                  className="bg-green-500 text-white rounded-md px-2 py-1 hover:bg-green-600"
+                  customClass="bg-green-500 text-white rounded-md px-2 py-1 hover:bg-green-600"
                 >
                   恢复
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
@@ -232,7 +315,7 @@ const MyComponent: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
-        theme="light"
+        theme={theme}
         header="Modal Header"
         tooltip="Close Modal"
         borderWidth="2"
@@ -247,4 +330,4 @@ const MyComponent: React.FC = () => {
   );
 };
 
-export default MyComponent;
+export default IndexedDBManager;

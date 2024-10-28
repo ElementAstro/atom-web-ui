@@ -35,33 +35,31 @@ const NavbarExample: React.FC = () => {
 
   return (
     <div className="p-4">
-      <Router>
-        <Navbar
-          brand="My Website"
-          links={links}
-          onLinkClick={handleLinkClick}
-          customClass="my-custom-navbar"
-          dropdown={dropdown}
-          search={true}
-          userMenu={userMenu}
-          fixed={true}
-          themeToggle={true}
-          theme="light"
-          tooltip="Navigate"
-          icon={<AiOutlineHome />}
-          iconPosition="left"
-          multiSelect={false}
-          customLinkClass="my-custom-link"
-          customDropdownClass="my-custom-dropdown"
-          customSearchClass="my-custom-search"
-          customUserMenuClass="my-custom-user-menu"
-        />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-        </Routes>
-      </Router>
+      <Navbar
+        brand="My Website"
+        links={links}
+        onLinkClick={handleLinkClick}
+        customClass="my-custom-navbar"
+        dropdown={dropdown}
+        search={true}
+        userMenu={userMenu}
+        fixed={true}
+        themeToggle={true}
+        theme="light"
+        tooltip="Navigate"
+        icon={<AiOutlineHome />}
+        iconPosition="left"
+        multiSelect={false}
+        customLinkClass="my-custom-link"
+        customDropdownClass="my-custom-dropdown"
+        customSearchClass="my-custom-search"
+        customUserMenuClass="my-custom-user-menu"
+      />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
     </div>
   );
 };

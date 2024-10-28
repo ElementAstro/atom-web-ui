@@ -23,6 +23,7 @@ interface InputProps {
   onFocus?: (e: FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onKeyUp?: (e: KeyboardEvent<HTMLInputElement>) => void; // 新增 onKeyUp 属性
   customClass?: string;
   customLabelClass?: string;
   customInputClass?: string;
@@ -58,6 +59,7 @@ const Input: FC<InputProps> = ({
   onFocus,
   onBlur,
   onChange,
+  onKeyUp, // 新增 onKeyUp 属性
   customClass = "",
   customLabelClass = "",
   customInputClass = "",
@@ -103,6 +105,10 @@ const Input: FC<InputProps> = ({
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
     if (onChange) onChange(e);
+  };
+
+  const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (onKeyUp) onKeyUp(e);
   };
 
   const togglePasswordVisibility = () => {
@@ -154,6 +160,7 @@ const Input: FC<InputProps> = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={handleChange}
+          onKeyUp={handleKeyUp} // 添加 onKeyUp 处理函数
           disabled={disabled}
           placeholder={placeholder}
           maxLength={maxLength}

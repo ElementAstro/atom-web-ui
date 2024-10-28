@@ -38,6 +38,7 @@ interface CardProps {
   borderStyle?: string;
   borderColor?: string;
   textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
+  bgColor?: string; // 新增属性
 }
 
 const Card: React.FC<CardProps> = ({
@@ -70,6 +71,7 @@ const Card: React.FC<CardProps> = ({
   borderStyle = "solid",
   borderColor = "gray-300",
   textTransform = "none",
+  bgColor = "white", // 默认背景色
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
@@ -190,6 +192,7 @@ const Card: React.FC<CardProps> = ({
         width: dimensions.width,
         height: dimensions.height,
         textTransform,
+        backgroundColor: bgColor, // 应用背景色
       }}
     >
       <div

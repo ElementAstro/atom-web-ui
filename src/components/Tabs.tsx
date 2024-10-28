@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { AiOutlinePlus, AiOutlineClose, AiOutlineExpand } from "react-icons/ai";
+import styled, { css } from "styled-components";
 import { useTheme } from "../context/ThemeContext";
 
 interface Tab {
@@ -26,14 +27,6 @@ interface TabsProps {
   draggable?: boolean;
   closable?: boolean;
   addable?: boolean;
-  theme?:
-    | "light"
-    | "dark"
-    | "astronomy"
-    | "eyeCare"
-    | "sunset"
-    | "ocean"
-    | "astronomyDarkRed";
   tooltip?: string;
   borderWidth?: string;
   animation?: string;
@@ -43,7 +36,6 @@ interface TabsProps {
   onBlur?: (event: FocusEvent<HTMLButtonElement>) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
   onAnimationEnd?: (event: React.AnimationEvent<HTMLDivElement>) => void;
-  onDoubleClick?: (event: MouseEvent<HTMLDivElement>) => void;
   ariaLabel?: string;
   showProgress?: boolean;
   progressColor?: string;
@@ -51,17 +43,91 @@ interface TabsProps {
   rippleEffect?: boolean;
   rippleColor?: string;
   rippleDuration?: number;
-  backgroundColor?: string;
-  textColor?: string;
-  borderColor?: string;
-  hoverColor?: string;
-  activeColor?: string;
-  disabledColor?: string;
-  hoverAnimation?: string;
-  showLabels?: boolean;
-  labelColor?: string;
-  labelActiveColor?: string;
 }
+
+const TabsContainer = styled.div<{ fullscreen: boolean; theme: any }>`
+  background-color: ${({ theme }) => theme.backgroundColor};
+  color: ${({ theme }) => theme.textColor};
+  border-color: ${({ theme }) => theme.borderColor};
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  ${({ fullscreen }) =>
+    fullscreen &&
+    css`
+      width: 100%;
+      height: 100%;
+    `}
+`;
+
+const TabList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
+  overflow-x: auto;
+  align-items: center;
+`;
+
+const TabButton = styled.button<{ isActive: boolean; rippleEffect: boolean }>`
+  padding: 0.5rem 1rem;
+  text-align: center;
+  width: 100%;
+  transition: all 0.3s;
+  background: ${({ isActive, theme }) =>
+    isActive
+      ? `linear-gradient(to right, ${theme.activeColor})`
+      : theme.backgroundColor};
+  color: ${({ isActive, theme }) =>
+    isActive ? theme.labelActiveColor : theme.labelColor};
+  border-bottom: ${({ isActive }) => (isActive ? "2px solid #3b82f6" : "none")};
+  &:hover {
+    background: ${({ theme }) => theme.hoverColor};
+  }
+  &:focus {
+    outline: none;
+  }
+  ${({ rippleEffect }) =>
+    rippleEffect &&
+    css`
+      position: relative;
+      overflow: hidden;
+      .ripple {
+        position: absolute;
+        border-radius: 50%;
+        transform: scale(0);
+        animation: ripple 600ms linear;
+        background: rgba(255, 255, 255, 0.6);
+      }
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    `}
+`;
+
+const TabContent = styled.div`
+  padding: 1rem;
+  transition: all 0.5s;
+  transform: scale(1);
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const AddTabButton = styled.button`
+  padding: 0.5rem 1rem;
+  background: ${({ theme }) => theme.backgroundColor};
+  color: ${({ theme }) => theme.textColor};
+  transition: all 0.3s;
+  &:hover {
+    background: ${({ theme }) => theme.hoverColor};
+  }
+  &:focus {
+    outline: none;
+  }
+`;
 
 const Tabs: React.FC<TabsProps> = ({
   tabs,
@@ -73,7 +139,6 @@ const Tabs: React.FC<TabsProps> = ({
   draggable = true,
   closable = true,
   addable = true,
-  theme,
   tooltip = "",
   animation = "transition duration-300 transform hover:scale-105",
   icon = null,
@@ -82,7 +147,6 @@ const Tabs: React.FC<TabsProps> = ({
   onBlur,
   onKeyDown,
   onAnimationEnd,
-  onDoubleClick,
   ariaLabel = "标签页",
   showProgress = false,
   progressColor = "bg-blue-500",
@@ -90,20 +154,11 @@ const Tabs: React.FC<TabsProps> = ({
   rippleEffect = true,
   rippleColor = "rgba(255, 255, 255, 0.6)",
   rippleDuration = 600,
-  backgroundColor,
-  textColor,
-  borderColor,
-  hoverColor = "",
-  activeColor = "",
-  disabledColor = "text-gray-400",
-  hoverAnimation = "hover:scale-105 hover:shadow-neon",
-  showLabels = true,
-  labelColor = "text-gray-200",
-  labelActiveColor = "text-white",
 }) => {
   const [activeTab, setActiveTab] = useState(tabs[0].label);
   const [tabList, setTabList] = useState(tabs);
   const windowRefs = useRef<{ [key: string]: Window | null }>({});
+  const theme = useTheme();
 
   const handleTabChange = (label: string) => {
     setActiveTab(label);
@@ -225,17 +280,13 @@ const Tabs: React.FC<TabsProps> = ({
         } flex-1`}
         style={{ height: tabHeight, width: tabWidth }}
         title={tooltip}
-        onDoubleClick={() => handleDragOut(tab)}
         onKeyDown={onKeyDown}
         onAnimationEnd={onAnimationEnd}
         aria-label={ariaLabel}
       >
-        <button
-          className={`py-2 px-4 text-white transition duration-300 transform w-full text-center ${animation} ${
-            activeTab === tab.label
-              ? `border-b-2 border-blue-500 scale-105 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-neon ${labelActiveColor}`
-              : `hover:bg-gray-600 ${labelColor}`
-          } focus:outline-none`}
+        <TabButton
+          isActive={activeTab === tab.label}
+          rippleEffect={rippleEffect}
           onClick={(e) => {
             handleTabChange(tab.label);
             if (rippleEffect) createRipple(e);
@@ -245,7 +296,7 @@ const Tabs: React.FC<TabsProps> = ({
         >
           {icon && <span className="mr-2">{icon}</span>}
           {tab.label}
-        </button>
+        </TabButton>
         <div className="absolute top-0 right-0 mt-1 mr-1 flex space-x-1">
           {closable && (
             <button
@@ -266,40 +317,8 @@ const Tabs: React.FC<TabsProps> = ({
     );
   };
 
-  type ThemeKeys =
-    | "light"
-    | "dark"
-    | "astronomy"
-    | "eyeCare"
-    | "sunset"
-    | "ocean"
-    | "astronomyDarkRed";
-
-  const themeClasses: Record<ThemeKeys, string> = {
-    light: "bg-white text-gray-900 border-gray-300",
-    dark: "bg-gray-900 text-white border-gray-700",
-    astronomy:
-      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
-    eyeCare: "bg-green-100 text-green-900 border-green-300",
-    sunset:
-      "bg-gradient-to-r from-orange-500 to-pink-500 text-white border-pink-500",
-    ocean:
-      "bg-gradient-to-r from-blue-500 to-teal-500 text-white border-teal-500",
-    astronomyDarkRed:
-      "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
-  };
-
   return (
-    <div
-      className={`bg-gray-900 rounded-lg shadow-lg ${
-        fullscreen ? "w-full h-full" : ""
-      } ${themeClasses[(theme as ThemeKeys) || "light"]}`}
-      style={{
-        backgroundColor: backgroundColor || undefined,
-        color: textColor || undefined,
-        borderColor: borderColor || undefined,
-      }}
-    >
+    <TabsContainer fullscreen={fullscreen} theme={theme}>
       {showProgress && (
         <div className={`absolute top-0 left-0 w-full ${progressHeight}`}>
           <div
@@ -314,54 +333,29 @@ const Tabs: React.FC<TabsProps> = ({
           ></div>
         </div>
       )}
-      <div className="flex flex-wrap border-b border-gray-700 overflow-x-auto items-center">
+      <TabList>
         {tabList.map((tab, index) => (
           <Tab key={tab.label} tab={tab} index={index} />
         ))}
         {addable && (
-          <button
-            className="py-2 px-4 text-white bg-gray-700 hover:bg-gray-600 transition duration-300 transform w-12 h-12 flex items-center justify-center focus:outline-none"
-            onClick={handleTabAdd}
-            title="添加新标签"
-          >
+          <AddTabButton onClick={handleTabAdd} title="添加新标签">
             <AiOutlinePlus size={24} />
-          </button>
+          </AddTabButton>
         )}
-        <button
-          className="py-2 px-4 text-white bg-gray-700 hover:bg-gray-600 transition duration-300 transform w-12 h-12 flex items-center justify-center focus:outline-none"
-          onClick={handleDragReset}
-          title="重置标签顺序"
-        >
+        <AddTabButton onClick={handleDragReset} title="重置标签顺序">
           ↺
-        </button>
-      </div>
-      <div className="p-4" style={{ height: tabHeight }}>
+        </AddTabButton>
+      </TabList>
+      <TabContent>
         {tabList.map((tab) =>
           tab.label === activeTab ? (
-            <div
-              key={tab.label}
-              className={`transition duration-500 ease-in-out transform hover:scale-105 hover:shadow-neon ${animation}`}
-            >
+            <div key={tab.label} className={animation}>
               {tab.content}
             </div>
           ) : null
         )}
-      </div>
-      <style>{`
-        .ripple {
-          position: absolute;
-          border-radius: 50%;
-          transform: scale(0);
-          animation: ripple ${rippleDuration}ms linear;
-        }
-        @keyframes ripple {
-          to {
-            transform: scale(4);
-            opacity: 0;
-          }
-        }
-      `}</style>
-    </div>
+      </TabContent>
+    </TabsContainer>
   );
 };
 

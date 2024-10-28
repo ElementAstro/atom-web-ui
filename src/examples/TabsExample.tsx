@@ -31,7 +31,6 @@ const TabsExample: React.FC = () => {
         draggable={true}
         closable={true}
         addable={true}
-        theme="light"
         tooltip="Click to interact"
         borderWidth="2"
         animation="transform transition-transform duration-300 ease-in-out"
