@@ -9,6 +9,10 @@ interface RadioProps {
   color?: string;
   size?: number;
   error?: boolean;
+  tooltip?: string;
+  name?: string;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export const Radio: React.FC<RadioProps> = ({
@@ -20,6 +24,10 @@ export const Radio: React.FC<RadioProps> = ({
   color = "blue",
   size = 20,
   error = false,
+  tooltip,
+  name,
+  onFocus,
+  onBlur,
 }) => {
   return (
     <label
@@ -27,6 +35,7 @@ export const Radio: React.FC<RadioProps> = ({
         disabled ? "opacity-50 cursor-not-allowed" : "hover:text-blue-600"
       } ${error ? "text-red-600" : ""}`}
       style={{ fontSize: size }}
+      title={tooltip}
     >
       <input
         type="radio"
@@ -39,6 +48,9 @@ export const Radio: React.FC<RadioProps> = ({
         disabled={disabled}
         aria-checked={checked}
         aria-disabled={disabled}
+        name={name}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
       <span
         className={`text-gray-800 ${

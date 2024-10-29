@@ -28,6 +28,35 @@ const AlertExample: React.FC = () => {
         showIcon={true}
         errorIcon={<span>⚠️</span>}
       />
+      <Alert
+        message="This is a warning alert"
+        severity="warning"
+        onClose={handleAlertClose}
+        autoClose={true}
+        autoCloseDuration={3000}
+        title="Warning"
+        showIcon={true}
+        warningIcon={<span>⚠️</span>}
+      />
+      <Alert
+        message="This is a success alert"
+        severity="success"
+        onClose={handleAlertClose}
+        autoClose={true}
+        autoCloseDuration={3000}
+        title="Success"
+        showIcon={true}
+        successIcon={<span>✔️</span>}
+      />
+      <Alert
+        message="This is a custom alert with no auto close"
+        severity="info"
+        onClose={handleAlertClose}
+        autoClose={false}
+        title="Custom"
+        showIcon={true}
+        infoIcon={<span>ℹ️</span>}
+      />
     </div>
   );
 };

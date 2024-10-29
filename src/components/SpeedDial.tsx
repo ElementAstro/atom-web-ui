@@ -16,6 +16,7 @@ interface SpeedDialProps {
   easing?: string;
   onOpen?: () => void;
   onClose?: () => void;
+  closeOnActionClick?: boolean;
 }
 
 const SpeedDialContainer = styled.div<{ floating: boolean }>`
@@ -112,6 +113,7 @@ const SpeedDial: React.FC<SpeedDialProps> = ({
   easing = "ease",
   onOpen,
   onClose,
+  closeOnActionClick = true,
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -150,6 +152,13 @@ const SpeedDial: React.FC<SpeedDialProps> = ({
     };
   }, []);
 
+  const handleActionClick = () => {
+    if (closeOnActionClick) {
+      setOpen(false);
+      onClose?.();
+    }
+  };
+
   return (
     <SpeedDialContainer ref={containerRef} floating={floating}>
       <SpeedDialFab
@@ -170,7 +179,11 @@ const SpeedDial: React.FC<SpeedDialProps> = ({
         animationDuration={animationDuration}
         easing={easing}
       >
-        {children}
+        {React.Children.map(children, (child) =>
+          React.cloneElement(child as React.ReactElement<any>, {
+            onClick: handleActionClick,
+          })
+        )}
       </SpeedDialActions>
     </SpeedDialContainer>
   );
@@ -181,9 +194,11 @@ interface SpeedDialActionProps {
   tooltipTitle: string;
   onClick: () => void;
   tooltipPosition?: "left" | "right" | "top" | "bottom";
+  disabled?: boolean;
+  tooltipColor?: string;
 }
 
-const SpeedDialActionButton = styled.button`
+const SpeedDialActionButton = styled.button<{ disabled: boolean }>`
   background-color: white;
   color: #6b46c1;
   width: 40px;
@@ -195,16 +210,18 @@ const SpeedDialActionButton = styled.button`
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
   margin: 8px;
   transition: transform 0.3s;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
 
   &:hover {
-    background-color: #f1f1f1;
-    transform: scale(1.1);
+    background-color: ${(props) => (props.disabled ? "white" : "#f1f1f1")};
+    transform: ${(props) => (props.disabled ? "none" : "scale(1.1)")};
   }
 `;
 
-const Tooltip = styled.div<{ position: string }>`
+const Tooltip = styled.div<{ position: string; tooltipColor: string }>`
   position: absolute;
-  background-color: black;
+  background-color: ${(props) => props.tooltipColor};
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
@@ -246,11 +263,17 @@ const SpeedDialAction: React.FC<SpeedDialActionProps> = ({
   tooltipTitle,
   onClick,
   tooltipPosition = "left",
+  disabled = false,
+  tooltipColor = "black",
 }) => {
   return (
     <div style={{ position: "relative", display: "inline-flex" }}>
-      <SpeedDialActionButton onClick={onClick}>{icon}</SpeedDialActionButton>
-      <Tooltip position={tooltipPosition}>{tooltipTitle}</Tooltip>
+      <SpeedDialActionButton onClick={onClick} disabled={disabled}>
+        {icon}
+      </SpeedDialActionButton>
+      <Tooltip position={tooltipPosition} tooltipColor={tooltipColor}>
+        {tooltipTitle}
+      </Tooltip>
     </div>
   );
 };

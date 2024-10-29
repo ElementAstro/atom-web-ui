@@ -41,11 +41,8 @@ describe("TimeInput Component", () => {
         borderWidth="2"
         icon={<span>Clear</span>}
         fullscreen={true}
-        hoverColor="hover:bg-gray-700"
-        activeColor="active:bg-gray-900"
         disabledColor="opacity-50 cursor-not-allowed"
         hoverAnimation="hover:scale-105"
-        showLabels={true}
         labelColor="text-gray-200"
         labelActiveColor="text-white"
       />,

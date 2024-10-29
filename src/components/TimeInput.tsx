@@ -1,7 +1,14 @@
 // src/components/TimeInput.tsx
-import React, { useState, ChangeEvent, FocusEvent, MouseEvent } from "react";
-import { AiOutlineClose } from "react-icons/ai";
+import React, {
+  useState,
+  ChangeEvent,
+  FocusEvent,
+  MouseEvent,
+  KeyboardEvent,
+} from "react";
+import { AiOutlineClose, AiOutlineClockCircle } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext";
+import TimePicker from "react-time-picker";
 
 interface TimeInputProps {
   value?: string;
@@ -29,11 +36,8 @@ interface TimeInputProps {
   borderWidth?: string;
   icon?: React.ReactNode;
   fullscreen?: boolean;
-  hoverColor?: string;
-  activeColor?: string;
   disabledColor?: string;
   hoverAnimation?: string;
-  showLabels?: boolean;
   labelColor?: string;
   labelActiveColor?: string;
 }
@@ -57,16 +61,14 @@ const TimeInput: React.FC<TimeInputProps> = ({
   borderWidth = "2",
   icon = <AiOutlineClose />,
   fullscreen = false,
-  hoverColor = "",
-  activeColor = "",
   disabledColor = "opacity-50 cursor-not-allowed",
   hoverAnimation = "hover:scale-105 hover:shadow-neon",
-  showLabels = true,
   labelColor = "text-gray-200",
   labelActiveColor = "text-white",
 }) => {
   const [error, setError] = useState<string>("");
   const [timeValue, setTimeValue] = useState<string>(value || defaultValue);
+  const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
   const { theme: currentTheme } = useTheme();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -88,6 +90,23 @@ const TimeInput: React.FC<TimeInputProps> = ({
   const handleClear = () => {
     setTimeValue("");
     onChange("");
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      handleClear();
+    }
+  };
+
+  const handleContextMenu = (e: MouseEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    // 显示右键菜单逻辑
+  };
+
+  const handleTimePickerChange = (newValue: string) => {
+    setTimeValue(newValue);
+    onChange(newValue);
+    setShowTimePicker(false);
   };
 
   type ThemeKeys =
@@ -136,6 +155,8 @@ const TimeInput: React.FC<TimeInputProps> = ({
           onFocus={onFocus}
           onBlur={onBlur}
           onMouseEnter={onHover}
+          onKeyDown={handleKeyDown}
+          onContextMenu={handleContextMenu}
           disabled={disabled}
           className={`p-2 border-${borderWidth} rounded bg-gray-800 text-gray-200 focus:outline-none focus:ring focus:ring-purple-500 transition duration-300 ease-in-out transform ${hoverAnimation} ${
             disabled ? disabledColor : ""
@@ -152,6 +173,24 @@ const TimeInput: React.FC<TimeInputProps> = ({
           >
             {icon}
           </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setShowTimePicker(!showTimePicker)}
+          className="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition duration-300"
+          title="选择时间"
+        >
+          <AiOutlineClockCircle />
+        </button>
+        {showTimePicker && (
+          <div className="absolute z-10">
+            <TimePicker
+              value={timeValue}
+              disableClock={true}
+              clearIcon={null}
+              clockIcon={null}
+            />
+          </div>
         )}
       </div>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}

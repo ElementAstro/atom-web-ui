@@ -1,5 +1,4 @@
-// src/components/VerticalMenu.tsx
-import React, { useState, DragEvent } from "react";
+import React, { useState, DragEvent, KeyboardEvent, MouseEvent } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 interface MenuItem {
@@ -72,6 +71,12 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
     multiSelect ? [] : [activeIndex]
   );
   const [collapsedIndices, setCollapsedIndices] = useState<number[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    visible: boolean;
+  }>({ x: 0, y: 0, visible: false });
   const { theme: currentTheme } = useTheme();
 
   const handleItemClick = (index: number | string) => {
@@ -111,6 +116,27 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
     );
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchKeyword(e.target.value);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLUListElement>) => {
+    if (e.key === "ArrowDown") {
+      // Handle down arrow key
+    } else if (e.key === "ArrowUp") {
+      // Handle up arrow key
+    }
+  };
+
+  const handleContextMenu = (e: MouseEvent<HTMLLIElement>, index: number) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, visible: true });
+  };
+
+  const filteredItems = items.filter((item) =>
+    item.label.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
   type ThemeKeys =
     | "light"
     | "dark"
@@ -135,97 +161,118 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({
   };
 
   return (
-    <ul
-      className={`flex flex-col space-y-2 p-4 bg-gradient-to-r from-gray-800 via-gray-900 to-black rounded-lg shadow-neon ${customClass} ${
-        fullscreen ? "w-full h-full" : ""
-      } ${themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]}`}
-    >
-      {items.map((item, index) => (
-        <li
-          key={index}
-          className={`p-2 rounded ${animation} 
-          ${
-            selectedIndices.includes(index)
-              ? `bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white shadow-neon ${customActiveItemClass}`
-              : `hover:bg-gray-700 hover:text-white ${customItemClass}`
-          } ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
-          draggable={draggable}
-          onDragStart={(e) => handleDragStart(e, index)}
-          onDrop={(e) => handleDrop(e, index)}
-          onDragOver={(e) => e.preventDefault()}
-          onMouseEnter={() => onItemHover && onItemHover(index)}
-          onFocus={() => onItemFocus && onItemFocus(index)}
-          onBlur={() => onItemBlur && onItemBlur(index)}
-          title={tooltip}
-        >
-          <button
-            className="flex items-center text-blue-700 bg-transparent border-none p-0 m-0 cursor-pointer"
-            onClick={() => handleItemClick(index)}
+    <div>
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchKeyword}
+        onChange={handleSearchChange}
+        className="mb-4 p-2 border rounded"
+      />
+      <ul
+        className={`flex flex-col space-y-2 p-4 bg-gradient-to-r from-gray-800 via-gray-900 to-black rounded-lg shadow-neon ${customClass} ${
+          fullscreen ? "w-full h-full" : ""
+        } ${themeClasses[(theme as ThemeKeys) || (currentTheme as ThemeKeys)]}`}
+        onKeyDown={handleKeyDown}
+      >
+        {filteredItems.map((item, index) => (
+          <li
+            key={index}
+            className={`p-2 rounded ${animation} 
+            ${
+              selectedIndices.includes(index)
+                ? `bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white shadow-neon ${customActiveItemClass}`
+                : `hover:bg-gray-700 hover:text-white ${customItemClass}`
+            } ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
+            draggable={draggable}
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDrop={(e) => handleDrop(e, index)}
+            onDragOver={(e) => e.preventDefault()}
+            onMouseEnter={() => onItemHover && onItemHover(index)}
+            onFocus={() => onItemFocus && onItemFocus(index)}
+            onBlur={() => onItemBlur && onItemBlur(index)}
+            onContextMenu={(e) => handleContextMenu(e, index)}
+            title={tooltip}
           >
-            {item.icon && (
-              <span className={`mr-2 ${customIconClass}`}>{item.icon}</span>
-            )}
-            {showLabels && (
-              <span
-                className={`${
-                  selectedIndices.includes(index)
-                    ? labelActiveColor
-                    : labelColor
-                }`}
-              >
-                {item.label}
-              </span>
-            )}
-            {collapsible && item.subItems && (
-              <span
-                className="ml-auto"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCollapseToggle(index);
-                }}
-              >
-                {collapsedIndices.includes(index) ? "▲" : "▼"}
-              </span>
-            )}
-          </button>
-          {item.subItems && !collapsedIndices.includes(index) && (
-            <ul className="ml-4 mt-2 space-y-2">
-              {item.subItems.map((subItem, subIndex) => (
-                <li
-                  key={subIndex}
-                  className={`p-2 rounded ${animation} 
-                  ${
-                    selectedIndices.includes(`${index}-${subIndex}`)
-                      ? `bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white shadow-neon ${customActiveItemClass}`
-                      : `hover:bg-gray-700 hover:text-white ${customItemClass}`
-                  } ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
-                  onClick={() => handleItemClick(`${index}-${subIndex}`)}
+            <button
+              className="flex items-center text-blue-700 bg-transparent border-none p-0 m-0 cursor-pointer"
+              onClick={() => handleItemClick(index)}
+            >
+              {item.icon && (
+                <span className={`mr-2 ${customIconClass}`}>{item.icon}</span>
+              )}
+              {showLabels && (
+                <span
+                  className={`${
+                    selectedIndices.includes(index)
+                      ? labelActiveColor
+                      : labelColor
+                  }`}
                 >
-                  <button className="flex items-center text-blue-700 bg-transparent border-none p-0 m-0 cursor-pointer">
-                    {subItem.icon && (
-                      <span className={`mr-2 ${customIconClass}`}>
-                        {subItem.icon}
-                      </span>
-                    )}
-                    {showLabels && (
-                      <span
-                        className={`${
-                          selectedIndices.includes(`${index}-${subIndex}`)
-                            ? labelActiveColor
-                            : labelColor
-                        }`}
-                      >
-                        {subItem.label}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </li>
-      ))}
-    </ul>
+                  {item.label}
+                </span>
+              )}
+              {collapsible && item.subItems && (
+                <span
+                  className="ml-auto"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCollapseToggle(index);
+                  }}
+                >
+                  {collapsedIndices.includes(index) ? "▲" : "▼"}
+                </span>
+              )}
+            </button>
+            {item.subItems && !collapsedIndices.includes(index) && (
+              <ul className="ml-4 mt-2 space-y-2">
+                {item.subItems.map((subItem, subIndex) => (
+                  <li
+                    key={subIndex}
+                    className={`p-2 rounded ${animation} 
+                    ${
+                      selectedIndices.includes(`${index}-${subIndex}`)
+                        ? `bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white shadow-neon ${customActiveItemClass}`
+                        : `hover:bg-gray-700 hover:text-white ${customItemClass}`
+                    } ${hoverColor} ${activeColor} ${disabledColor} ${hoverAnimation}`}
+                    onClick={() => handleItemClick(`${index}-${subIndex}`)}
+                  >
+                    <button className="flex items-center text-blue-700 bg-transparent border-none p-0 m-0 cursor-pointer">
+                      {subItem.icon && (
+                        <span className={`mr-2 ${customIconClass}`}>
+                          {subItem.icon}
+                        </span>
+                      )}
+                      {showLabels && (
+                        <span
+                          className={`${
+                            selectedIndices.includes(`${index}-${subIndex}`)
+                              ? labelActiveColor
+                              : labelColor
+                          }`}
+                        >
+                          {subItem.label}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+      {contextMenu.visible && (
+        <div
+          className="absolute bg-white shadow-lg rounded p-2"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button className="block w-full text-left p-2">Option 1</button>
+          <button className="block w-full text-left p-2">Option 2</button>
+          <button className="block w-full text-left p-2">Option 3</button>
+        </div>
+      )}
+    </div>
   );
 };
 

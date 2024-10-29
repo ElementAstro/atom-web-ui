@@ -5,6 +5,7 @@ interface Option {
   label: string;
   value: string;
   disabled?: boolean;
+  tooltip?: string;
 }
 
 interface RadioGroupProps {
@@ -15,6 +16,9 @@ interface RadioGroupProps {
   color?: string;
   size?: number;
   groupLabel?: string;
+  name?: string;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export const RadioGroup: React.FC<RadioGroupProps> = ({
@@ -25,6 +29,9 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   color = "blue",
   size = 20,
   groupLabel,
+  name,
+  onFocus,
+  onBlur,
 }) => {
   return (
     <div className="flex flex-col space-y-3">
@@ -39,6 +46,10 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
           disabled={option.disabled}
           color={color}
           size={size}
+          tooltip={option.tooltip}
+          name={name}
+          onFocus={onFocus}
+          onBlur={onBlur}
         />
       ))}
       {error && <p className="text-red-500 text-sm">{error}</p>}

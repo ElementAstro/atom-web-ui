@@ -1,4 +1,3 @@
-// src/components/Tabs.tsx
 import React, {
   useState,
   useRef,
@@ -157,6 +156,12 @@ const Tabs: React.FC<TabsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState(tabs[0].label);
   const [tabList, setTabList] = useState(tabs);
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    visible: boolean;
+  }>({ x: 0, y: 0, visible: false });
   const windowRefs = useRef<{ [key: string]: Window | null }>({});
   const theme = useTheme();
 
@@ -250,6 +255,27 @@ const Tabs: React.FC<TabsProps> = ({
     }, rippleDuration);
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchKeyword(e.target.value);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowDown") {
+      // Handle down arrow key
+    } else if (e.key === "ArrowUp") {
+      // Handle up arrow key
+    }
+  };
+
+  const handleContextMenu = (e: MouseEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, visible: true });
+  };
+
+  const filteredTabs = tabList.filter((tab) =>
+    tab.label.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
   const Tab: React.FC<{ tab: Tab; index: number }> = ({ tab, index }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [, drop] = useDrop({
@@ -283,6 +309,7 @@ const Tabs: React.FC<TabsProps> = ({
         onKeyDown={onKeyDown}
         onAnimationEnd={onAnimationEnd}
         aria-label={ariaLabel}
+        onContextMenu={(e) => handleContextMenu(e, index)}
       >
         <TabButton
           isActive={activeTab === tab.label}
@@ -319,6 +346,13 @@ const Tabs: React.FC<TabsProps> = ({
 
   return (
     <TabsContainer fullscreen={fullscreen} theme={theme}>
+      <input
+        type="text"
+        placeholder="搜索标签..."
+        value={searchKeyword}
+        onChange={handleSearchChange}
+        className="mb-4 p-2 border rounded"
+      />
       {showProgress && (
         <div className={`absolute top-0 left-0 w-full ${progressHeight}`}>
           <div
@@ -334,7 +368,7 @@ const Tabs: React.FC<TabsProps> = ({
         </div>
       )}
       <TabList>
-        {tabList.map((tab, index) => (
+        {filteredTabs.map((tab, index) => (
           <Tab key={tab.label} tab={tab} index={index} />
         ))}
         {addable && (
@@ -347,7 +381,7 @@ const Tabs: React.FC<TabsProps> = ({
         </AddTabButton>
       </TabList>
       <TabContent>
-        {tabList.map((tab) =>
+        {filteredTabs.map((tab) =>
           tab.label === activeTab ? (
             <div key={tab.label} className={animation}>
               {tab.content}
@@ -355,6 +389,16 @@ const Tabs: React.FC<TabsProps> = ({
           ) : null
         )}
       </TabContent>
+      {contextMenu.visible && (
+        <div
+          className="absolute bg-white shadow-lg rounded p-2"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button className="block w-full text-left p-2">选项 1</button>
+          <button className="block w-full text-left p-2">选项 2</button>
+          <button className="block w-full text-left p-2">选项 3</button>
+        </div>
+      )}
     </TabsContainer>
   );
 };

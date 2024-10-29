@@ -1,9 +1,11 @@
 import React from "react";
 import Breadcrumbs from "../components/Breadcrumbs";
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 const Home = () => <h1>Home</h1>;
+const Category = () => <h1>Category</h1>;
+const Subcategory = () => <h1>Subcategory</h1>;
+const Item = () => <h1>Item</h1>;
 
 const BreadcrumbsExample: React.FC = () => {
   const breadcrumbItems = [
@@ -40,6 +42,9 @@ const BreadcrumbsExample: React.FC = () => {
       />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/category" element={<Category />} />
+        <Route path="/category/subcategory" element={<Subcategory />} />
+        <Route path="/category/subcategory/item" element={<Item />} />
       </Routes>
     </div>
   );

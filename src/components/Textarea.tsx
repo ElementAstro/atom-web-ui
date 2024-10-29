@@ -15,6 +15,11 @@ interface TextareaProps {
   showCharCount?: boolean;
   borderColor?: string;
   backgroundColor?: string;
+  label?: string;
+  error?: string;
+  required?: boolean;
+  onFocus?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
 }
 
 const StyledTextarea = styled.textarea<{ customClass?: string }>`
@@ -39,8 +44,13 @@ const Textarea: React.FC<TextareaProps> = ({
   showCharCount = false,
   borderColor,
   backgroundColor,
+  label,
+  error,
+  required = false,
+  onFocus,
+  onBlur,
 }) => {
-  const { theme } = useTheme() as { theme: keyof typeof themeClasses }; // 使用主题上下文
+  const { theme } = useTheme() as { theme: keyof typeof themeClasses };
 
   const themeClasses = {
     light: "bg-white text-black",
@@ -55,6 +65,11 @@ const Textarea: React.FC<TextareaProps> = ({
 
   return (
     <div className={`relative ${themeClasses[theme]}`}>
+      {label && (
+        <label className="block text-sm font-medium text-gray-700">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
       <StyledTextarea
         value={value}
         onChange={onChange}
@@ -66,12 +81,15 @@ const Textarea: React.FC<TextareaProps> = ({
         cols={cols}
         disabled={disabled}
         maxLength={maxLength}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
       {showCharCount && maxLength && (
         <div className="absolute bottom-1 right-2 text-sm text-gray-500">
           {value.length}/{maxLength}
         </div>
       )}
+      {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
     </div>
   );
 };

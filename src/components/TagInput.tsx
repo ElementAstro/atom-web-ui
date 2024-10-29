@@ -32,6 +32,16 @@ interface TagInputProps {
   showLabels?: boolean;
   labelColor?: string;
   labelActiveColor?: string;
+  validateTag?: (tag: string) => boolean;
+  renderTag?: (
+    tag: string,
+    index: number,
+    handleDelete: (index: number) => void
+  ) => React.ReactNode;
+  inputStyles?: string;
+  tagStyles?: string;
+  placeholderStyles?: string;
+  deleteButtonStyles?: string;
 }
 
 const TagInput: React.FC<TagInputProps> = ({
@@ -56,13 +66,24 @@ const TagInput: React.FC<TagInputProps> = ({
   showLabels = true,
   labelColor = "text-gray-200",
   labelActiveColor = "text-white",
+  validateTag = (tag) => true,
+  renderTag,
+  inputStyles = "border-none outline-none bg-transparent text-white placeholder-gray-400 transition duration-300 transform hover:scale-105",
+  tagStyles = "",
+  placeholderStyles = "",
+  deleteButtonStyles = "ml-1 text-red-300 hover:text-red-500 transition duration-300",
 }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const { theme: currentTheme } = useTheme();
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && inputValue && tags.length < maxTags) {
+    if (
+      e.key === "Enter" &&
+      inputValue &&
+      tags.length < maxTags &&
+      validateTag(inputValue)
+    ) {
       const newTags = [...tags, inputValue];
       setTags(newTags);
       setInputValue("");
@@ -134,27 +155,31 @@ const TagInput: React.FC<TagInputProps> = ({
           disabled ? "opacity-50 cursor-not-allowed" : ""
         }`}
       >
-        {tags.map((tag, index) => (
-          <span
-            key={index}
-            className={`${tagColors.background} ${tagColors.text} rounded-full px-3 py-1 mr-2 mb-2 ${animation} ${hoverColor} ${activeColor} ${hoverAnimation}`}
-            draggable={draggable}
-            onDragStart={(e) => handleDragStart(e, index)}
-            onDrop={(e) => handleDrop(e, index)}
-            title={tooltip}
-          >
-            {icon && <span className="mr-2">{icon}</span>}
-            {tag}
-            {!disabled && (
-              <button
-                onClick={() => handleDelete(index)}
-                className="ml-1 text-red-300 hover:text-red-500 transition duration-300"
-              >
-                <AiOutlineClose />
-              </button>
-            )}
-          </span>
-        ))}
+        {tags.map((tag, index) =>
+          renderTag ? (
+            renderTag(tag, index, handleDelete)
+          ) : (
+            <span
+              key={index}
+              className={`${tagColors.background} ${tagColors.text} rounded-full px-3 py-1 mr-2 mb-2 ${animation} ${hoverColor} ${activeColor} ${hoverAnimation} ${tagStyles}`}
+              draggable={draggable}
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDrop={(e) => handleDrop(e, index)}
+              title={tooltip}
+            >
+              {icon && <span className="mr-2">{icon}</span>}
+              {tag}
+              {!disabled && (
+                <button
+                  onClick={() => handleDelete(index)}
+                  className={deleteButtonStyles}
+                >
+                  <AiOutlineClose />
+                </button>
+              )}
+            </span>
+          )
+        )}
         <input
           type="text"
           value={inputValue}
@@ -163,7 +188,7 @@ const TagInput: React.FC<TagInputProps> = ({
           }
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="border-none outline-none bg-transparent text-white placeholder-gray-400 transition duration-300 transform hover:scale-105"
+          className={`${inputStyles} ${placeholderStyles}`}
           disabled={disabled}
         />
       </div>

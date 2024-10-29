@@ -7,6 +7,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import createAxiosInstance from "../utils/axiosInstance";
+import { LRUCache } from "lru-cache";
 
 // 自定义错误处理函数
 const customHandleError = (error: AxiosError): AxiosError => {
@@ -46,30 +47,61 @@ const axiosInstance = createAxiosInstance({
   showProgress: true,
 });
 
+// 缓存配置
+const cache = new LRUCache<string, AxiosResponse>({
+  max: 100,
+  ttl: 1000 * 60 * 5, // 5 minutes
+});
+
+// 扩展 AxiosRequestConfig 接口
+interface CustomAxiosRequestConfig extends AxiosRequestConfig {
+  cache?: boolean;
+  retry?: number;
+  retryDelay?: number;
+}
+
 // 通用请求函数
 const request = async (
   method: AxiosRequestConfig["method"],
   url: string,
   data: any = null,
-  config: AxiosRequestConfig = {}
+  config: CustomAxiosRequestConfig = {}
 ): Promise<AxiosResponse> => {
-  try {
-    const response = await axiosInstance({
-      method,
-      url,
-      data,
-      ...config,
-    });
-    return response;
-  } catch (error) {
-    customHandleError(error as AxiosError);
-    throw error;
+  const cacheKey = `${method}:${url}:${JSON.stringify(data)}`;
+  if (config.cache && cache.has(cacheKey)) {
+    return cache.get(cacheKey) as AxiosResponse;
   }
+
+  const makeRequest = async (retryCount: number): Promise<AxiosResponse> => {
+    try {
+      const response = await axiosInstance({
+        method,
+        url,
+        data,
+        ...config,
+      });
+      if (config.cache) {
+        cache.set(cacheKey, response);
+      }
+      return response;
+    } catch (error) {
+      if (retryCount > 0) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, config.retryDelay || 1000)
+        );
+        return makeRequest(retryCount - 1);
+      }
+      customHandleError(error as AxiosError);
+      throw error;
+    }
+  };
+
+  return makeRequest(config.retry || 0);
 };
 
 export const getRequest = async (
   url: string,
-  config: AxiosRequestConfig = {}
+  config: CustomAxiosRequestConfig = {}
 ): Promise<AxiosResponse> => {
   return await request("get", url, null, config);
 };
@@ -77,7 +109,7 @@ export const getRequest = async (
 export const postRequest = async (
   url: string,
   data: any,
-  config: AxiosRequestConfig = {}
+  config: CustomAxiosRequestConfig = {}
 ): Promise<AxiosResponse> => {
   return await request("post", url, data, config);
 };
@@ -85,14 +117,14 @@ export const postRequest = async (
 export const putRequest = async (
   url: string,
   data: any,
-  config: AxiosRequestConfig = {}
+  config: CustomAxiosRequestConfig = {}
 ): Promise<AxiosResponse> => {
   return await request("put", url, data, config);
 };
 
 export const deleteRequest = async (
   url: string,
-  config: AxiosRequestConfig = {}
+  config: CustomAxiosRequestConfig = {}
 ): Promise<AxiosResponse> => {
   return await request("delete", url, null, config);
 };
@@ -100,7 +132,7 @@ export const deleteRequest = async (
 export const patchRequest = async (
   url: string,
   data: any,
-  config: AxiosRequestConfig = {}
+  config: CustomAxiosRequestConfig = {}
 ): Promise<AxiosResponse> => {
   return await request("patch", url, data, config);
 };

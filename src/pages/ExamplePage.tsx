@@ -60,12 +60,14 @@ import SidebarExample from "../examples/SidebarExample";
 import SkeletonScreenExample from "../examples/SkeletonScreenExample";
 import SlidesExample from "../examples/SlidesExample";
 import SpeedDialExample from "../examples/SpeedDialExample";
+import StackExample from "../examples/StackExample";
 import StepperExample from "../examples/StepperExample";
 import SwitchExample from "../examples/SwitchExample";
 import TableExample from "../examples/TableExample";
 import TabsExample from "../examples/TabsExample";
 import TagExample from "../examples/TagExample";
 import TagInputExample from "../examples/TagInputExample";
+import TextFieldExample from "../examples/TextFieldExample";
 import TimeInputExample from "../examples/TimeInputExample";
 import ToastExample from "../examples/ToastExample";
 import TooltipExample from "../examples/TooltipExample";
@@ -194,6 +196,8 @@ const ExamplePage: React.FC = () => {
         <Divider />
         <SpeedDialExample />
         <Divider />
+        <StackExample />
+        <Divider />
         <StepperExample />
         <Divider />
         <SwitchExample />
@@ -205,6 +209,8 @@ const ExamplePage: React.FC = () => {
         <TagExample />
         <Divider />
         <TagInputExample />
+        <Divider />
+        <TextFieldExample />
         <Divider />
         <TimeInputExample />
         <Divider />
