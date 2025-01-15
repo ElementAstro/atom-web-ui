@@ -1,6 +1,12 @@
 // src/components/Accordion.tsx
 import React, { useState, useEffect, ReactNode, KeyboardEvent } from "react";
 import { useTheme } from "../context/ThemeContext";
+import {
+  motion,
+  AnimatePresence,
+  Variants,
+  TargetAndTransition,
+} from "framer-motion";
 
 interface AccordionItemProps {
   title: string;
@@ -22,7 +28,7 @@ interface AccordionItemProps {
   iconOpen?: string;
   iconClose?: string;
   iconPosition?: "left" | "right";
-  maxHeight?: string;
+  // maxHeight?: string; // 如果未使用，可考虑移除
   titleBgColor?: string;
   titleTextColor?: string;
   contentBgColor?: string;
@@ -32,6 +38,38 @@ interface AccordionItemProps {
   hoverBgColor?: string;
   hoverTextColor?: string;
   tooltip?: string;
+  // 新增动画相关props
+  animationType?:
+    | "fade"
+    | "slide"
+    | "scale"
+    | "rotate"
+    | "flip"
+    | "bounce"
+    | "zoom";
+  animationDuration?: number;
+  animationEasing?: string;
+  springConfig?: {
+    stiffness?: number;
+    damping?: number;
+    mass?: number;
+    restDelta?: number;
+    restSpeed?: number;
+  };
+  enterAnimation?: Variants;
+  exitAnimation?: Variants;
+  whileHover?: TargetAndTransition | string;
+  whileTap?: TargetAndTransition | string;
+  whileFocus?: TargetAndTransition | string;
+  onAnimationStart?: (type: "enter" | "exit") => void;
+  onAnimationComplete?: (type: "enter" | "exit") => void;
+  onAnimationCancel?: () => void;
+  onHoverStart?: () => void;
+  onHoverEnd?: () => void;
+  onTapStart?: () => void;
+  onTapCancel?: () => void;
+  onFocusStart?: () => void;
+  onFocusEnd?: () => void;
 }
 
 type Theme =
@@ -42,6 +80,77 @@ type Theme =
   | "ocean"
   | "sunset"
   | "astronomyDarkRed";
+
+// 默认动画配置
+const defaultAnimations: Record<string, Variants> = {
+  fade: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+  },
+  slide: {
+    initial: { y: -20, opacity: 0 },
+    animate: { y: 0, opacity: 1 },
+    exit: { y: -20, opacity: 0 },
+  },
+  scale: {
+    initial: { scale: 0.9, opacity: 0 },
+    animate: { scale: 1, opacity: 1 },
+    exit: { scale: 0.9, opacity: 0 },
+  },
+  rotate: {
+    initial: { rotate: -90, opacity: 0 },
+    animate: { rotate: 0, opacity: 1 },
+    exit: { rotate: 90, opacity: 0 },
+  },
+  flip: {
+    initial: { rotateX: 90, opacity: 0 },
+    animate: { rotateX: 0, opacity: 1 },
+    exit: { rotateX: -90, opacity: 0 },
+  },
+  bounce: {
+    initial: { y: -50, opacity: 0 },
+    animate: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        bounce: 0.4,
+        duration: 0.8,
+      },
+    },
+    exit: {
+      y: 50,
+      opacity: 0,
+      transition: {
+        type: "spring",
+        bounce: 0.4,
+        duration: 0.8,
+      },
+    },
+  },
+  zoom: {
+    initial: { scale: 0.5, opacity: 0 },
+    animate: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 20,
+      },
+    },
+    exit: {
+      scale: 0.5,
+      opacity: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 20,
+      },
+    },
+  },
+};
 
 const AccordionItem: React.FC<AccordionItemProps> = ({
   title,
@@ -63,7 +172,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
   iconOpen = "▼",
   iconClose = "▲",
   iconPosition = "right",
-  maxHeight = "max-h-screen",
+  // maxHeight = "max-h-screen", // 如果未使用，可考虑移除
   titleBgColor,
   titleTextColor,
   contentBgColor,
@@ -73,7 +182,32 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
   hoverBgColor,
   hoverTextColor,
   tooltip = "",
+  // 新增props默认值
+  animationType = "fade",
+  animationDuration = 0.3,
+  animationEasing = "easeInOut",
+  springConfig = {
+    stiffness: 300,
+    damping: 20,
+    mass: 0.5,
+  },
+  enterAnimation,
+  exitAnimation,
+  whileHover = { scale: 1.02 },
+  whileTap = { scale: 0.98 },
+  whileFocus = { scale: 1.02 },
 }) => {
+  // 获取动画配置
+  const animationConfig =
+    enterAnimation && exitAnimation
+      ? {
+          initial:
+            enterAnimation.initial || defaultAnimations[animationType].initial,
+          animate:
+            enterAnimation.animate || defaultAnimations[animationType].animate,
+          exit: exitAnimation.exit || defaultAnimations[animationType].exit,
+        }
+      : defaultAnimations[animationType];
   const { theme } = useTheme() as { theme: Theme };
 
   useEffect(() => {
@@ -129,11 +263,18 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
   };
 
   return (
-    <div
+    <motion.div
       className={`border-b last:border-b-0 ${customClass} ${themeClasses[theme].container}`}
+      whileHover={whileHover}
+      whileTap={whileTap}
+      whileFocus={whileFocus}
     >
-      <div
-        onClick={!disabled ? onToggle : undefined}
+      <motion.div
+        onClick={(e) => {
+          if (!disabled) {
+            onToggle();
+          }
+        }}
         onMouseEnter={onHover}
         onFocus={onFocus}
         onBlur={onBlur}
@@ -152,28 +293,46 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
           disabled ? "opacity-50 cursor-not-allowed" : ""
         } ${titleBgColor} ${titleTextColor} ${hoverBgColor} ${hoverTextColor}`}
         title={tooltip}
+        whileHover={whileHover}
+        whileTap={whileTap}
+        whileFocus={whileFocus}
       >
         <h3 className="font-semibold">{title}</h3>
-        <span
+        <motion.span
           className={`${animation} ${
             isOpen ? "rotate-180 text-yellow-400" : "text-white"
           } ${iconPosition === "left" ? "order-first mr-2" : "ml-2"}`}
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ type: "spring", ...springConfig }}
         >
           {isOpen ? iconOpen : iconClose}
-        </span>
-      </div>
-      <div
-        className={`overflow-hidden transition-max-height duration-500 ease-in-out ${
-          isOpen ? maxHeight : "max-h-0"
-        }`}
-      >
-        <div
-          className={`p-4 ${themeClasses[theme].content} ${customContentClass} ${contentBgColor} ${contentTextColor} ${borderColor} ${borderWidth}`}
-        >
-          {children}
-        </div>
-      </div>
-    </div>
+        </motion.span>
+      </motion.div>
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            className="overflow-hidden"
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={animationConfig}
+            transition={{
+              duration: animationDuration,
+              ease: animationEasing,
+              type: "spring",
+              ...springConfig,
+            }}
+          >
+            <div
+              className={`p-4 ${themeClasses[theme].content} ${customContentClass} ${contentBgColor} ${contentTextColor} ${borderColor} ${borderWidth}`}
+            >
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

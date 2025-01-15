@@ -1,191 +1,139 @@
-// src/components/ButtonGroup.tsx
-import React from "react";
-import { useTheme } from "../context/ThemeContext";
+import { motion, Variants } from "framer-motion";
+import { ReactNode, forwardRef } from "react";
+import { twMerge } from "tailwind-merge";
+import Button, { ButtonProps } from "./Button";
 
-interface Button {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-  disabled?: boolean;
-}
+export interface ButtonGroupProps {
+  /**
+   * 按钮组内容
+   */
+  children: ReactNode;
 
-interface ButtonGroupProps {
-  buttons: Button[];
-  orientation?: "horizontal" | "vertical";
-  onButtonClick: (value: string) => void;
-  size?: "small" | "medium" | "large";
-  disabled?: boolean;
-  variant?: "primary" | "secondary" | "alert" | "success";
+  /**
+   * 布局方向
+   * @default 'horizontal'
+   */
+  direction?: "horizontal" | "vertical";
+
+  /**
+   * 响应式布局配置
+   * 例如：{ sm: 'vertical', md: 'horizontal' }
+   */
+  responsiveDirection?: Partial<Record<"sm" | "md" | "lg" | "xl", "horizontal" | "vertical">>;
+
+  /**
+   * 按钮间距
+   * @default 'md'
+   */
+  spacing?: "none" | "sm" | "md" | "lg";
+
+  /**
+   * 响应式间距配置
+   * 例如：{ sm: 'sm', md: 'md' }
+   */
+  responsiveSpacing?: Partial<Record<"sm" | "md" | "lg" | "xl", "none" | "sm" | "md" | "lg">>;
+
+  /**
+   * 是否包裹按钮
+   * @default false
+   */
+  wrap?: boolean;
+
+  /**
+   * 动画预设
+   * @default 'fade'
+   */
+  animation?: "none" | "fade" | "slide" | "scale";
+
+  /**
+   * 动画持续时间（秒）
+   * @default 0.3
+   */
+  animationDuration?: number;
+
+  /**
+   * 自定义类名
+   */
   className?: string;
-  tooltip?: string;
-  iconPosition?: "left" | "right";
-  animation?: string;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
-  onAnimationEnd?: () => void;
-  ariaLabel?: string;
-  fullWidth?: boolean;
-  rounded?: boolean;
-  shadow?: boolean;
-  hoverEffect?: boolean;
-  borderStyle?: string;
-  borderWidth?: string;
-  borderColor?: string;
-  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
-  ripple?: boolean;
+
+  /**
+   * 按钮组对齐方式
+   * @default 'start'
+   */
+  align?: "start" | "center" | "end" | "stretch";
+
+  /**
+   * 是否显示分隔线
+   * @default false
+   */
+  showDivider?: boolean;
+
+  /**
+   * 分隔线样式
+   */
+  dividerClassName?: string;
 }
 
-type Theme =
-  | "light"
-  | "dark"
-  | "astronomy"
-  | "eyeCare"
-  | "ocean"
-  | "sunset"
-  | "astronomyDarkRed";
-
-const ButtonGroup: React.FC<ButtonGroupProps> = ({
-  buttons,
-  orientation = "horizontal",
-  onButtonClick,
-  size = "medium",
-  disabled = false,
-  variant = "primary",
-  className = "",
-  tooltip = "",
-  iconPosition = "left",
-  animation = "transform transition-transform duration-200 ease-in-out",
-  onFocus,
-  onBlur,
-  onMouseEnter,
-  onMouseLeave,
-  onKeyDown,
-  onAnimationEnd,
-  ariaLabel = "",
-  fullWidth = false,
-  rounded = true,
-  shadow = false,
-  hoverEffect = true,
-  borderStyle = "solid",
-  borderWidth = "1",
-  borderColor = "transparent",
-  textTransform = "none",
-  ripple = false,
-}) => {
-  const { theme } = useTheme() as { theme: Theme };
-
-  const sizeClasses = {
-    small: "p-1 text-sm",
-    medium: "p-2 text-md",
-    large: "p-3 text-lg",
-  };
-
-  const variantClasses = {
-    primary:
-      "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-neon",
-    secondary: "bg-gray-700 hover:bg-gray-600",
-    alert: "bg-red-500 text-white hover:bg-red-700 active:bg-red-800",
-    success: "bg-green-500 text-white hover:bg-green-700 active:bg-green-800",
-  };
-
-  const orientationClasses = {
-    horizontal: "flex-row space-x-2",
-    vertical: "flex-col space-y-2",
-  };
-
-  const themeClasses: Record<Theme, string> = {
-    light: "bg-white text-gray-900 border-gray-300",
-    dark: "bg-gray-900 text-white border-gray-700",
-    astronomy:
-      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
-    eyeCare: "bg-green-100 text-green-900 border-green-300",
-    ocean: "bg-blue-100 text-blue-900 border-blue-300",
-    sunset: "bg-orange-100 text-orange-900 border-orange-300",
-    astronomyDarkRed:
-      "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
-  };
-
-  const handleRipple = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (!ripple) return;
-
-    const button = event.currentTarget;
-    const circle = document.createElement("span");
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-    circle.classList.add("ripple");
-
-    const rippleEffect = button.getElementsByClassName("ripple")[0];
-
-    if (rippleEffect) {
-      rippleEffect.remove();
-    }
-
-    button.appendChild(circle);
-  };
-
-  return (
-    <div
-      className={`flex ${orientationClasses[orientation]} ${className} ${
-        themeClasses[theme]
-      } ${fullWidth ? "w-full" : ""}`}
-      aria-label={ariaLabel}
-    >
-      {buttons.map((btn, index) => (
-        <button
-          key={index}
-          onClick={() => !btn.disabled && !disabled && onButtonClick(btn.value)}
-          className={`flex items-center justify-center ${
-            rounded ? "rounded-md" : ""
-          } focus:outline-none ${animation} ${sizeClasses[size]} ${
-            variantClasses[variant]
-          } ${
-            btn.disabled || disabled ? "opacity-50 cursor-not-allowed" : ""
-          } ${shadow ? "shadow-lg" : ""} ${
-            hoverEffect ? "hover:shadow-neon hover:scale-105" : ""
-          } border-${borderWidth} border-${borderColor} border-${borderStyle} ${textTransform}`}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onFocus={onFocus}
-          onBlur={onBlur}
-          onKeyDown={onKeyDown}
-          onAnimationEnd={onAnimationEnd}
-          title={tooltip}
-          aria-label={btn.label}
-          onMouseDown={handleRipple}
-        >
-          {iconPosition === "left" && btn.icon && (
-            <span className="mr-2">{btn.icon}</span>
-          )}
-          {btn.label}
-          {iconPosition === "right" && btn.icon && (
-            <span className="ml-2">{btn.icon}</span>
-          )}
-        </button>
-      ))}
-      <style>{`
-        .ripple {
-          position: absolute;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.6);
-          transform: scale(0);
-          animation: ripple 600ms linear;
-        }
-        @keyframes ripple {
-          to {
-            transform: scale(4);
-            opacity: 0;
-          }
-        }
-      `}</style>
-    </div>
-  );
+const spacingClasses = {
+  none: "gap-0",
+  sm: "gap-2",
+  md: "gap-4", 
+  lg: "gap-6",
 };
+
+const animationVariants: Record<string, Variants> = {
+  fade: {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  },
+  slide: {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0, transition: { staggerChildren: 0.1 } }
+  },
+  scale: {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { staggerChildren: 0.1 } }
+  }
+};
+
+const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(
+  (
+    {
+      children,
+      direction = "horizontal",
+      spacing = "md",
+      wrap = false,
+      animation = "fade",
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    const directionClasses = direction === "horizontal" 
+      ? "flex-row" 
+      : "flex-col";
+
+    return (
+      <motion.div
+        ref={ref}
+        className={twMerge(
+          "flex",
+          directionClasses,
+          spacingClasses[spacing],
+          wrap && "flex-wrap",
+          className
+        )}
+        variants={animation !== "none" ? animationVariants[animation] : undefined}
+        initial="hidden"
+        animate="visible"
+        {...props}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+);
+
+ButtonGroup.displayName = "ButtonGroup";
 
 export default ButtonGroup;

@@ -1,156 +1,180 @@
 // src/components/Alert.test.tsx
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom/extend-expect";
-import Alert from "./Alert";
+import React from 'react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
+import { Alert } from './Alert';
+import { ThemeProvider } from '../context/ThemeContext';
 
-describe("Alert Component", () => {
-  test("renders with default props", () => {
-    render(<Alert message="Test Message" severity="info" onClose={() => {}} />);
-    expect(screen.getByText("Test Message")).toBeInTheDocument();
+const renderWithTheme = (ui: React.ReactElement) => {
+  return render(
+    <ThemeProvider initialTheme="light">{ui}</ThemeProvider>
+  );
+};
+
+describe('Alert Component', () => {
+  // Basic Rendering Tests
+  describe('Basic Rendering', () => {
+    test('renders with default props', () => {
+      renderWithTheme(
+        <Alert isOpen={true} message="Test message" />
+      );
+      expect(screen.getByText('Test message')).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveClass('bg-blue-50');
+    });
+
+    test('renders different alert types', () => {
+      const { rerender } = renderWithTheme(
+        <Alert isOpen={true} message="Test" type="success" />
+      );
+      expect(screen.getByRole('alert')).toHaveClass('bg-green-50');
+
+      rerender(
+        <ThemeProvider initialTheme="light">
+          <Alert isOpen={true} message="Test" type="warning" />
+        </ThemeProvider>
+      );
+      expect(screen.getByRole('alert')).toHaveClass('bg-yellow-50');
+
+      rerender(
+        <ThemeProvider initialTheme="light">
+          <Alert isOpen={true} message="Test" type="error" />
+        </ThemeProvider>
+      );
+      expect(screen.getByRole('alert')).toHaveClass('bg-red-50');
+    });
+
+    test('renders with title', () => {
+      renderWithTheme(
+        <Alert isOpen={true} message="Message" title="Title" />
+      );
+      expect(screen.getByText('Title')).toBeInTheDocument();
+    });
+
+    test('renders with custom icon', () => {
+      renderWithTheme(
+        <Alert 
+          isOpen={true} 
+          message="Test" 
+          icon={<span data-testid="custom-icon">🔔</span>} 
+        />
+      );
+      expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
+    });
+
+    test('renders with actions', () => {
+      renderWithTheme(
+        <Alert 
+          isOpen={true} 
+          message="Test" 
+          actions={<button>Action</button>} 
+        />
+      );
+      expect(screen.getByRole('button', { name: 'Action' })).toBeInTheDocument();
+    });
   });
 
-  test("renders with custom classes", () => {
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={() => {}}
-        customClass="custom-alert"
-        customMessageClass="custom-message"
-        customButtonClass="custom-button"
-      />
-    );
-    expect(screen.getByText("Test Message").parentElement).toHaveClass(
-      "custom-alert"
-    );
-    expect(screen.getByText("Test Message")).toHaveClass("custom-message");
-    expect(screen.getByRole("button")).toHaveClass("custom-button");
+  // Interaction Tests
+  describe('Interactions', () => {
+    test('calls onClose when close button is clicked', () => {
+      const onClose = jest.fn();
+      renderWithTheme(
+        <Alert isOpen={true} message="Test" onClose={onClose} />
+      );
+      
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    test('does not show close button when closable is false', () => {
+      renderWithTheme(
+        <Alert isOpen={true} message="Test" closable={false} />
+      );
+      expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
+    });
+
+    test('auto-closes after duration', () => {
+      jest.useFakeTimers();
+      const onClose = jest.fn();
+      
+      renderWithTheme(
+        <Alert isOpen={true} message="Test" duration={1000} onClose={onClose} />
+      );
+      
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+      
+      expect(onClose).toHaveBeenCalledTimes(1);
+      jest.useRealTimers();
+    });
   });
 
-  test("auto closes after duration", () => {
-    jest.useFakeTimers();
-    const onClose = jest.fn();
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={onClose}
-        autoClose
-        autoCloseDuration={3000}
-      />
-    );
-    jest.advanceTimersByTime(3000);
-    expect(onClose).toHaveBeenCalled();
-    jest.useRealTimers();
+  // Style Tests
+  describe('Style Variations', () => {
+    test('applies correct rounded classes', () => {
+      const { rerender } = renderWithTheme(
+        <Alert isOpen={true} message="Test" rounded="none" />
+      );
+      expect(screen.getByRole('alert')).toHaveClass('rounded-none');
+
+      rerender(
+        <ThemeProvider initialTheme="light">
+          <Alert isOpen={true} message="Test" rounded="full" />
+        </ThemeProvider>
+      );
+      expect(screen.getByRole('alert')).toHaveClass('rounded-full');
+    });
+
+    test('applies correct shadow classes', () => {
+      const { rerender } = renderWithTheme(
+        <Alert isOpen={true} message="Test" shadow="none" />
+      );
+      expect(screen.getByRole('alert')).toHaveClass('shadow-none');
+
+      rerender(
+        <ThemeProvider initialTheme="light">
+          <Alert isOpen={true} message="Test" shadow="xl" />
+        </ThemeProvider>
+      );
+      expect(screen.getByRole('alert')).toHaveClass('shadow-xl');
+    });
+
+    test('merges custom className', () => {
+      renderWithTheme(
+        <Alert isOpen={true} message="Test" className="custom-class" />
+      );
+      expect(screen.getByRole('alert')).toHaveClass('custom-class');
+    });
   });
 
-  test("pauses auto close on hover", () => {
-    jest.useFakeTimers();
-    const onClose = jest.fn();
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={onClose}
-        autoClose
-        autoCloseDuration={3000}
-        pauseOnHover
-      />
-    );
-    fireEvent.mouseEnter(screen.getByText("Test Message"));
-    jest.advanceTimersByTime(3000);
-    expect(onClose).not.toHaveBeenCalled();
-    fireEvent.mouseLeave(screen.getByText("Test Message"));
-    jest.advanceTimersByTime(3000);
-    expect(onClose).toHaveBeenCalled();
-    jest.useRealTimers();
-  });
+  // Animation Tests
+  describe('Animations', () => {
+    test('applies correct animation preset', () => {
+      const { rerender } = renderWithTheme(
+        <Alert isOpen={true} message="Test" animationPreset="fade" />
+      );
+      expect(screen.getByRole('alert')).toHaveStyle({ opacity: 1 });
 
-  test("calls onOpen and onClose callbacks", () => {
-    const onOpen = jest.fn();
-    const onClose = jest.fn();
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={onClose}
-        onOpen={onOpen}
-      />
-    );
-    expect(onOpen).toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button"));
-    expect(onClose).toHaveBeenCalled();
-  });
+      rerender(
+        <ThemeProvider initialTheme="light">
+          <Alert isOpen={true} message="Test" animationPreset="slide" />
+        </ThemeProvider>
+      );
+      expect(screen.getByRole('alert')).toHaveStyle({ transform: 'translateY(0px)' });
+    });
 
-  test("renders with icon", () => {
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={() => {}}
-        icon={<span>Icon</span>}
-      />
-    );
-    expect(screen.getByText("Icon")).toBeInTheDocument();
-  });
+    test('handles visibility toggle correctly', () => {
+      const { rerender } = renderWithTheme(
+        <Alert isOpen={true} message="Test" />
+      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
 
-  test("renders with title", () => {
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={() => {}}
-        title="Test Title"
-      />
-    );
-    expect(screen.getByText("Test Title")).toBeInTheDocument();
-  });
-
-  test("handles keyboard interactions", () => {
-    const onClose = jest.fn();
-    render(<Alert message="Test Message" severity="info" onClose={onClose} />);
-    fireEvent.keyDown(screen.getByRole("button"), { key: "Enter" });
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  test("renders with progress bar", () => {
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={() => {}}
-        showProgress
-      />
-    );
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-  });
-
-  test("applies theme classes", () => {
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={() => {}}
-        theme="dark"
-      />
-    );
-    expect(screen.getByText("Test Message").parentElement).toHaveClass(
-      "bg-gray-900"
-    );
-  });
-
-  test("applies position classes", () => {
-    render(
-      <Alert
-        message="Test Message"
-        severity="info"
-        onClose={() => {}}
-        position="bottom-left"
-      />
-    );
-    expect(screen.getByText("Test Message").parentElement).toHaveClass(
-      "bottom-0 left-0"
-    );
+      rerender(
+        <ThemeProvider initialTheme="light">
+          <Alert isOpen={false} message="Test" />
+        </ThemeProvider>
+      );
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
   });
 });

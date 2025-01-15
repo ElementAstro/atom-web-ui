@@ -203,7 +203,7 @@ const SystemInfoPanel: React.FC = () => {
     {
       label: "系统信息",
       content: (
-        <Grid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={4}>
+        <Grid columns={{ base: 2, sm: 2, md: 3, lg: 4 }}>
           <CpuUsage usage={cpuUsage} />
           <MemoryUsage usage={memoryUsage} />
           <StorageSpace space={storageSpace} />

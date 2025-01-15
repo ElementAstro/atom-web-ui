@@ -1,174 +1,174 @@
-// src/components/Button.test.tsx
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom/extend-expect";
-import Button from "./Button";
-import { ThemeProvider } from "../context/ThemeContext";
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import Button from './Button';
+import { ThemeProvider } from '../context/ThemeContext';
 
-describe("Button Component", () => {
-  const renderWithTheme = (ui: React.ReactElement, theme: string) => {
-    return render(<ThemeProvider initialTheme={theme}>{ui}</ThemeProvider>);
-  };
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(
+    <ThemeProvider initialTheme="light">
+      {ui}
+    </ThemeProvider>
+  );
+};
 
-  test("renders with default props", () => {
-    renderWithTheme(<Button>Click Me</Button>, "light");
-    const buttonElement = screen.getByText("Click Me");
-    expect(buttonElement).toBeInTheDocument();
-    expect(buttonElement).toHaveClass("bg-blue-500 text-white");
+describe('Button Component', () => {
+  describe('Basic Rendering', () => {
+    test('renders with default props', () => {
+      renderWithProviders(<Button>Click me</Button>);
+      const button = screen.getByText('Click me');
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveClass('bg-blue-500', 'rounded-md');
+    });
+
+    test('renders different sizes', () => {
+      const { rerender } = renderWithProviders(<Button size="sm">Small</Button>);
+      expect(screen.getByText('Small')).toHaveClass('px-3', 'py-1.5', 'text-sm');
+
+      rerender(<Button size="lg">Large</Button>);
+      expect(screen.getByText('Large')).toHaveClass('px-6', 'py-3', 'text-lg');
+    });
+
+    test('renders different colors', () => {
+      const { rerender } = renderWithProviders(<Button color="success">Success</Button>);
+      expect(screen.getByText('Success')).toHaveClass('bg-green-500');
+
+      rerender(<Button color="danger">Danger</Button>);
+      expect(screen.getByText('Danger')).toHaveClass('bg-red-500');
+    });
+
+    test('renders different shapes', () => {
+      const { rerender } = renderWithProviders(<Button shape="pill">Pill</Button>);
+      expect(screen.getByText('Pill')).toHaveClass('rounded-full');
+
+      rerender(<Button shape="square">Square</Button>);
+      expect(screen.getByText('Square')).toHaveClass('rounded-none');
+    });
   });
 
-  test("renders with custom variant", () => {
-    renderWithTheme(<Button variant="alert">Alert</Button>, "light");
-    const buttonElement = screen.getByText("Alert");
-    expect(buttonElement).toHaveClass("bg-red-500 text-white");
+  describe('Interactive States', () => {
+    test('handles click events', () => {
+      const handleClick = jest.fn();
+      renderWithProviders(<Button onClick={handleClick}>Click me</Button>);
+      
+      fireEvent.click(screen.getByText('Click me'));
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    test('respects disabled state', () => {
+      const handleClick = jest.fn();
+      renderWithProviders(
+        <Button disabled onClick={handleClick}>
+          Disabled
+        </Button>
+      );
+      
+      const button = screen.getByText('Disabled');
+      expect(button).toBeDisabled();
+      expect(button).toHaveClass('opacity-50', 'cursor-not-allowed');
+      
+      fireEvent.click(button);
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+
+    test('shows loading state', () => {
+      renderWithProviders(<Button loading>Loading</Button>);
+      
+      expect(screen.getByRole('button')).toHaveClass('cursor-wait');
+      expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+      expect(screen.getByRole('button').querySelector('.animate-spin')).toBeInTheDocument();
+    });
   });
 
-  test("renders with custom size", () => {
-    renderWithTheme(<Button size="large">Large Button</Button>, "light");
-    const buttonElement = screen.getByText("Large Button");
-    expect(buttonElement).toHaveClass("text-lg px-6 py-3");
+  describe('Icon Functionality', () => {
+    const TestIcon = () => <span data-testid="test-icon">★</span>;
+
+    test('renders icon in left position', () => {
+      renderWithProviders(
+        <Button icon={{ position: 'left', element: <TestIcon /> }}>
+          With Icon
+        </Button>
+      );
+      
+      const button = screen.getByRole('button');
+      expect(button).toHaveClass('flex-row');
+      expect(screen.getByTestId('test-icon')).toBeInTheDocument();
+    });
+
+    test('renders icon in right position', () => {
+      renderWithProviders(
+        <Button icon={{ position: 'right', element: <TestIcon /> }}>
+          With Icon
+        </Button>
+      );
+      
+      const button = screen.getByRole('button');
+      expect(button).toHaveClass('flex-row-reverse');
+      expect(screen.getByTestId('test-icon')).toBeInTheDocument();
+    });
   });
 
-  test("renders with loading state", () => {
-    renderWithTheme(<Button isLoading>Loading</Button>, "light");
-    const loadingElement = screen.getByText("Loading...");
-    expect(loadingElement).toBeInTheDocument();
-    expect(loadingElement).toHaveClass("animate-spin");
+  describe('Style Classes', () => {
+    test('combines custom classes with default classes', () => {
+      renderWithProviders(
+        <Button className="custom-class" color="primary">
+          Custom
+        </Button>
+      );
+      
+      const button = screen.getByText('Custom');
+      expect(button).toHaveClass('custom-class', 'bg-blue-500');
+    });
+
+    test('applies focus styles', () => {
+      renderWithProviders(<Button>Focus</Button>);
+      
+      const button = screen.getByText('Focus');
+      expect(button).toHaveClass('focus:ring-2', 'focus:ring-offset-2');
+    });
   });
 
-  test("renders with custom class", () => {
-    renderWithTheme(
-      <Button customClass="custom-class">Custom</Button>,
-      "light"
-    );
-    const buttonElement = screen.getByText("Custom");
-    expect(buttonElement).toHaveClass("custom-class");
+  describe('Animation Properties', () => {
+    test('has correct animation attributes', () => {
+      renderWithProviders(<Button>Animate</Button>);
+      
+      const button = screen.getByText('Animate');
+      expect(button).toHaveClass('transition-colors', 'duration-200');
+    });
+
+    test('disables animations when loading', () => {
+      renderWithProviders(<Button loading>Loading</Button>);
+      
+      const button = screen.getByRole('button');
+      const motionProps = button.getAttribute('style');
+      expect(motionProps).not.toContain('scale');
+    });
   });
 
-  test("renders with icon", () => {
-    renderWithTheme(<Button icon="check">With Icon</Button>, "light");
-    const iconElement = screen.getByText("With Icon").querySelector("svg");
-    expect(iconElement).toBeInTheDocument();
-  });
+  describe('Accessibility', () => {
+    test('maintains button semantics', () => {
+      renderWithProviders(<Button>Accessible</Button>);
+      
+      const button = screen.getByRole('button');
+      expect(button).toHaveAttribute('type');
+      expect(button).toBeInTheDocument();
+    });
 
-  test("handles click event", () => {
-    const handleClick = jest.fn();
-    renderWithTheme(<Button onClick={handleClick}>Click Me</Button>, "light");
-    const buttonElement = screen.getByText("Click Me");
-    fireEvent.click(buttonElement);
-    expect(handleClick).toHaveBeenCalled();
-  });
+    test('handles keyboard interaction', () => {
+      const handleClick = jest.fn();
+      renderWithProviders(<Button onClick={handleClick}>Press</Button>);
+      
+      const button = screen.getByText('Press');
+      button.focus();
+      fireEvent.keyDown(button, { key: 'Enter' });
+      expect(handleClick).toHaveBeenCalled();
+    });
 
-  test("applies disabled state", () => {
-    renderWithTheme(<Button disabled>Disabled</Button>, "light");
-    const buttonElement = screen.getByText("Disabled");
-    expect(buttonElement).toBeDisabled();
-    expect(buttonElement).toHaveClass("opacity-50 cursor-not-allowed");
-  });
-
-  test("applies ripple effect on click", () => {
-    renderWithTheme(<Button ripple>Ripple</Button>, "light");
-    const buttonElement = screen.getByText("Ripple");
-    fireEvent.mouseDown(buttonElement);
-    const rippleElement = buttonElement.querySelector(".ripple");
-    expect(rippleElement).toBeInTheDocument();
-  });
-
-  test("applies full width style", () => {
-    renderWithTheme(<Button fullWidth>Full Width</Button>, "light");
-    const buttonElement = screen.getByText("Full Width");
-    expect(buttonElement).toHaveClass("w-full");
-  });
-
-  test("applies gradient style", () => {
-    renderWithTheme(<Button gradient>Gradient</Button>, "light");
-    const buttonElement = screen.getByText("Gradient");
-    expect(buttonElement).toHaveClass(
-      "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500"
-    );
-  });
-
-  test("applies shadow style", () => {
-    renderWithTheme(<Button shadow>Shadow</Button>, "light");
-    const buttonElement = screen.getByText("Shadow");
-    expect(buttonElement).toHaveClass("shadow-lg");
-  });
-
-  test("applies custom border radius", () => {
-    renderWithTheme(
-      <Button borderRadius="rounded-full">Rounded</Button>,
-      "light"
-    );
-    const buttonElement = screen.getByText("Rounded");
-    expect(buttonElement).toHaveClass("rounded-full");
-  });
-
-  test("applies text transform style", () => {
-    renderWithTheme(
-      <Button textTransform="uppercase">Uppercase</Button>,
-      "light"
-    );
-    const buttonElement = screen.getByText("Uppercase");
-    expect(buttonElement).toHaveClass("uppercase");
-  });
-
-  test("handles focus event", () => {
-    const handleFocus = jest.fn();
-    renderWithTheme(<Button onFocus={handleFocus}>Focus</Button>, "light");
-    const buttonElement = screen.getByText("Focus");
-    fireEvent.focus(buttonElement);
-    expect(handleFocus).toHaveBeenCalled();
-  });
-
-  test("handles blur event", () => {
-    const handleBlur = jest.fn();
-    renderWithTheme(<Button onBlur={handleBlur}>Blur</Button>, "light");
-    const buttonElement = screen.getByText("Blur");
-    fireEvent.blur(buttonElement);
-    expect(handleBlur).toHaveBeenCalled();
-  });
-
-  test("handles mouse enter event", () => {
-    const handleMouseEnter = jest.fn();
-    renderWithTheme(
-      <Button onMouseEnter={handleMouseEnter}>Mouse Enter</Button>,
-      "light"
-    );
-    const buttonElement = screen.getByText("Mouse Enter");
-    fireEvent.mouseEnter(buttonElement);
-    expect(handleMouseEnter).toHaveBeenCalled();
-  });
-
-  test("handles mouse leave event", () => {
-    const handleMouseLeave = jest.fn();
-    renderWithTheme(
-      <Button onMouseLeave={handleMouseLeave}>Mouse Leave</Button>,
-      "light"
-    );
-    const buttonElement = screen.getByText("Mouse Leave");
-    fireEvent.mouseLeave(buttonElement);
-    expect(handleMouseLeave).toHaveBeenCalled();
-  });
-
-  test("handles key down event", () => {
-    const handleKeyDown = jest.fn();
-    renderWithTheme(
-      <Button onKeyDown={handleKeyDown}>Key Down</Button>,
-      "light"
-    );
-    const buttonElement = screen.getByText("Key Down");
-    fireEvent.keyDown(buttonElement, { key: "Enter" });
-    expect(handleKeyDown).toHaveBeenCalled();
-  });
-
-  test("handles animation end event", () => {
-    const handleAnimationEnd = jest.fn();
-    renderWithTheme(
-      <Button onAnimationEnd={handleAnimationEnd}>Animation End</Button>,
-      "light"
-    );
-    const buttonElement = screen.getByText("Animation End");
-    fireEvent.animationEnd(buttonElement);
-    expect(handleAnimationEnd).toHaveBeenCalled();
+    test('maintains focus outline', () => {
+      renderWithProviders(<Button>Focus Ring</Button>);
+      
+      const button = screen.getByText('Focus Ring');
+      expect(button).toHaveClass('focus:outline-none', 'focus:ring-2');
+    });
   });
 });

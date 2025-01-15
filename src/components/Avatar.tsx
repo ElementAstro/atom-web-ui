@@ -1,261 +1,128 @@
-// src/components/Avatar.tsx
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  MouseEvent,
-  KeyboardEvent,
-} from "react";
-import { useTheme } from "../context/ThemeContext";
+import React from "react";
+import { motion, HTMLMotionProps } from "framer-motion";
+import clsx from "clsx";
 
-interface AvatarProps {
-  src: string;
-  alt: string;
-  size?: number;
-  isLoading?: boolean;
-  onLoad?: () => void;
-  onError?: () => void;
-  borderColor?: string;
-  showStatus?: boolean;
-  statusColor?: string;
-  shape?: "circle" | "square";
-  fallbackSrc?: string;
-  tooltip?: string;
-  borderWidth?: string;
-  statusPosition?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-  animation?: string;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  onKeyDown?: (e: KeyboardEvent<HTMLDivElement>) => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  onAnimationEnd?: () => void;
-  showBadge?: boolean;
-  badgeContent?: string;
-  badgeColor?: string;
-  badgePosition?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-  badgeSize?: "small" | "medium" | "large";
-  badgeShape?: "circle" | "square";
-  badgeBorderColor?: string;
-  badgeBorderWidth?: string;
-  lazyLoad?: boolean;
-  intersectionThreshold?: number;
-  onClick?: (e: MouseEvent<HTMLDivElement>) => void;
-  showAnimation?: string;
-  hideAnimation?: string;
-  borderStyle?: string;
-  onShow?: () => void;
-  onHide?: () => void;
+export interface AvatarProps extends HTMLMotionProps<"div"> {
+  /**
+   * 头像尺寸
+   * @default 'md'
+   */
+  size?: "sm" | "md" | "lg" | "xl";
+  /**
+   * 颜色方案
+   * @default 'primary'
+   */
+  colorScheme?: "primary" | "secondary" | "success" | "warning" | "danger";
+  /**
+   * 边框样式
+   * @default 'solid'
+   */
+  borderStyle?: "solid" | "dashed" | "none";
+  /**
+   * 头像内容（文字或图标）
+   */
+  children?: React.ReactNode;
+  /**
+   * 图片URL
+   */
+  src?: string;
+  /**
+   * 替代文本
+   */
+  alt?: string;
+  /**
+   * 是否禁用
+   * @default false
+   */
+  disabled?: boolean;
 }
 
-type Theme =
-  | "light"
-  | "dark"
-  | "astronomy"
-  | "eyeCare"
-  | "ocean"
-  | "sunset"
-  | "astronomyDarkRed";
-
-const Avatar: React.FC<AvatarProps> = ({
-  src,
-  alt,
-  size = 40,
-  isLoading = false,
-  onLoad,
-  onError,
-  borderColor = "transparent",
-  showStatus = false,
-  statusColor = "green",
-  shape = "circle",
-  fallbackSrc = "https://via.placeholder.com/150",
-  tooltip = "",
-  borderWidth = "2",
-  statusPosition = "bottom-right",
-  animation = "scale-105 shadow-lg shadow-neon",
-  onFocus,
-  onBlur,
-  onKeyDown,
-  onMouseEnter,
-  onMouseLeave,
-  onAnimationEnd,
-  showBadge = false,
-  badgeContent = "",
-  badgeColor = "red",
-  badgePosition = "top-right",
-  badgeSize = "small",
-  badgeShape = "circle",
-  badgeBorderColor = "white",
-  badgeBorderWidth = "1",
-  lazyLoad = false,
-  intersectionThreshold = 0.1,
-  onClick,
-  showAnimation = "fadeIn",
-  hideAnimation = "fadeOut",
-  borderStyle = "solid",
-  onShow,
-  onHide,
-}) => {
-  const [isError, setIsError] = useState(false);
-  const [isVisible, setIsVisible] = useState(!lazyLoad);
-  const { theme } = useTheme() as { theme: Theme };
-  const avatarRef = useRef<HTMLDivElement>(null);
-
-  const handleError = () => {
-    setIsError(true);
-    if (onError) onError();
-  };
-
-  useEffect(() => {
-    if (!isError && onLoad) {
-      onLoad();
-    }
-  }, [isError, onLoad]);
-
-  useEffect(() => {
-    if (lazyLoad && avatarRef.current) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setIsVisible(true);
-              observer.disconnect();
-              if (onShow) onShow();
-            }
-          });
-        },
-        { threshold: intersectionThreshold }
-      );
-
-      observer.observe(avatarRef.current);
-      return () => observer.disconnect();
-    }
-  }, [lazyLoad, intersectionThreshold, onShow]);
-
-  const shapeClass = shape === "circle" ? "rounded-full" : "rounded-lg";
-
-  const statusPositionClasses = {
-    "top-left": "top-0 left-0",
-    "top-right": "top-0 right-0",
-    "bottom-left": "bottom-0 left-0",
-    "bottom-right": "bottom-0 right-0",
-  };
-
-  const badgePositionClasses = {
-    "top-left": "top-0 left-0",
-    "top-right": "top-0 right-0",
-    "bottom-left": "bottom-0 left-0",
-    "bottom-right": "bottom-0 right-0",
-  };
-
-  const badgeSizeClasses = {
-    small: "w-4 h-4 text-xs",
-    medium: "w-6 h-6 text-sm",
-    large: "w-8 h-8 text-md",
-  };
-
-  const badgeShapeClass =
-    badgeShape === "circle" ? "rounded-full" : "rounded-lg";
-
-  const themeClasses: Record<Theme, string> = {
-    light: "border-gray-300",
-    dark: "border-gray-700",
-    astronomy: "border-gradient-to-r from-purple-900 via-blue-900 to-black",
-    eyeCare: "border-green-300",
-    ocean: "border-blue-300",
-    sunset: "border-orange-300",
-    astronomyDarkRed: "border-gradient-to-r from-red-900 via-black to-black",
-  };
-
-  const handleClick = (e: MouseEvent<HTMLDivElement>) => {
-    const ripple = document.createElement("span");
-    const diameter = Math.max(
-      e.currentTarget.clientWidth,
-      e.currentTarget.clientHeight
-    );
-    const radius = diameter / 2;
-    ripple.style.width = ripple.style.height = `${diameter}px`;
-    ripple.style.left = `${e.clientX - e.currentTarget.offsetLeft - radius}px`;
-    ripple.style.top = `${e.clientY - e.currentTarget.offsetTop - radius}px`;
-    ripple.classList.add("ripple");
-    const rippleContainer = e.currentTarget.querySelector(".ripple-container");
-    rippleContainer?.appendChild(ripple);
-
-    setTimeout(() => {
-      ripple.remove();
-    }, 600);
-
-    if (onClick) onClick(e);
-  };
-
-  return (
-    <div
-      ref={avatarRef}
-      id={`avatar-${alt}`}
-      className={`relative w-${size} h-${size} group flex items-center justify-center cursor-pointer ${showAnimation}`}
-      title={tooltip}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-      onAnimationEnd={onAnimationEnd}
-      onClick={handleClick}
-    >
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      )}
-      {isVisible && (
-        <img
-          src={isError ? fallbackSrc : src}
-          alt={alt}
-          onError={handleError}
-          className={`${shapeClass} w-${size} h-${size} object-cover transition-transform duration-300 ease-in-out group-hover:${animation}`}
-        />
-      )}
-      <div
-        className={`absolute inset-0 ${shapeClass} border-${borderWidth} border-${borderColor} border-${borderStyle} group-hover:border-neon transition-all duration-300 ease-in-out ${themeClasses[theme]}`}
-      ></div>
-      {showStatus && (
-        <span
-          className={`absolute ${statusPositionClasses[statusPosition]} block w-3 h-3 bg-${statusColor}-500 border-${borderWidth} border-white ${shapeClass}`}
-        ></span>
-      )}
-      {showBadge && (
-        <span
-          className={`absolute ${badgePositionClasses[badgePosition]} flex items-center justify-center ${badgeSizeClasses[badgeSize]} bg-${badgeColor}-500 border-${badgeBorderWidth} border-${badgeBorderColor} ${badgeShapeClass}`}
-        >
-          {badgeContent}
-        </span>
-      )}
-      <div className="ripple-container absolute inset-0 overflow-hidden rounded-full"></div>
-      <style>{`
-        @media (max-width: 768px) {
-          .w-${size} {
-            width: ${size / 2}px;
-          }
-          .h-${size} {
-            height: ${size / 2}px;
-          }
-        }
-        .ripple {
-          position: absolute;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.6);
-          transform: scale(0);
-          animation: ripple 600ms linear;
-        }
-        @keyframes ripple {
-          to {
-            transform: scale(4);
-            opacity: 0;
-          }
-        }
-      `}</style>
-    </div>
-  );
+const sizeClasses = {
+  sm: "w-8 h-8 text-sm",
+  md: "w-12 h-12 text-base",
+  lg: "w-16 h-16 text-lg",
+  xl: "w-20 h-20 text-xl",
 };
+
+const colorClasses = {
+  primary: "bg-blue-500 text-white",
+  secondary: "bg-gray-500 text-white",
+  success: "bg-green-500 text-white",
+  warning: "bg-yellow-500 text-black",
+  danger: "bg-red-500 text-white",
+};
+
+const borderClasses = {
+  solid: "border-2",
+  dashed: "border-2 border-dashed",
+  none: "border-0",
+};
+
+const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
+  (
+    {
+      size = "md",
+      colorScheme = "primary",
+      borderStyle = "solid",
+      children,
+      src,
+      alt,
+      disabled = false,
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    const avatarClasses = clsx(
+      "rounded-full",
+      "flex items-center justify-center",
+      "overflow-hidden",
+      "select-none",
+      "transition-all duration-200",
+      "hover:scale-105",
+      "active:scale-95",
+      "focus:outline-none focus:ring-2 focus:ring-offset-2",
+      sizeClasses[size],
+      colorClasses[colorScheme],
+      borderClasses[borderStyle],
+      disabled && "opacity-50 cursor-not-allowed",
+      className
+    );
+
+    const content = src ? (
+      <motion.img
+        src={src}
+        alt={alt}
+        className="w-full h-full object-cover"
+        whileHover={{ scale: 1.1 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      />
+    ) : (
+      <motion.span
+        className="font-medium"
+        whileHover={{ scale: 1.1 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      >
+        {children}
+      </motion.span>
+    );
+
+    return (
+      <motion.div
+        ref={ref}
+        className={avatarClasses}
+        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.05 }}
+        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        aria-disabled={disabled}
+        {...props}
+      >
+        {content}
+      </motion.div>
+    );
+  }
+);
+
+Avatar.displayName = "Avatar";
 
 export default Avatar;

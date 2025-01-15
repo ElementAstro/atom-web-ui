@@ -43,6 +43,7 @@
     "react-simple-code-editor": "^0.14.1",
     "react-time-picker": "^7.0.0",
     "styled-components": "^6.1.13",
+    "tailwind-merge": "^2.6.0",
     "typescript": "^5.6.3",
     "web-vitals": "^2.1.4",
     "yup": "^1.4.0"

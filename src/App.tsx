@@ -6,6 +6,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import ExamplePage from "./pages/ExamplePage";
 import SystemInfoPage from "./pages/SystemInfoPage";
+import ModManagerPage from "./pages/ModManagerPage";
 
 const Home: React.FC = () => {
   return (
@@ -36,6 +37,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/examples" element={<ExamplePage />} />
             <Route path="/system-info" element={<SystemInfoPage />} />
+            <Route path="/mod-manager" element={<ModManagerPage />} />
           </Routes>
         </Router>
       </DndProvider>

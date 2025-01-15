@@ -1,147 +1,171 @@
-// src/components/Breadcrumbs.test.tsx
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom/extend-expect";
-import { BrowserRouter as Router } from "react-router-dom";
-import Breadcrumbs from "./Breadcrumbs";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
+import Breadcrumbs from "./Breadcrumbs";
+import "@testing-library/jest-dom/extend-expect";
+
+const mockItems = [
+  { label: "Home", link: "/" },
+  { label: "Products", link: "/products" },
+  { label: "Categories", link: "/products/categories" },
+];
+
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(
+    <BrowserRouter>
+      <ThemeProvider initialTheme="light">{ui}</ThemeProvider>
+    </BrowserRouter>
+  );
+};
 
 describe("Breadcrumbs Component", () => {
-  const renderWithTheme = (ui: React.ReactElement, theme: string) => {
-    return render(
-      <ThemeProvider initialTheme={theme}>
-        <Router>{ui}</Router>
-      </ThemeProvider>
-    );
-  };
+  describe("Basic Rendering", () => {
+    test("renders all breadcrumb items", () => {
+      renderWithProviders(<Breadcrumbs items={mockItems} />);
+      mockItems.forEach((item) => {
+        expect(screen.getByText(item.label)).toBeInTheDocument();
+      });
+    });
 
-  const items = [
-    { label: "Home", link: "/" },
-    { label: "Category", link: "/category" },
-    { label: "Product", link: "/product" },
-  ];
+    test("renders with custom separator", () => {
+      renderWithProviders(<Breadcrumbs items={mockItems} separator=">" />);
+      const separators = screen.getAllByText(">");
+      expect(separators).toHaveLength(mockItems.length - 1);
+    });
 
-  test("renders with default props", () => {
-    renderWithTheme(<Breadcrumbs items={items} />, "light");
-    expect(screen.getByText("Home")).toBeInTheDocument();
-    expect(screen.getByText("Category")).toBeInTheDocument();
-    expect(screen.getByText("Product")).toBeInTheDocument();
+    test("truncates items when exceeding maxItems", () => {
+      const manyItems = Array.from({ length: 10 }, (_, i) => ({
+        label: `Item ${i}`,
+        link: `/item${i}`,
+      }));
+      renderWithProviders(<Breadcrumbs items={manyItems} maxItems={5} />);
+      expect(screen.getByText("...")).toBeInTheDocument();
+    });
   });
 
-  test("renders with custom separator", () => {
-    renderWithTheme(<Breadcrumbs items={items} separator=">" />, "light");
-    expect(screen.getAllByText(">")).toHaveLength(2);
+  describe("Interaction Tests", () => {
+    test("calls onItemClick when clicking a link", () => {
+      const onItemClick = jest.fn();
+      renderWithProviders(
+        <Breadcrumbs items={mockItems} onItemClick={onItemClick} />
+      );
+
+      fireEvent.click(screen.getByText("Products"));
+      expect(onItemClick).toHaveBeenCalledWith(mockItems[1]);
+    });
+
+    test("handles keyboard navigation", () => {
+      const onKeyDown = jest.fn();
+      renderWithProviders(
+        <Breadcrumbs items={mockItems} onKeyDown={onKeyDown} />
+      );
+
+      fireEvent.keyDown(screen.getByText("Products"), { key: "Enter" });
+      expect(onKeyDown).toHaveBeenCalled();
+    });
+
+    test("handles mouse events", () => {
+      const onMouseEnter = jest.fn();
+      const onMouseLeave = jest.fn();
+
+      renderWithProviders(
+        <Breadcrumbs
+          items={mockItems}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+        />
+      );
+
+      fireEvent.mouseEnter(screen.getByText("Products"));
+      expect(onMouseEnter).toHaveBeenCalled();
+
+      fireEvent.mouseLeave(screen.getByText("Products"));
+      expect(onMouseLeave).toHaveBeenCalled();
+    });
   });
 
-  test("renders with custom class", () => {
-    renderWithTheme(
-      <Breadcrumbs items={items} customClass="custom-class" />,
-      "light"
-    );
-    expect(screen.getByRole("navigation")).toHaveClass("custom-class");
+  describe("Visual Features", () => {
+    test("renders icon in correct position", () => {
+      const icon = <span data-testid="test-icon">★</span>;
+      renderWithProviders(
+        <Breadcrumbs
+          items={mockItems}
+          icon={icon}
+          showIcon={true}
+          iconPosition="left"
+        />
+      );
+
+      const icons = screen.getAllByTestId("test-icon");
+      expect(icons[0]).toBeInTheDocument();
+    });
+
+    test("displays badge when enabled", () => {
+      renderWithProviders(
+        <Breadcrumbs items={mockItems} showBadge={true} badgeContent="new" />
+      );
+
+      expect(screen.getAllByText("new")).toHaveLength(mockItems.length);
+    });
+
+    test("shows progress bar when enabled", () => {
+      renderWithProviders(
+        <Breadcrumbs
+          items={mockItems}
+          showProgress={true}
+          progressColor="bg-blue-500"
+        />
+      );
+
+      expect(
+        screen.getByRole("navigation").querySelector(".bg-blue-500")
+      ).toBeInTheDocument();
+    });
   });
 
-  test("handles item click", () => {
-    const onItemClick = jest.fn();
-    renderWithTheme(
-      <Breadcrumbs items={items} onItemClick={onItemClick} />,
-      "light"
-    );
-    fireEvent.click(screen.getByText("Home"));
-    expect(onItemClick).toHaveBeenCalledWith(items[0]);
+  describe("Theme Tests", () => {
+    test("applies correct theme classes", () => {
+      renderWithProviders(<Breadcrumbs items={mockItems} variant="primary" />);
+      const navigation = screen.getByRole("navigation");
+      expect(navigation).toHaveClass("text-gray-400");
+    });
+
+    test("applies variant styles correctly", () => {
+      renderWithProviders(<Breadcrumbs items={mockItems} variant="alert" />);
+      const links = screen.getAllByRole("link");
+      expect(links[0]).toHaveClass("text-red-500");
+    });
   });
 
-  test("renders with tooltip", () => {
-    renderWithTheme(
-      <Breadcrumbs items={items} showTooltip tooltip="Tooltip text" />,
-      "light"
-    );
-    fireEvent.mouseEnter(screen.getByText("Home"));
-    expect(screen.getByText("Tooltip text")).toBeInTheDocument();
-  });
+  describe("Animation Tests", () => {
+    test("applies animation properties", async () => {
+      renderWithProviders(
+        <Breadcrumbs
+          items={mockItems}
+          animationType="fade"
+          animationDuration={0.3}
+          hoverAnimation={true}
+        />
+      );
 
-  test("renders with icon", () => {
-    renderWithTheme(
-      <Breadcrumbs items={items} icon={<span>Icon</span>} />,
-      "light"
-    );
-    expect(screen.getAllByText("Icon")).toHaveLength(3);
-  });
+      const listItems = screen.getAllByRole("listitem");
+      expect(listItems[0]).toHaveStyle({
+        opacity: "1",
+      });
+    });
 
-  test("renders with badge", () => {
-    renderWithTheme(
-      <Breadcrumbs items={items} showBadge badgeContent="99+" />,
-      "light"
-    );
-    expect(screen.getAllByText("99+")).toHaveLength(3);
-  });
+    test("handles stagger animations", () => {
+      renderWithProviders(
+        <Breadcrumbs
+          items={mockItems}
+          staggerChildren={true}
+          staggerDelay={0.1}
+        />
+      );
 
-  test("applies theme classes", () => {
-    renderWithTheme(<Breadcrumbs items={items} />, "dark");
-    expect(screen.getByRole("navigation")).toHaveClass(
-      "bg-gray-900 text-white"
-    );
-  });
-
-  test("renders with progress bar", () => {
-    renderWithTheme(<Breadcrumbs items={items} showProgress />, "light");
-    expect(
-      screen.getByRole("navigation").querySelector(".bg-blue-500")
-    ).toBeInTheDocument();
-  });
-
-  test("handles keyboard interactions", () => {
-    const onKeyDown = jest.fn();
-    renderWithTheme(
-      <Breadcrumbs items={items} onKeyDown={onKeyDown} />,
-      "light"
-    );
-    fireEvent.keyDown(screen.getByText("Home"), { key: "Enter" });
-    expect(onKeyDown).toHaveBeenCalled();
-  });
-
-  test("handles mouse interactions", () => {
-    const onMouseEnter = jest.fn();
-    const onMouseLeave = jest.fn();
-    renderWithTheme(
-      <Breadcrumbs
-        items={items}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-      />,
-      "light"
-    );
-    fireEvent.mouseEnter(screen.getByText("Home"));
-    expect(onMouseEnter).toHaveBeenCalled();
-    fireEvent.mouseLeave(screen.getByText("Home"));
-    expect(onMouseLeave).toHaveBeenCalled();
-  });
-
-  test("handles focus and blur events", () => {
-    const onFocus = jest.fn();
-    const onBlur = jest.fn();
-    renderWithTheme(
-      <Breadcrumbs items={items} onFocus={onFocus} onBlur={onBlur} />,
-      "light"
-    );
-    fireEvent.focus(screen.getByText("Home"));
-    expect(onFocus).toHaveBeenCalled();
-    fireEvent.blur(screen.getByText("Home"));
-    expect(onBlur).toHaveBeenCalled();
-  });
-
-  test("handles animation end event", () => {
-    const onAnimationEnd = jest.fn();
-    renderWithTheme(
-      <Breadcrumbs items={items} onAnimationEnd={onAnimationEnd} />,
-      "light"
-    );
-    fireEvent.animationEnd(screen.getByText("Home"));
-    expect(onAnimationEnd).toHaveBeenCalled();
-  });
-
-  test("renders with limited items", () => {
-    renderWithTheme(<Breadcrumbs items={items} maxItems={2} />, "light");
-    expect(screen.getByText("...")).toBeInTheDocument();
+      const list = screen.getByRole("list");
+      expect(list).toBeInTheDocument();
+    });
   });
 });

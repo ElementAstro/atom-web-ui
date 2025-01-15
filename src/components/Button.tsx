@@ -1,242 +1,136 @@
-// src/components/Button.tsx
-import React, { useRef, MouseEvent, KeyboardEvent } from "react";
-import { useTheme } from "../context/ThemeContext";
-import Icon from "./Icon";
+import { motion } from "framer-motion";
+import { forwardRef, ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
 
-interface ButtonProps {
-  children?: React.ReactNode;
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  variant?: "primary" | "secondary" | "alert" | "success";
-  size?: "small" | "medium" | "large";
-  isLoading?: boolean;
+export interface ButtonProps {
+  /**
+   * 按钮内容
+   */
+  children: ReactNode;
+
+  /**
+   * 按钮大小
+   * @default 'md'
+   */
+  size?: "sm" | "md" | "lg";
+
+  /**
+   * 按钮颜色
+   * @default 'primary'
+   */
+  color?: "primary" | "secondary" | "success" | "warning" | "danger";
+
+  /**
+   * 按钮形状
+   * @default 'rounded'
+   */
+  shape?: "square" | "rounded" | "pill";
+
+  /**
+   * 是否禁用
+   * @default false
+   */
   disabled?: boolean;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  onKeyDown?: (event: KeyboardEvent<HTMLButtonElement>) => void;
-  onAnimationEnd?: () => void;
-  ripple?: boolean;
-  icon?: string | null;
-  fullWidth?: boolean;
-  outline?: boolean;
-  gradient?: boolean;
-  ariaLabel?: string;
-  title?: string;
-  type?: "button" | "submit" | "reset";
-  customClass?: string;
-  customIconClass?: string;
-  shadow?: boolean;
-  borderRadius?: string;
-  textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
-  hoverEffect?: boolean;
+
+  /**
+   * 加载状态
+   * @default false
+   */
+  loading?: boolean;
+
+  /**
+   * 图标位置
+   */
+  icon?: {
+    position: "left" | "right";
+    element: ReactNode;
+  };
+
+  /**
+   * 点击事件处理函数
+   */
+  onClick?: () => void;
+
+  /**
+   * 自定义类名
+   */
+  className?: string;
 }
 
-type Theme =
-  | "light"
-  | "dark"
-  | "astronomy"
-  | "eyeCare"
-  | "ocean"
-  | "sunset"
-  | "astronomyDarkRed";
-
-const Button: React.FC<ButtonProps> = ({
-  children,
-  onClick,
-  variant = "primary",
-  size = "medium",
-  isLoading = false,
-  disabled = false,
-  onFocus,
-  onBlur,
-  onMouseEnter,
-  onMouseLeave,
-  onKeyDown,
-  onAnimationEnd,
-  ripple = false,
-  icon = null,
-  fullWidth = false,
-  outline = false,
-  gradient = false,
-  ariaLabel = "",
-  title = "",
-  type = "button",
-  customClass = "",
-  customIconClass = "",
-  shadow = false,
-  borderRadius = "rounded",
-  textTransform = "none",
-  hoverEffect = true,
-}) => {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const { theme } = useTheme() as { theme: Theme };
-
-  const baseStyle =
-    "px-4 py-2 focus:outline-none transition duration-300 ease-in-out transform";
-
-  const themeClasses: Record<Theme, Record<string, string>> = {
-    light: {
-      primary: "bg-blue-500 text-white hover:bg-blue-700 active:bg-blue-800",
-      secondary: "bg-gray-300 text-black hover:bg-gray-400 active:bg-gray-500",
-      alert: "bg-red-500 text-white hover:bg-red-700 active:bg-red-800",
-      success: "bg-green-500 text-white hover:bg-green-700 active:bg-green-800",
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      children,
+      size = "md",
+      color = "primary",
+      shape = "rounded",
+      disabled = false,
+      loading = false,
+      icon,
+      className,
+      ...props
     },
-    dark: {
-      primary: "bg-blue-700 text-white hover:bg-blue-500 active:bg-blue-400",
-      secondary: "bg-gray-500 text-white hover:bg-gray-400 active:bg-gray-300",
-      alert: "bg-red-700 text-white hover:bg-red-500 active:bg-red-400",
-      success: "bg-green-700 text-white hover:bg-green-500 active:bg-green-400",
-    },
-    astronomy: {
-      primary:
-        "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white",
-      secondary:
-        "bg-gradient-to-r from-gray-700 via-gray-800 to-black text-white",
-      alert: "bg-gradient-to-r from-red-900 via-pink-900 to-black text-white",
-      success:
-        "bg-gradient-to-r from-green-900 via-teal-900 to-black text-white",
-    },
-    eyeCare: {
-      primary:
-        "bg-green-500 text-green-900 hover:bg-green-700 active:bg-green-800",
-      secondary:
-        "bg-green-300 text-green-900 hover:bg-green-400 active:bg-green-500",
-      alert: "bg-red-500 text-green-900 hover:bg-red-700 active:bg-red-800",
-      success:
-        "bg-green-700 text-green-900 hover:bg-green-500 active:bg-green-400",
-    },
-    ocean: {
-      primary: "bg-blue-100 text-blue-900 hover:bg-blue-200 active:bg-blue-300",
-      secondary:
-        "bg-blue-200 text-blue-900 hover:bg-blue-300 active:bg-blue-400",
-      alert: "bg-red-100 text-blue-900 hover:bg-red-200 active:bg-red-300",
-      success:
-        "bg-green-100 text-blue-900 hover:bg-green-200 active:bg-green-300",
-    },
-    sunset: {
-      primary:
-        "bg-orange-100 text-orange-900 hover:bg-orange-200 active:bg-orange-300",
-      secondary:
-        "bg-orange-200 text-orange-900 hover:bg-orange-300 active:bg-orange-400",
-      alert: "bg-red-100 text-orange-900 hover:bg-red-200 active:bg-red-300",
-      success:
-        "bg-green-100 text-orange-900 hover:bg-green-200 active:bg-green-300",
-    },
-    astronomyDarkRed: {
-      primary: "bg-gradient-to-r from-red-900 via-black to-black text-white",
-      secondary:
-        "bg-gradient-to-r from-gray-700 via-gray-800 to-black text-white",
-      alert: "bg-gradient-to-r from-red-900 via-pink-900 to-black text-white",
-      success:
-        "bg-gradient-to-r from-green-900 via-teal-900 to-black text-white",
-    },
-  };
+    ref
+  ) => {
+    const sizeClasses = {
+      sm: "px-3 py-1.5 text-sm",
+      md: "px-4 py-2 text-base",
+      lg: "px-6 py-3 text-lg",
+    };
 
-  const variantStyle = outline
-    ? `border ${themeClasses[theme][variant]}`
-    : themeClasses[theme][variant];
+    const colorClasses = {
+      primary: "bg-blue-500 hover:bg-blue-600 text-white",
+      secondary: "bg-gray-500 hover:bg-gray-600 text-white",
+      success: "bg-green-500 hover:bg-green-600 text-white",
+      warning: "bg-yellow-500 hover:bg-yellow-600 text-black",
+      danger: "bg-red-500 hover:bg-red-600 text-white",
+    };
 
-  const sizeStyle =
-    size === "small"
-      ? "text-xs px-2 py-1"
-      : size === "large"
-      ? "text-lg px-6 py-3"
-      : "text-md px-4 py-2";
+    const shapeClasses = {
+      square: "rounded-none",
+      rounded: "rounded-md",
+      pill: "rounded-full",
+    };
 
-  const disabledStyle = "opacity-50 cursor-not-allowed";
-  const loadingStyle = "cursor-wait";
+    const iconClasses = icon
+      ? `flex items-center gap-2 ${
+          icon.position === "left" ? "flex-row" : "flex-row-reverse"
+        }`
+      : "";
 
-  const sciFiStyle = hoverEffect
-    ? "hover:shadow-neon hover:scale-105 focus:ring-2 focus:ring-purple-600"
-    : "";
+    return (
+      <motion.button
+        ref={ref}
+        className={twMerge(
+          "font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+          sizeClasses[size],
+          colorClasses[color],
+          shapeClasses[shape],
+          iconClasses,
+          disabled && "opacity-50 cursor-not-allowed",
+          loading && "cursor-wait",
+          className
+        )}
+        whileHover={{ scale: disabled || loading ? 1 : 1.05 }}
+        whileTap={{ scale: disabled || loading ? 1 : 0.95 }}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {loading ? (
+          <div className="flex items-center justify-center">
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <>
+            {icon?.element}
+            {children}
+          </>
+        )}
+      </motion.button>
+    );
+  }
+);
 
-  const fullWidthStyle = fullWidth ? "w-full" : "";
-
-  const gradientStyle = gradient
-    ? "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500"
-    : "";
-
-  const iconOnlyStyle =
-    icon && !children ? "flex justify-center items-center" : "";
-
-  const shadowStyle = shadow ? "shadow-lg" : "";
-
-  const handleRipple = (event: MouseEvent<HTMLButtonElement>) => {
-    if (!ripple) return;
-
-    const button = buttonRef.current;
-    if (!button) return;
-
-    const circle = document.createElement("span");
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-    circle.classList.add("ripple");
-
-    const rippleEffect = button.getElementsByClassName("ripple")[0];
-
-    if (rippleEffect) {
-      rippleEffect.remove();
-    }
-
-    button.appendChild(circle);
-  };
-
-  return (
-    <button
-      ref={buttonRef}
-      className={`${baseStyle} ${variantStyle} ${sizeStyle} ${sciFiStyle} ${fullWidthStyle} ${gradientStyle} ${iconOnlyStyle} ${shadowStyle} ${borderRadius} ${textTransform} ${
-        disabled ? disabledStyle : ""
-      } ${isLoading ? loadingStyle : ""} ${customClass}`}
-      onClick={!disabled && !isLoading ? onClick : undefined}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-      onAnimationEnd={onAnimationEnd}
-      onMouseDown={handleRipple}
-      disabled={disabled || isLoading}
-      title={title}
-      aria-label={ariaLabel}
-      type={type}
-    >
-      {isLoading ? (
-        <div className="flex items-center">
-          <svg
-            className="animate-spin h-5 w-5 mr-3 text-white"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12c0-4.418 1.791-8.365 4.688-11.264l5.688 5.688C9.472 6.112 7.314 9.836 8 12h-4z"
-            />
-          </svg>
-          Loading...
-        </div>
-      ) : (
-        <div className="flex items-center">
-          {icon && <Icon name={icon} customClass={customIconClass} />}
-          {children}
-        </div>
-      )}
-    </button>
-  );
-};
+Button.displayName = "Button";
 
 export default Button;

@@ -1,7 +1,7 @@
-// src/components/Breadcrumbs.tsx
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface BreadcrumbItem {
   label: string;
@@ -40,6 +40,15 @@ interface BreadcrumbsProps {
   badgeShape?: "circle" | "square";
   badgeBorderColor?: string;
   badgeBorderWidth?: string;
+  animationType?: "fade" | "slide" | "scale" | "rotate";
+  animationDuration?: number;
+  animationDelay?: number;
+  staggerChildren?: boolean;
+  staggerDelay?: number;
+  hoverAnimation?: boolean;
+  hoverScale?: number;
+  hoverRotate?: number;
+  hoverShadow?: boolean;
 }
 
 type Theme =
@@ -83,6 +92,15 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   badgeShape = "circle",
   badgeBorderColor = "white",
   badgeBorderWidth = "1",
+  animationType = "fade",
+  animationDuration = 0.3,
+  animationDelay = 0,
+  staggerChildren = false,
+  staggerDelay = 0.1,
+  hoverAnimation = true,
+  hoverScale = 1.05,
+  hoverRotate = 0,
+  hoverShadow = true,
 }) => {
   const location = useLocation();
   const { theme } = useTheme() as { theme: Theme };
@@ -140,7 +158,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 
   return (
     <nav
-      className={`text-gray-400 ${customClass} ${themeClasses[theme]}`}
+      className={`text-gray-400 ${customClass} ${themeClasses[theme]} relative`}
       aria-label="Breadcrumb"
     >
       {showProgress && (
@@ -155,118 +173,114 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           ></div>
         </div>
       )}
-      <ol className={`flex space-x-2 ${responsive ? "flex-wrap" : ""}`}>
-        {displayedItems.map((item, index) => (
-          <li
-            key={item.label}
-            className="flex items-center"
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            onFocus={onFocus}
-            onBlur={onBlur}
-            onKeyDown={onKeyDown}
-            onAnimationEnd={onAnimationEnd}
-          >
-            {index > 0 && <span className="mx-2">{separator}</span>}
-            {item.link ? (
-              <Link
-                to={item.link}
-                className={`transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-neon ${variantClasses[variant]} ${animation}`}
-                aria-current={
-                  location.pathname === item.link ? "page" : undefined
-                }
-                onClick={() => onItemClick && onItemClick(item)}
-                title={tooltip}
-              >
-                {showIcon && icon && iconPosition === "left" && (
-                  <span className="mr-2">{icon}</span>
-                )}
-                {item.label}
-                {showIcon && icon && iconPosition === "right" && (
-                  <span className="ml-2">{icon}</span>
-                )}
-              </Link>
-            ) : (
-              <span className="text-gray-200" title={tooltip}>
-                {showIcon && icon && iconPosition === "left" && (
-                  <span className="mr-2">{icon}</span>
-                )}
-                {item.label}
-                {showIcon && icon && iconPosition === "right" && (
-                  <span className="ml-2">{icon}</span>
-                )}
-              </span>
-            )}
-            {showTooltip && (
-              <div className={`tooltip ${tooltipClasses[tooltipPosition]}`}>
-                {tooltip}
-              </div>
-            )}
-            {showBadge && (
-              <span
-                className={`absolute ${badgePositionClasses[badgePosition]} flex items-center justify-center ${badgeSizeClasses[badgeSize]} bg-${badgeColor}-500 border-${badgeBorderWidth} border-${badgeBorderColor} ${badgeShapeClass}`}
-              >
-                {badgeContent}
-              </span>
-            )}
-          </li>
-        ))}
-      </ol>
-      <style>{`
-        nav {
-          background: linear-gradient(to right, #4a5568, #2d3748);
-          padding: 0.5rem 1rem;
-          border-radius: 0.5rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          position: relative;
-        }
-        li {
-          transition: all 0.3s ease;
-        }
-        li:hover {
-          transform: scale(1.05);
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        }
-        .tooltip {
-          position: absolute;
-          background: rgba(0, 0, 0, 0.75);
-          color: white;
-          padding: 0.5rem;
-          border-radius: 0.25rem;
-          font-size: 0.875rem;
-          white-space: nowrap;
-          z-index: 10;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-        .tooltip-top {
-          bottom: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          margin-bottom: 0.5rem;
-        }
-        .tooltip-bottom {
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          margin-top: 0.5rem;
-        }
-        .tooltip-left {
-          right: 100%;
-          top: 50%;
-          transform: translateY(-50%);
-          margin-right: 0.5rem;
-        }
-        .tooltip-right {
-          left: 100%;
-          top: 50%;
-          transform: translateY(-50%);
-          margin-left: 0.5rem;
-        }
-        li:hover .tooltip {
-          opacity: 1;
-        }
-      `}</style>
+      <AnimatePresence>
+        <motion.ol
+          className={`flex space-x-2 ${responsive ? "flex-wrap" : ""}`}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                when: "beforeChildren",
+                staggerChildren: staggerChildren ? staggerDelay : 0,
+              },
+            },
+          }}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+        >
+          {displayedItems.map((item, index) => (
+            <motion.li
+              key={item.label}
+              className="flex items-center"
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
+              onFocus={onFocus}
+              onBlur={onBlur}
+              onKeyDown={onKeyDown}
+              onAnimationEnd={onAnimationEnd}
+              variants={{
+                hidden: {
+                  opacity: 0,
+                  y: animationType === "slide" ? 20 : 0,
+                  scale: animationType === "scale" ? 0.8 : 1,
+                  rotate: animationType === "rotate" ? 90 : 0,
+                },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                  rotate: 0,
+                  transition: {
+                    type: "spring",
+                    stiffness: 100,
+                    damping: 20,
+                    duration: animationDuration,
+                    delay: animationDelay,
+                  },
+                },
+              }}
+              whileHover={
+                hoverAnimation
+                  ? {
+                      scale: hoverScale || 1.05,
+                      rotate: hoverRotate || 0,
+                      boxShadow: hoverShadow
+                        ? "0 5px 15px rgba(0,0,0,0.1)"
+                        : "none",
+                    }
+                  : undefined
+              }
+            >
+              {index > 0 && <span className="mx-2">{separator}</span>}
+              {item.link ? (
+                <Link
+                  to={item.link}
+                  className={`transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg ${variantClasses[variant]} ${animation}`}
+                  aria-current={
+                    location.pathname === item.link ? "page" : undefined
+                  }
+                  onClick={() => onItemClick && onItemClick(item)}
+                  title={tooltip}
+                >
+                  {showIcon && icon && iconPosition === "left" && (
+                    <span className="mr-2">{icon}</span>
+                  )}
+                  {item.label}
+                  {showIcon && icon && iconPosition === "right" && (
+                    <span className="ml-2">{icon}</span>
+                  )}
+                </Link>
+              ) : (
+                <span className="text-gray-200" title={tooltip}>
+                  {showIcon && icon && iconPosition === "left" && (
+                    <span className="mr-2">{icon}</span>
+                  )}
+                  {item.label}
+                  {showIcon && icon && iconPosition === "right" && (
+                    <span className="ml-2">{icon}</span>
+                  )}
+                </span>
+              )}
+              {showTooltip && (
+                <div
+                  className={`absolute ${tooltipClasses[tooltipPosition]} bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs transition-opacity duration-300 opacity-0 group-hover:opacity-100`}
+                >
+                  {tooltip}
+                </div>
+              )}
+              {showBadge && (
+                <span
+                  className={`absolute ${badgePositionClasses[badgePosition]} flex items-center justify-center ${badgeSizeClasses[badgeSize]} bg-${badgeColor}-500 border-${badgeBorderWidth} border-${badgeBorderColor} ${badgeShapeClass}`}
+                >
+                  {badgeContent}
+                </span>
+              )}
+            </motion.li>
+          ))}
+        </motion.ol>
+      </AnimatePresence>
     </nav>
   );
 };

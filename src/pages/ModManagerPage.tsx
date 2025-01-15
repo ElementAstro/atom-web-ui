@@ -5,6 +5,7 @@ import Filter from "../components/Filter";
 import Modal from "../components/Modal";
 import Input from "../components/Input";
 import Button from "../components/Button";
+import Select from "../components/Select";
 
 interface Mod {
   name: string;
@@ -28,7 +29,10 @@ const ModManagerPage: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<string>("asc");
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [selectedCreator, setSelectedCreator] = useState<string>("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const modsPerPage = 6;
 
   useEffect(() => {
     const savedMods = JSON.parse(localStorage.getItem("mods") || "[]");
@@ -86,6 +90,7 @@ const ModManagerPage: React.FC = () => {
     setSortOrder("asc");
     setSelectedRating(null);
     setSelectedCreator("");
+    setSelectedTags([]);
   };
 
   const filteredMods = mods
@@ -103,11 +108,22 @@ const ModManagerPage: React.FC = () => {
         ? mod.creator.toLowerCase().includes(selectedCreator.toLowerCase())
         : true
     )
+    .filter((mod) =>
+      selectedTags.length > 0
+        ? selectedTags.every((tag) => mod.tags.includes(tag))
+        : true
+    )
     .sort((a, b) =>
       sortOrder === "asc"
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name)
     );
+
+  const indexOfLastMod = currentPage * modsPerPage;
+  const indexOfFirstMod = indexOfLastMod - modsPerPage;
+  const currentMods = filteredMods.slice(indexOfFirstMod, indexOfLastMod);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <div className="container mx-auto p-4">
@@ -141,10 +157,22 @@ const ModManagerPage: React.FC = () => {
           setSelectedCreator={setSelectedCreator}
           resetFilters={resetFilters}
         />
+        <Select
+          options={mods.map((mod) => ({
+            value: mod.tags.join(", "),
+            label: mod.tags.join(", "),
+          }))}
+          value={selectedTags}
+          onChange={(value) => setSelectedTags(value as string[])}
+          multiple
+          searchable
+          placeholder="Select Tags"
+          customStyles="w-1/3"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-        {filteredMods.map((mod, index) => (
+        {currentMods.map((mod, index) => (
           <div
             key={index}
             className="border rounded-lg p-4 flex flex-col items-start transition-transform transform hover:scale-105 shadow-lg bg-white"
@@ -184,6 +212,25 @@ const ModManagerPage: React.FC = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="flex justify-center mt-6">
+        {Array.from(
+          { length: Math.ceil(filteredMods.length / modsPerPage) },
+          (_, index) => (
+            <Button
+              key={index}
+              onClick={() => paginate(index + 1)}
+              customClass={`mx-1 px-3 py-1 rounded ${
+                currentPage === index + 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-300 text-gray-700"
+              }`}
+            >
+              {index + 1}
+            </Button>
+          )
+        )}
       </div>
 
       {selectedMod && (
