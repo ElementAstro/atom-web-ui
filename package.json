@@ -23,6 +23,7 @@
     "framer-motion": "^11.11.10",
     "highlight.js": "^9.18.1",
     "lru-cache": "^11.0.1",
+    "lucide-react": "^0.471.1",
     "nprogress": "^0.2.0",
     "prismjs": "^1.29.0",
     "react": "^18.3.1",

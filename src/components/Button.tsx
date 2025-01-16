@@ -47,6 +47,12 @@ export interface ButtonProps {
   };
 
   /**
+   * 主题
+   * @default 'light'
+   */
+  theme?: "light" | "dark";
+
+  /**
    * 点击事件处理函数
    */
   onClick?: () => void;
@@ -68,6 +74,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       loading = false,
       icon,
       className,
+      theme = "light",
       ...props
     },
     ref
@@ -79,11 +86,26 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const colorClasses = {
-      primary: "bg-blue-500 hover:bg-blue-600 text-white",
-      secondary: "bg-gray-500 hover:bg-gray-600 text-white",
-      success: "bg-green-500 hover:bg-green-600 text-white",
-      warning: "bg-yellow-500 hover:bg-yellow-600 text-black",
-      danger: "bg-red-500 hover:bg-red-600 text-white",
+      primary:
+        theme === "dark"
+          ? "bg-blue-700 hover:bg-blue-800 text-white"
+          : "bg-blue-500 hover:bg-blue-600 text-white",
+      secondary:
+        theme === "dark"
+          ? "bg-gray-700 hover:bg-gray-800 text-white"
+          : "bg-gray-500 hover:bg-gray-600 text-white",
+      success:
+        theme === "dark"
+          ? "bg-green-700 hover:bg-green-800 text-white"
+          : "bg-green-500 hover:bg-green-600 text-white",
+      warning:
+        theme === "dark"
+          ? "bg-yellow-700 hover:bg-yellow-800 text-black"
+          : "bg-yellow-500 hover:bg-yellow-600 text-black",
+      danger:
+        theme === "dark"
+          ? "bg-red-700 hover:bg-red-800 text-white"
+          : "bg-red-500 hover:bg-red-600 text-white",
     };
 
     const shapeClasses = {

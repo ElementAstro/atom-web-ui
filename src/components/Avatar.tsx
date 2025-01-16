@@ -35,6 +35,15 @@ export interface AvatarProps extends HTMLMotionProps<"div"> {
    * @default false
    */
   disabled?: boolean;
+  /**
+   * 自定义图标
+   */
+  icon?: React.ReactNode;
+  /**
+   * 主题
+   * @default 'light'
+   */
+  theme?: "light" | "dark";
 }
 
 const sizeClasses = {
@@ -50,6 +59,7 @@ const colorClasses = {
   success: "bg-green-500 text-white",
   warning: "bg-yellow-500 text-black",
   danger: "bg-red-500 text-white",
+  dark: "bg-gray-800 text-white",
 };
 
 const borderClasses = {
@@ -69,6 +79,8 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       alt,
       disabled = false,
       className,
+      icon,
+      theme = "light",
       ...props
     },
     ref
@@ -78,12 +90,9 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       "flex items-center justify-center",
       "overflow-hidden",
       "select-none",
-      "transition-all duration-200",
-      "hover:scale-105",
-      "active:scale-95",
-      "focus:outline-none focus:ring-2 focus:ring-offset-2",
+      "transition-transform duration-200",
+      theme === "dark" ? colorClasses.dark : colorClasses[colorScheme],
       sizeClasses[size],
-      colorClasses[colorScheme],
       borderClasses[borderStyle],
       disabled && "opacity-50 cursor-not-allowed",
       className
@@ -97,6 +106,14 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         whileHover={{ scale: 1.1 }}
         transition={{ type: "spring", stiffness: 300 }}
       />
+    ) : icon ? (
+      <motion.div
+        className="flex items-center justify-center w-full h-full"
+        whileHover={{ rotate: 360 }}
+        transition={{ duration: 0.5 }}
+      >
+        {icon}
+      </motion.div>
     ) : (
       <motion.span
         className="font-medium"

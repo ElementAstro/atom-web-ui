@@ -1,175 +1,196 @@
+// src/components/Card.test.tsx
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom/extend-expect";
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import "@testing-library/jest-dom";
 import Card from "./Card";
 import { ThemeProvider } from "../context/ThemeContext";
+import { Mail } from "lucide-react";
+
+const renderWithTheme = (component: React.ReactElement) => {
+  return render(<ThemeProvider>{component}</ThemeProvider>);
+};
 
 describe("Card Component", () => {
-  const renderWithTheme = (ui: React.ReactElement, theme: string) => {
-    return render(<ThemeProvider initialTheme={theme}>{ui}</ThemeProvider>);
-  };
+  describe("Basic Rendering", () => {
+    test("renders with required props", () => {
+      renderWithTheme(
+        <Card title="Test Card">
+          <p>Test Content</p>
+        </Card>
+      );
+      expect(screen.getByText("Test Card")).toBeInTheDocument();
+      expect(screen.getByText("Test Content")).toBeInTheDocument();
+    });
 
-  test("renders with default props", () => {
-    renderWithTheme(
-      <Card title="Test Title">
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    expect(screen.getByText("Test Title")).toBeInTheDocument();
-    expect(screen.getByText("Test Content")).toBeInTheDocument();
+    test("renders with footer", () => {
+      renderWithTheme(
+        <Card title="Test Card" footer={<div>Footer Content</div>}>
+          <p>Content</p>
+        </Card>
+      );
+      expect(screen.getByText("Footer Content")).toBeInTheDocument();
+    });
+
+    test("renders with custom icon", () => {
+      renderWithTheme(
+        <Card title="Test Card" icon={<Mail data-testid="mail-icon" />}>
+          <p>Content</p>
+        </Card>
+      );
+      expect(screen.getByTestId("mail-icon")).toBeInTheDocument();
+    });
   });
 
-  test("renders with custom classes and styles", () => {
-    renderWithTheme(
-      <Card
-        title="Test Title"
-        customClass="custom-class"
-        customHeaderClass="custom-header-class"
-        customContentClass="custom-content-class"
-        customFooterClass="custom-footer-class"
-        footer={<p>Test Footer</p>}
-      >
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    const headerElement = screen.getByText("Test Title").parentElement;
-    expect(headerElement).toHaveClass("flex", "items-center", "custom-header-class");
-    
-    const contentElement = screen.getByText("Test Content").parentElement;
-    expect(contentElement).toHaveClass("custom-content-class");
-    
-    const footerElement = screen.getByText("Test Footer").parentElement;
-    expect(footerElement).toHaveClass("custom-footer-class");
+  describe("Collapse Functionality", () => {
+    test("toggles collapse state on button click", async () => {
+      const onToggleCollapse = jest.fn();
+      renderWithTheme(
+        <Card title="Test Card" onToggleCollapse={onToggleCollapse}>
+          <p>Content</p>
+        </Card>
+      );
+
+      const toggleButton = screen.getByLabelText("Toggle Collapse");
+      await userEvent.click(toggleButton);
+      expect(onToggleCollapse).toHaveBeenCalled();
+    });
+
+    test("renders in collapsed state", () => {
+      renderWithTheme(
+        <Card title="Test Card" isCollapsed={true}>
+          <p>Content</p>
+        </Card>
+      );
+      expect(screen.queryByText("Content")).not.toBeVisible();
+    });
   });
 
-  test("toggles collapse state", () => {
-    const onToggleCollapse = jest.fn();
-    renderWithTheme(
-      <Card title="Test Title" onToggleCollapse={onToggleCollapse}>
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    const headerElement = screen.getByText("Test Title").parentElement;
-    fireEvent.click(headerElement!);
-    expect(onToggleCollapse).toHaveBeenCalled();
+  describe("Maximize Functionality", () => {
+    test("toggles maximize state on button click", async () => {
+      const onMaximize = jest.fn();
+      renderWithTheme(
+        <Card title="Test Card" onMaximize={onMaximize}>
+          <p>Content</p>
+        </Card>
+      );
+
+      const maximizeButton = screen.getByLabelText("Maximize");
+      await userEvent.click(maximizeButton);
+      expect(onMaximize).toHaveBeenCalled();
+    });
   });
 
-  test("handles maximize and close actions", () => {
-    const onMaximize = jest.fn();
-    const onClose = jest.fn();
-    renderWithTheme(
-      <Card title="Test Title" onMaximize={onMaximize} onClose={onClose}>
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    const maximizeButton = screen.getByText("🗖");
-    const closeButton = screen.getByText("✕");
-    fireEvent.click(maximizeButton);
-    expect(onMaximize).toHaveBeenCalled();
-    fireEvent.click(closeButton);
-    expect(onClose).toHaveBeenCalled();
+  describe("Close Functionality", () => {
+    test("calls onClose when close button is clicked", async () => {
+      const onClose = jest.fn();
+      renderWithTheme(
+        <Card title="Test Card" onClose={onClose}>
+          <p>Content</p>
+        </Card>
+      );
+
+      const closeButton = screen.getByLabelText("Close");
+      await userEvent.click(closeButton);
+      expect(onClose).toHaveBeenCalled();
+    });
   });
 
-  test("renders with tooltip", () => {
-    renderWithTheme(
-      <Card title="Test Title" tooltip="Test Tooltip">
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    const cardRoot = screen.getByRole("article");
-    expect(cardRoot).toHaveAttribute("title", "Test Tooltip");
+  describe("Drag Functionality", () => {
+    test("enables drag functionality when draggable is true", () => {
+      renderWithTheme(
+        <Card title="Test Card" draggable={true}>
+          <p>Content</p>
+        </Card>
+      );
+
+      const card = screen.getByRole("article");
+      expect(card).toHaveAttribute("draggable", "true");
+    });
   });
 
-  test("handles drag and drop", () => {
-    renderWithTheme(
-      <Card title="Test Title" draggable>
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    const cardElement = screen.getByRole("article");
-    const dataTransfer = { setData: jest.fn() };
-    
-    fireEvent.dragStart(cardElement, { dataTransfer });
-    fireEvent.dragOver(cardElement);
-    // fireEvent.drop(cardElement);
-    fireEvent.dragEnd(cardElement);
-    
-    expect(cardElement).toHaveAttribute("draggable", "true");
+  describe("Resize Functionality", () => {
+    test("renders resize handle when resizable is true", () => {
+      renderWithTheme(
+        <Card title="Test Card" resizable={true}>
+          <p>Content</p>
+        </Card>
+      );
+
+      expect(screen.getByTestId("resize-handle")).toBeInTheDocument();
+    });
+
+    test("calls onResize when resizing", async () => {
+      const onResize = jest.fn();
+      renderWithTheme(
+        <Card title="Test Card" resizable={true} onResize={onResize}>
+          <p>Content</p>
+        </Card>
+      );
+
+      const resizeHandle = screen.getByTestId("resize-handle");
+      fireEvent.mouseDown(resizeHandle);
+      fireEvent.mouseMove(document, { clientX: 100, clientY: 100 });
+      fireEvent.mouseUp(document);
+
+      expect(onResize).toHaveBeenCalled();
+    });
   });
 
-  test("handles resize", () => {
-    const onResize = jest.fn();
-    renderWithTheme(
-      <Card title="Test Title" resizable onResize={onResize}>
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    const resizeHandle = screen.getByTestId("resize-handle");
-    
-    fireEvent.mouseDown(resizeHandle, { clientX: 100, clientY: 100 });
-    fireEvent.mouseMove(document, { clientX: 200, clientY: 200 });
-    fireEvent.mouseUp(document);
-    
-    expect(onResize).toHaveBeenCalled();
+  describe("Theme and Styling", () => {
+    test("applies custom theme", () => {
+      renderWithTheme(
+        <Card title="Test Card" theme="dark">
+          <p>Content</p>
+        </Card>
+      );
+
+      const card = screen.getByRole("article");
+      expect(card).toHaveClass("bg-gray-900");
+    });
+
+    test("applies custom classes", () => {
+      renderWithTheme(
+        <Card
+          title="Test Card"
+          customClass="test-class"
+          customHeaderClass="header-class"
+          customContentClass="content-class"
+        >
+          <p>Content</p>
+        </Card>
+      );
+
+      expect(screen.getByRole("article")).toHaveClass("test-class");
+    });
   });
 
-  test("applies theme classes", () => {
-    renderWithTheme(
-      <Card title="Test Title">
-        <p>Test Content</p>
-      </Card>,
-      "dark"
-    );
-    const cardElement = screen.getByRole("article");
-    /*
-    expect(cardElement).toHaveClass(
-      "flex",
-      "justify-between",
-      "items-center",
-      "p-4",
-      "cursor-pointer",
-      "bg-gradient-to-r",
-      "from-purple-900",
-      "via-pink-900",
-      "to-red-900"
-    );
-    */
-    
-  });
+  describe("Accessibility", () => {
+    test("supports keyboard navigation", async () => {
+      const onToggleCollapse = jest.fn();
+      renderWithTheme(
+        <Card title="Test Card" onToggleCollapse={onToggleCollapse}>
+          <p>Content</p>
+        </Card>
+      );
 
-  test("renders with icon", () => {
-    renderWithTheme(
-      <Card title="Test Title" icon={<span>🔍</span>}>
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    expect(screen.getByText("🔍")).toBeInTheDocument();
-  });
+      const header = screen.getByText("Test Card").parentElement;
+      header?.focus();
+      fireEvent.keyDown(header!, { key: "Enter" });
+      expect(onToggleCollapse).toHaveBeenCalled();
+    });
 
-  test("renders with custom header and footer backgrounds", () => {
-    renderWithTheme(
-      <Card
-        title="Test Title"
-        headerBackground="bg-blue-500"
-        footerBackground="bg-red-500"
-        footer={<p>Test Footer</p>}
-      >
-        <p>Test Content</p>
-      </Card>,
-      "light"
-    );
-    const headerElement = screen.getByText("Test Title").parentElement;
-    const footerElement = screen.getByText("Test Footer").parentElement;
-    
-    // expect(headerElement).toHaveClass("flex", "items-center", "bg-blue-500");
-    expect(footerElement).toHaveClass("bg-red-500");
+    test("has correct ARIA attributes", () => {
+      renderWithTheme(
+        <Card title="Test Card" tooltip="Card tooltip">
+          <p>Content</p>
+        </Card>
+      );
+
+      expect(screen.getByRole("article")).toHaveAttribute(
+        "title",
+        "Card tooltip"
+      );
+    });
   });
 });

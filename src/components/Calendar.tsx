@@ -1,6 +1,8 @@
 // src/components/Calendar.tsx
 import React, { useState, ChangeEvent, KeyboardEvent } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CalendarProps {
   onDateChange?: (date: Date | null) => void;
@@ -149,19 +151,31 @@ const Calendar: React.FC<CalendarProps> = ({
     return weeks;
   };
 
+  const dropdownVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+  };
+
   return (
     <div className={`calendar relative inline-block ${customClass}`}>
-      <button
+      <motion.button
         onClick={handleToggleCalendar}
         className={`calendar__button border border-gray-300 rounded-lg p-2 transition duration-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customButtonClass}`}
         disabled={disabled}
         aria-label={ariaLabel}
+        whileHover={{ scale: disabled ? 1 : 1.05 }}
+        whileTap={{ scale: disabled ? 1 : 0.95 }}
       >
         {selectedDate ? selectedDate.toLocaleDateString(locale) : "Select Date"}
-      </button>
+      </motion.button>
 
       {isCalendarOpen && (
-        <div
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          variants={dropdownVariants}
           className={`calendar__dropdown absolute ${
             positionClasses[position]
           } ${
@@ -175,46 +189,58 @@ const Calendar: React.FC<CalendarProps> = ({
           onAnimationEnd={onAnimationEnd}
         >
           <div className="calendar__header flex justify-between items-center mb-2">
-            <button
+            <motion.button
               onClick={() => handleYearChange(-1)}
               className="calendar__year-button text-gray-400 hover:text-gray-200 transition duration-200"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Previous Year"
             >
-              ❮
-            </button>
+              <ChevronLeft size={20} />
+            </motion.button>
             <span className="calendar__year font-semibold">
               {selectedDate ? selectedDate.getFullYear() : ""}
             </span>
-            <button
+            <motion.button
               onClick={() => handleYearChange(1)}
               className="calendar__year-button text-gray-400 hover:text-gray-200 transition duration-200"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Next Year"
             >
-              ❯
-            </button>
+              <ChevronRight size={20} />
+            </motion.button>
           </div>
 
           {showMonthDropdown && (
             <div className="calendar__month-dropdown flex justify-between items-center mb-2">
-              <button
+              <motion.button
                 onClick={() => handleMonthChange(-1)}
                 className="calendar__month-button text-gray-400 hover:text-gray-200 transition duration-200"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Previous Month"
               >
-                ❮
-              </button>
+                <ChevronLeft size={20} />
+              </motion.button>
               <span className="calendar__month font-semibold">
                 {selectedDate
                   ? selectedDate.toLocaleString(locale, { month: "long" })
                   : ""}
               </span>
-              <button
+              <motion.button
                 onClick={() => handleMonthChange(1)}
                 className="calendar__month-button text-gray-400 hover:text-gray-200 transition duration-200"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Next Month"
               >
-                ❯
-              </button>
+                <ChevronRight size={20} />
+              </motion.button>
             </div>
           )}
 
-          <input
+          <motion.input
             type="date"
             value={selectedDate ? selectedDate.toISOString().slice(0, 10) : ""}
             onChange={handleDateChange}
@@ -222,6 +248,7 @@ const Calendar: React.FC<CalendarProps> = ({
             min={minDate ? minDate.toISOString().slice(0, 10) : ""}
             max={maxDate ? maxDate.toISOString().slice(0, 10) : ""}
             disabled={disabled}
+            whileFocus={{ scale: 1.02 }}
           />
 
           {selectedDate && (
@@ -238,10 +265,11 @@ const Calendar: React.FC<CalendarProps> = ({
                       minute: "2-digit",
                     })}
                   </p>
-                  <select
+                  <motion.select
                     className={`calendar__time-select border rounded-lg p-2 w-full mb-2 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 ${customInputClass}`}
                     onChange={handleTimeChange}
                     disabled={disabled}
+                    whileFocus={{ scale: 1.02 }}
                   >
                     <option value="12:00">12:00 PM</option>
                     <option value="13:00">1:00 PM</option>
@@ -255,7 +283,7 @@ const Calendar: React.FC<CalendarProps> = ({
                     <option value="21:00">9:00 PM</option>
                     <option value="22:00">10:00 PM</option>
                     <option value="23:00">11:00 PM</option>
-                  </select>
+                  </motion.select>
                 </>
               )}
             </>
@@ -268,14 +296,17 @@ const Calendar: React.FC<CalendarProps> = ({
           )}
 
           {clearable && (
-            <button
+            <motion.button
               onClick={handleClear}
               className={`calendar__clear-button mt-2 bg-red-500 text-white p-2 rounded-lg transition duration-300 hover:bg-red-700 ${customClearButtonClass}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              disabled={disabled}
             >
               清除
-            </button>
+            </motion.button>
           )}
-        </div>
+        </motion.div>
       )}
       <style>{`
         @media (max-width: 768px) {

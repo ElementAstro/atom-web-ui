@@ -7,6 +7,8 @@ import React, {
   useState,
 } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { motion } from "framer-motion";
+import { ChevronDown, ChevronUp, Maximize2, Minimize2, X } from "lucide-react";
 
 interface CardProps {
   title: string;
@@ -38,7 +40,8 @@ interface CardProps {
   borderStyle?: string;
   borderColor?: string;
   textTransform?: "uppercase" | "lowercase" | "capitalize" | "none";
-  bgColor?: string; // 新增属性
+  theme?: "light" | "dark";
+  bgColor?: string;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -72,9 +75,10 @@ const Card: React.FC<CardProps> = ({
   borderColor = "gray-300",
   textTransform = "none",
   bgColor = "white", // 默认背景色
+  theme = "light",
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
+  const { theme: currentTheme } = useTheme();
   const [initialPosition, setInitialPosition] = useState<{
     x: number;
     y: number;
@@ -87,6 +91,7 @@ const Card: React.FC<CardProps> = ({
     height: 200,
   });
   const [collapsed, setCollapsed] = useState(isCollapsed);
+  const [maximized, setMaximized] = useState(isMaximized);
 
   const handleToggleCollapse = () => {
     setCollapsed(!collapsed);
@@ -94,6 +99,7 @@ const Card: React.FC<CardProps> = ({
   };
 
   const handleMaximize = () => {
+    setMaximized(!maximized);
     if (onMaximize) onMaximize();
   };
 
@@ -160,34 +166,34 @@ const Card: React.FC<CardProps> = ({
     }
   };
 
-  const themeClasses = {
+  const themeClasses: Record<string, string> = {
     light: "bg-white text-gray-900 border-gray-300",
     dark: "bg-gray-900 text-white border-gray-700",
-    astronomy: "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
+    astronomy:
+      "bg-gradient-to-r from-purple-900 via-blue-900 to-black text-white border-purple-500",
     eyeCare: "bg-green-100 text-green-900 border-green-300",
     ocean: "bg-blue-100 text-blue-900 border-blue-300",
     sunset: "bg-orange-100 text-orange-900 border-orange-300",
-    astronomyDarkRed: "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
+    astronomyDarkRed:
+      "bg-gradient-to-r from-red-900 via-black to-black text-white border-red-500",
   };
 
   return (
-    <div
+    <motion.div
       ref={cardRef}
       role="article"
       className={`border-${borderWidth} border-${borderColor} border-${borderStyle} rounded-lg ${
         shadow ? "shadow-lg" : ""
       } ${animation} ${collapsed ? "h-12 overflow-hidden" : "h-auto"} ${
-        isMaximized ? "fixed inset-0 z-50" : ""
+        maximized ? "fixed inset-0 z-50" : ""
       } ${draggable ? "absolute" : ""} ${
         hoverEffect
           ? "hover:shadow-xl hover:shadow-neon transform hover:scale-105"
           : ""
-      } ${customClass}`}
+      } ${themeClasses[theme]} ${customClass}`}
       draggable={draggable}
-      onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      onDragEnd={handleDragEnd}
       title={tooltip}
       style={{
         width: dimensions.width,
@@ -195,6 +201,7 @@ const Card: React.FC<CardProps> = ({
         textTransform,
         backgroundColor: bgColor,
       }}
+      whileHover={{ scale: hoverEffect ? 1.05 : 1 }}
     >
       <div
         className={`flex justify-between items-center p-4 cursor-pointer ${headerBackground} ${customHeaderClass}`}
@@ -211,38 +218,59 @@ const Card: React.FC<CardProps> = ({
           </h2>
         </div>
         <div className="flex space-x-2">
-          <button
+          <motion.button
             onClick={handleToggleCollapse}
             className="text-lg text-blue-500 hover:underline focus:outline-none focus:ring-2 focus:ring-purple-600"
             tabIndex={0}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.8 }}
+            aria-label="Toggle Collapse"
           >
-            {collapsed ? "▼" : "▲"}
-          </button>
-          <button
+            {collapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+          </motion.button>
+          <motion.button
             onClick={handleMaximize}
             className="text-lg text-green-500 hover:underline focus:outline-none focus:ring-2 focus:ring-purple-600"
             tabIndex={0}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.8 }}
+            aria-label={maximized ? "Minimize" : "Maximize"}
           >
-            {isMaximized ? "🗗" : "🗖"}
-          </button>
-          <button
+            {maximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+          </motion.button>
+          <motion.button
             onClick={handleClose}
             className="text-lg text-red-500 hover:underline focus:outline-none focus:ring-2 focus:ring-purple-600"
             tabIndex={0}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.8 }}
+            aria-label="Close"
           >
-            ✕
-          </button>
+            <X size={20} />
+          </motion.button>
         </div>
       </div>
       {!collapsed && (
-        <div className={`p-4 ${customContentClass}`}>{children}</div>
+        <motion.div
+          className={`p-4 ${customContentClass}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {children}
+        </motion.div>
       )}
       {!collapsed && footer && (
-        <div
+        <motion.div
           className={`p-4 ${footerBackground} ${footerTextColor} ${customFooterClass}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
         >
           {footer}
-        </div>
+        </motion.div>
       )}
       {resizable && (
         <div
@@ -251,7 +279,16 @@ const Card: React.FC<CardProps> = ({
           onMouseDown={handleResize}
         />
       )}
-    </div>
+      {draggable && (
+        <style>{`
+          .${cardRef.current?.id} {
+            position: absolute;
+            top: ${initialPosition?.y || 0}px;
+            left: ${initialPosition?.x || 0}px;
+          }
+        `}</style>
+      )}
+    </motion.div>
   );
 };
 
